@@ -12,15 +12,18 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AccountTest
 {
    private static final Logger debug = Logger.getLogger(AccountTest.class.getName());
 
+   @Ignore
    @Test
    public void testConcurrentLogin() throws Exception
    {
@@ -38,7 +41,7 @@ public class AccountTest
             }
             catch (Exception e)
             {
-               System.err.println("Failed");
+               System.err.println("AuthN Failed!");
                e.printStackTrace();
             }
          }
@@ -55,7 +58,7 @@ public class AccountTest
       void doLogin() throws Exception
       {
          debug.info("doing login");
-         String username = "paulb";
+         String username = "paul.bilnoski";
          String password = "pass";
          
          LoginContext ctx = new LoginContext("tcat.oss", new CBH(username, password));
@@ -107,6 +110,13 @@ public class AccountTest
             {
                NameCallback ncb = (NameCallback)cb;
                ncb.setName(username);
+               continue;
+            }
+            
+            if (cb instanceof PasswordCallback)
+            {
+               PasswordCallback ncb = (PasswordCallback)cb;
+               ncb.setPassword(password.toCharArray());
                continue;
             }
             

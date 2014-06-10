@@ -2,20 +2,35 @@ package edu.tamu.tcat.oss.account.test;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AccountNotFoundException;
+import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+
+import edu.tamu.tcat.oss.account.test.internal.Activator;
+import edu.tamu.tcat.oss.db.DbExecTask;
+import edu.tamu.tcat.oss.db.DbExecutor;
+import edu.tamu.tcat.oss.osgi.services.util.ServiceHelper;
 
 //TODO: get JAAS authn example working against database
 //      write tcat.oss.account wrapper for use with REST
@@ -41,8 +56,8 @@ public class DatabaseLoginModule implements LoginModule
    private boolean didCommit = false;
    
    // Store
-   private String userName;
-   private DatabasePrincipal dbpUserName;
+   private AccountRecord record;
+   private Collection<DatabasePrincipal> dbps;
    
    static class DatabasePrincipal implements Principal
    {
@@ -87,6 +102,16 @@ public class DatabaseLoginModule implements LoginModule
       }
    }
    
+   static class AccountRecord
+   {
+      long uid;
+      String username;
+      String passwordHash;
+      String first;
+      String last;
+      String email;
+   }
+   
    public DatabaseLoginModule()
    {
       debug.info("created!");
@@ -99,21 +124,30 @@ public class DatabaseLoginModule implements LoginModule
       this.cbh = callbackHandler;
       debug.info("init");
    }
-
+   
    @Override
    public boolean login() throws LoginException
    {
       debug.info("login");
       
-      String name = null;
+      // reset state
+      didLogin = false;
+      record = null;
+      
+      final AtomicReference<String> name = new AtomicReference<>();
+      final AtomicReference<String> passwordInput = new AtomicReference<>();
       try
       {
          List<Callback> cbs = new ArrayList<>();
          // There are a few library-defined callbacks commonly used
          cbs.add(new NameCallback("gimme name!"));
+         cbs.add(new PasswordCallback("gimme pass!", false));
          cbh.handle(cbs.toArray(new Callback[cbs.size()]));
          
-         name = ((NameCallback)cbs.get(0)).getName();
+         String nm = ((NameCallback)cbs.get(0)).getName();
+         name.set(nm);
+         char[] pwd = ((PasswordCallback)cbs.get(1)).getPassword();
+         passwordInput.set(new String(pwd));
       }
       catch (UnsupportedCallbackException e)
       {
@@ -124,23 +158,65 @@ public class DatabaseLoginModule implements LoginModule
          throw new IllegalStateException("Failed handling callbacks", e);
       }
       
-      boolean succ = false;
+      //String hashed = CryptoUtil.getHash(passwordInput.get());
+      
+      String nm = name.get();
+      // invalid username, just quit
+      if (nm == null || nm.trim().isEmpty())
+         return true;
       
       // validate credential
-      if (name != null && !name.trim().isEmpty())
+      DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
       {
-         succ = true;
-      }
+         @Override
+         public AccountRecord execute(Connection conn) throws Exception
+         {
+            String sql = "SELECT * FROM authn_local WHERE user_name = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql))
+            {
+               ps.setString(1, name.get());
+               try (ResultSet rs = ps.executeQuery())
+               {
+                  if (!rs.next())
+                     throw new AccountNotFoundException("No user exists with name '"+name.get()+"'");
+                  String storedHash = rs.getString("password_hash");
+                  
+                  boolean passed = CryptoUtil.authenticate(passwordInput.get(), storedHash);
+                  if (!passed)
+                     throw new FailedLoginException("password incorrect");
+                  
+                  AccountRecord rv = new AccountRecord();
+                  rv.uid = rs.getLong("scope_id");
+                  rv.username = name.get();
+                  rv.first = rs.getString("first_name");
+                  rv.last = rs.getString("last_name");
+                  rv.email = rs.getString("email");
+                  
+                  // TODO: should this check be done?
+                  //if (rs.next())
+                  //   throw new AccountNotFoundException("Multiple users exist with name '"+userName+"'");
+                  
+                  return rv;
+               }
+            }
+            
+            //throw new IllegalStateException("Failed accessing user from database");
+         }
+      };
       
-      // if not successful
-      if (!succ)
+      try (ServiceHelper sh = new ServiceHelper(Activator.getBundleContext()))
       {
-         didLogin = false;
-         return false;
+         DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
+         Future<AccountRecord> f = exec.submit(task);
+         // Store the data in fields to be used in commit()
+         record = f.get(10, TimeUnit.SECONDS);
+         if (record == null)
+            throw new IllegalStateException("Failed accessign user from database");
       }
-      
-      // Store the data in fields to be used in commit()
-      userName = name;
+      catch (Exception e)
+      {
+         throw new LoginException("Failed database processing");
+      }
       
       didLogin = true;
       return true;
@@ -156,16 +232,20 @@ public class DatabaseLoginModule implements LoginModule
          return false;
       
       // Store principal as internal state independent from username string
-      dbpUserName = new DatabasePrincipal(userName);
+      dbps = new ArrayList<>();
+      dbps.add(new DatabasePrincipal(record.username));
+      dbps.add(new DatabasePrincipal(record.email));
+      dbps.add(new DatabasePrincipal(record.first));
+      dbps.add(new DatabasePrincipal(record.last));
       
       Set<Principal> princs = subject.getPrincipals();
       // principals compare using .equals
-      if (!princs.contains(dbpUserName))
-         princs.add(dbpUserName);
+      for (DatabasePrincipal p : dbps)
+         if (!princs.contains(p))
+            princs.add(p);
       
-      // clean up state
-      // no need to retain username since a principal now exists
-      userName = null;
+      // clean up state - no need to retain since principals now exist
+      record = null;
       
       didCommit = true;
       return true;
@@ -178,12 +258,12 @@ public class DatabaseLoginModule implements LoginModule
       
       // no state to clean up for failed login
       if (!didLogin)
-         return false;
+         return true;
       
       // login success, commit failed
       if (!didCommit)
       {
-         userName = null;
+         record = null;
          return true;
       }
       
@@ -201,15 +281,18 @@ public class DatabaseLoginModule implements LoginModule
       // remove principals added, which will compare via .equals
       Set<Principal> princs = subject.getPrincipals();
       // Allow logout to succeed if login failed, so check for state
-      if (dbpUserName != null)
-         princs.remove(dbpUserName);
+      if (dbps != null)
+      {
+         for (DatabasePrincipal p : dbps)
+            princs.remove(p);
+      }
       
       didLogin = false;
       didCommit = false;
       
       // Clean up state
-      userName = null;
-      dbpUserName = null;
+      record = null;
+      dbps = null;
       
       return true;
    }
