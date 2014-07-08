@@ -26,11 +26,11 @@ import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
+import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.account.test.CryptoUtil;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
 import edu.tamu.tcat.oss.db.DbExecTask;
 import edu.tamu.tcat.oss.db.DbExecutor;
-import edu.tamu.tcat.oss.osgi.services.util.ServiceHelper;
 
 //TODO: get JAAS authn example working against database
 //      write tcat.oss.account wrapper for use with REST

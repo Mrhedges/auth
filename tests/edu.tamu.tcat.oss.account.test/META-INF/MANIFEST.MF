@@ -5,7 +5,7 @@ Bundle-SymbolicName: edu.tamu.tcat.oss.account.test
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  edu.tamu.tcat.oss.db.psql;bundle-version="1.0.0",
- edu.tamu.tcat.oss.osgi.config;bundle-version="1.0.0"
+ edu.tamu.tcat.osgi.config;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: edu.tamu.tcat.account;version="0.1.0",
  edu.tamu.tcat.account.login,
@@ -13,7 +13,7 @@ Import-Package: edu.tamu.tcat.account;version="0.1.0",
  edu.tamu.tcat.crypto.bouncycastle;version="1.1.0",
  edu.tamu.tcat.crypto.impl;version="1.1.0",
  edu.tamu.tcat.oss.db,
- edu.tamu.tcat.oss.osgi.services.util,
+ edu.tamu.tcat.osgi.services.util,
  org.junit;version="4.11.0"
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/props.xml,OSGI-INF/dbexec.xml

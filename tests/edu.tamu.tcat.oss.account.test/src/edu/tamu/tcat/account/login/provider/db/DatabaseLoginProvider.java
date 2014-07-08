@@ -14,11 +14,11 @@ import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
+import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.account.test.CryptoUtil;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
 import edu.tamu.tcat.oss.db.DbExecTask;
 import edu.tamu.tcat.oss.db.DbExecutor;
-import edu.tamu.tcat.oss.osgi.services.util.ServiceHelper;
 
 public class DatabaseLoginProvider implements LoginProvider
 {

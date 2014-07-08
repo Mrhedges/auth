@@ -2,7 +2,7 @@ package edu.tamu.tcat.oss.account.test.internal;
 
 import org.osgi.framework.BundleContext;
 
-import edu.tamu.tcat.oss.osgi.services.util.ActivatorBase;
+import edu.tamu.tcat.osgi.services.util.ActivatorBase;
 
 public class Activator extends ActivatorBase
 {

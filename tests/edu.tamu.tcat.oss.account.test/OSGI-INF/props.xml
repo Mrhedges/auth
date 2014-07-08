@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="dispose" immediate="false" name="edu.tamu.tcat.oss.account.test.properties">
-   <implementation class="edu.tamu.tcat.oss.osgi.config.file.SimpleFileConfigurationProperties"/>
+   <implementation class="edu.tamu.tcat.osgi.config.file.SimpleFileConfigurationProperties"/>
    <property name="props.file.propertyName" type="String" value="test.config.file"/>
    <service>
-      <provide interface="edu.tamu.tcat.oss.osgi.config.ConfigurationProperties"/>
+      <provide interface="edu.tamu.tcat.osgi.config.ConfigurationProperties"/>
    </service>
 </scr:component>
