@@ -7,9 +7,13 @@ Require-Bundle: org.eclipse.core.runtime,
  edu.tamu.tcat.oss.db.psql;bundle-version="1.0.0",
  edu.tamu.tcat.oss.osgi.config;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: edu.tamu.tcat.oss.db,
+Import-Package: edu.tamu.tcat.account;version="0.1.0",
+ edu.tamu.tcat.account.login,
+ edu.tamu.tcat.crypto;version="1.1.0",
+ edu.tamu.tcat.crypto.bouncycastle;version="1.1.0",
+ edu.tamu.tcat.crypto.impl;version="1.1.0",
+ edu.tamu.tcat.oss.db,
  edu.tamu.tcat.oss.osgi.services.util,
- org.apache.commons.codec.binary;version="1.5.0",
  org.junit;version="4.11.0"
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/props.xml,OSGI-INF/dbexec.xml
