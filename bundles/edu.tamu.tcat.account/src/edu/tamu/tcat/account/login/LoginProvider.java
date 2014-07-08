@@ -20,10 +20,12 @@ import edu.tamu.tcat.account.Account;
  * leverage its good parts.
  * <p>
  * Instance are not thread-safe and intended for single use for the purpose of
- * logging in to a secured application. The {@link #login()} process provides a {@link LoginData}
- * which may be used to find an {@link Account}.
+ * logging in to a secured application. The result of the process started by
+ * invoking {@link #login()} provides a {@link LoginData}
+ * which may be used to find an {@link Account} for the application.
  * <p>
- * Specific implementations must be default-constructible but may require
+ * Specific implementations should be default-constructible to allow for flexible
+ * instantiation and instance control, but may require
  * implementation-specific initialization and configuration. One such implementation may
  * simply delegate to the JAAS authentication entry point (i.e. {@link LoginContext}),
  * and utilize its configuration and class-loading mechanisms.
