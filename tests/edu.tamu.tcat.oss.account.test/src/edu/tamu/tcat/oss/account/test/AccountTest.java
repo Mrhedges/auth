@@ -1,128 +1,65 @@
 package edu.tamu.tcat.oss.account.test;
 
-import java.io.IOException;
-import java.security.Principal;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.LoginContext;
-
-import org.junit.Ignore;
 import org.junit.Test;
+
+import edu.tamu.tcat.account.login.LoginData;
+import edu.tamu.tcat.account.login.LoginProvider;
+import edu.tamu.tcat.account.login.provider.db.DatabaseLoginProvider;
 
 public class AccountTest
 {
    private static final Logger debug = Logger.getLogger(AccountTest.class.getName());
 
-   @Ignore
+//   @Ignore
    @Test
-   public void testConcurrentLogin() throws Exception
+   public void testLogin() throws Exception
    {
-      // Test login in a separate thread
-      ExecutorService exec = Executors.newFixedThreadPool(3);
-      Runnable lt =
-      new Runnable(){
-         @Override
-         public void run()
-         {
-            try
-            {
-               debug.info("running");
-               new LoginTester().doLogin();
-            }
-            catch (Exception e)
-            {
-               System.err.println("AuthN Failed!");
-               e.printStackTrace();
-            }
-         }
-      };
-      exec.execute(lt);
-//      exec.execute(lt);
-      exec.shutdown();
-      exec.awaitTermination(10, TimeUnit.MINUTES);
+      //----
+      // stage 1 - get credentials
+      
+      // presumably, this is the information provided as credentials to log the user in
+      String username = "paul.bilnoski";
+      String password = "pass";
+      
+      // The user selected a Login Provider
+      String providerId = "db.basic";
+      
+      //----
+      // stage 2 - authenticate
+      
+      // instantiate login provider with its configuration and initialize with credentials
+      // This app only uses username/password credentials
+      LoginProvider loginProvider = getLoginProvider(providerId, username, password);
+      
+      // provider encapsulates everything, so try to log in (or fail)
+      LoginData data = loginProvider.login();
+      
+      debug.info("lpid: " + data.getLoginProviderId());
+      debug.info("lpuid: " + data.getLoginUserId());
+      
+      //----
+      // stage 3 - map to account
+      
+      
+      //----
+      // stage 4 - "log in" by creating a secure token
+
+      
+
       debug.info("done");
    }
    
-   static class LoginTester
+   private LoginProvider getLoginProvider(String providerId, String username, String password)
    {
-      void doLogin() throws Exception
+      if (providerId.equals("db.basic"))
       {
-         debug.info("doing login");
-         String username = "paul.bilnoski";
-         String password = "pass";
-         
-         LoginContext ctx = new LoginContext("tcat.oss", new CBH(username, password));
-         ctx.login();
-         Subject subj = ctx.getSubject();
-         Set<Principal> principals = subj.getPrincipals();
-         System.err.println("Login succeeded, found "+principals.size()+" principals");
-         for (Principal p : principals)
-         {
-            System.err.println(p);
-         }
-         
-         //TODO: need to research how to build custom Permission instances into a Policy or
-         // ProtectionDomain or AccessControlContext or something...
-         
-         // Don't really need this, right? This needs a "do-as" permission, i.e. a "sudo"
-//         Integer rv = Subject.doAs(subj, new PrivilegedExceptionAction<Integer>()
-//         {
-//
-//            @Override
-//            public Integer run() throws Exception
-//            {
-//               // TODO Auto-generated method stub
-//               return null;
-//            }
-//         });
-      }
-   }
-   
-   static class CBH implements CallbackHandler
-   {
-      public final String username;
-      public final String password;
-      
-      public CBH(String u, String p)
-      {
-         this.username = u;
-         this.password = p;
+         DatabaseLoginProvider db = new DatabaseLoginProvider();
+         db.init(providerId, username, password);
+         return db;
       }
       
-      @Override
-      public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
-      {
-         debug.info("handling callbacks");
-         for (Callback cb : callbacks)
-         {
-            debug.info("Got callback: " + cb.getClass() + " " + cb);
-            if (cb instanceof NameCallback)
-            {
-               NameCallback ncb = (NameCallback)cb;
-               ncb.setName(username);
-               continue;
-            }
-            
-            if (cb instanceof PasswordCallback)
-            {
-               PasswordCallback ncb = (PasswordCallback)cb;
-               ncb.setPassword(password.toCharArray());
-               continue;
-            }
-            
-            throw new UnsupportedCallbackException(cb);
-         }
-      }
+      throw new IllegalStateException("Unknown provider id: " + providerId);
    }
-   
 }

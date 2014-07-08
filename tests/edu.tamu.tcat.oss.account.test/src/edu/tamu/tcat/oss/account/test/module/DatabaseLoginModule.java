@@ -1,4 +1,4 @@
-package edu.tamu.tcat.oss.account.test;
+package edu.tamu.tcat.oss.account.test.module;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +26,7 @@ import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
+import edu.tamu.tcat.oss.account.test.CryptoUtil;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
 import edu.tamu.tcat.oss.db.DbExecTask;
 import edu.tamu.tcat.oss.db.DbExecutor;
@@ -58,49 +58,6 @@ public class DatabaseLoginModule implements LoginModule
    // Store
    private AccountRecord record;
    private Collection<DatabasePrincipal> dbps;
-   
-   static class DatabasePrincipal implements Principal
-   {
-      private final String name;
-      
-      public DatabasePrincipal(String name)
-      {
-         Objects.requireNonNull(name);
-         this.name = name;
-      }
-      
-      @Override
-      public String getName()
-      {
-         return name;
-      }
-      
-      @Override
-      public String toString()
-      {
-         return "TcatPrincipal["+name+"]";
-      }
-
-      @Override
-      public int hashCode()
-      {
-         return name.hashCode();
-      }
-
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (this == obj)
-            return true;
-         if (obj instanceof DatabasePrincipal)
-         {
-            DatabasePrincipal other = (DatabasePrincipal)obj;
-            if (!name.equals(other.name))
-               return false;
-         }
-         return true;
-      }
-   }
    
    static class AccountRecord
    {
@@ -165,6 +122,26 @@ public class DatabaseLoginModule implements LoginModule
       if (nm == null || nm.trim().isEmpty())
          return true;
       
+      try
+      {
+         record = getRecord(name.get(), passwordInput.get());
+         if (record == null)
+            throw new IllegalStateException("Failed accessing user from database");
+      }
+      catch (Exception e)
+      {
+         throw new LoginException("Failed database processing");
+      }
+      
+      didLogin = true;
+      return true;
+   }
+   
+   public static AccountRecord getRecord(String name, String password) throws Exception
+   {
+      final AtomicReference<String> nameInput = new AtomicReference<>();
+      final AtomicReference<String> passwordInput = new AtomicReference<>();
+
       // validate credential
       DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
       {
@@ -174,11 +151,11 @@ public class DatabaseLoginModule implements LoginModule
             String sql = "SELECT * FROM authn_local WHERE user_name = ?";
             try (PreparedStatement ps = conn.prepareStatement(sql))
             {
-               ps.setString(1, name.get());
+               ps.setString(1, nameInput.get());
                try (ResultSet rs = ps.executeQuery())
                {
                   if (!rs.next())
-                     throw new AccountNotFoundException("No user exists with name '"+name.get()+"'");
+                     throw new AccountNotFoundException("No user exists with name '"+nameInput.get()+"'");
                   String storedHash = rs.getString("password_hash");
                   
                   boolean passed = CryptoUtil.authenticate(passwordInput.get(), storedHash);
@@ -187,7 +164,7 @@ public class DatabaseLoginModule implements LoginModule
                   
                   AccountRecord rv = new AccountRecord();
                   rv.uid = rs.getLong("scope_id");
-                  rv.username = name.get();
+                  rv.username = nameInput.get();
                   rv.first = rs.getString("first_name");
                   rv.last = rs.getString("last_name");
                   rv.email = rs.getString("email");
@@ -209,17 +186,13 @@ public class DatabaseLoginModule implements LoginModule
          DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
          Future<AccountRecord> f = exec.submit(task);
          // Store the data in fields to be used in commit()
-         record = f.get(10, TimeUnit.SECONDS);
-         if (record == null)
-            throw new IllegalStateException("Failed accessign user from database");
+         AccountRecord rec = f.get(10, TimeUnit.SECONDS);
+         return rec;
       }
       catch (Exception e)
       {
          throw new LoginException("Failed database processing");
       }
-      
-      didLogin = true;
-      return true;
    }
 
    @Override
@@ -233,13 +206,13 @@ public class DatabaseLoginModule implements LoginModule
       
       // Store principal as internal state independent from username string
       dbps = new ArrayList<>();
-      dbps.add(new DatabasePrincipal(record.username));
-      dbps.add(new DatabasePrincipal(record.email));
-      dbps.add(new DatabasePrincipal(record.first));
-      dbps.add(new DatabasePrincipal(record.last));
+      dbps.add(new DatabaseAccountNamePrincipal(record.username));
+      dbps.add(new DatabaseInfoPrincipal(record.email));
+      dbps.add(new DatabaseInfoPrincipal(record.first));
+      dbps.add(new DatabaseInfoPrincipal(record.last));
       
       Set<Principal> princs = subject.getPrincipals();
-      // principals compare using .equals
+      // principals compare using ".equals"
       for (DatabasePrincipal p : dbps)
          if (!princs.contains(p))
             princs.add(p);
