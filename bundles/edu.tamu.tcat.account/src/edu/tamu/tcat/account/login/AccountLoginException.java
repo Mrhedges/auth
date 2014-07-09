@@ -1,6 +1,8 @@
 package edu.tamu.tcat.account.login;
 
-public class AccountLoginException extends Exception
+import edu.tamu.tcat.account.AccountException;
+
+public class AccountLoginException extends AccountException
 {
    public AccountLoginException()
    {
