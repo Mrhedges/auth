@@ -11,16 +11,26 @@ public class CryptoUtil
 {
    public static boolean authenticate(String passwordRaw, String passwordHashed)
    {
+      return authenticate(getProvider(), passwordRaw, passwordHashed);
+   }
+   
+   public static boolean authenticate(CryptoProvider cp, String passwordRaw, String passwordHashed)
+   {
       if (passwordHashed == null)
          //TODO: log: "User ["+username+"] has no stored credential"
          return false;
-      PBKDF2 pbkdf2Impl = getProvider().getPbkdf2(DigestType.SHA1);
+      PBKDF2 pbkdf2Impl = cp.getPbkdf2(DigestType.SHA1);
       return pbkdf2Impl.checkHash(passwordRaw, passwordHashed);
    }
    
    public static String getHash(String passwordRaw)
    {
-      PBKDF2 pbkdf2Impl = getProvider().getPbkdf2(DigestType.SHA1);
+      return getHash(getProvider(), passwordRaw);
+   }
+   
+   public static String getHash(CryptoProvider cp, String passwordRaw)
+   {
+      PBKDF2 pbkdf2Impl = cp.getPbkdf2(DigestType.SHA1);
       return pbkdf2Impl.deriveHash(passwordRaw);
    }
    

@@ -14,6 +14,7 @@ import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
+import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.account.test.CryptoUtil;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
@@ -25,12 +26,14 @@ public class DatabaseLoginProvider implements LoginProvider
    private String userName;
    private String pass;
    private String instanceId;
+   private CryptoProvider crypto;
 
-   public void init(String providerId, String username, String password)
+   public void init(String providerId, String username, String password, CryptoProvider cp)
    {
       this.instanceId = providerId;
       this.userName = username;
       this.pass = password;
+      this.crypto = cp;
    }
 
    @Override
@@ -38,7 +41,7 @@ public class DatabaseLoginProvider implements LoginProvider
    {
       try
       {
-         AccountRecord rec = getRecord(userName, pass);
+         AccountRecord rec = getRecord(crypto, userName, pass);
          LoginData rv = new DbLoginData(instanceId, rec);
          return rv;
       }
@@ -98,7 +101,7 @@ public class DatabaseLoginProvider implements LoginProvider
    }
 
    
-   private static AccountRecord getRecord(String name, String password) throws Exception
+   private static AccountRecord getRecord(final CryptoProvider cp, String name, String password) throws Exception
    {
       final AtomicReference<String> nameInput = new AtomicReference<>(name);
       final AtomicReference<String> passwordInput = new AtomicReference<>(password);
@@ -119,7 +122,7 @@ public class DatabaseLoginProvider implements LoginProvider
                      throw new AccountNotFoundException("No user exists with name '"+nameInput.get()+"'");
                   String storedHash = rs.getString("password_hash");
                   
-                  boolean passed = CryptoUtil.authenticate(passwordInput.get(), storedHash);
+                  boolean passed = CryptoUtil.authenticate(cp, passwordInput.get(), storedHash);
                   if (!passed)
                      throw new FailedLoginException("password incorrect");
                   
