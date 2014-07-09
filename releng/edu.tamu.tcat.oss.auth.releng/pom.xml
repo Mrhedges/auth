@@ -26,10 +26,11 @@
   </properties>
   
   <modules>
-    <module>oss.auth.util/releng/edu.tamu.tcat.oss.auth.repo.product</module>
-    <module>oss.auth.util/releng/edu.tamu.tcat.oss.auth.sdk.feature</module>
+    <module>oss.auth/releng/edu.tamu.tcat.oss.auth.repo.product</module>
+    <module>oss.auth/releng/edu.tamu.tcat.oss.auth.sdk.feature</module>
     
-    <module>oss.auth.util/bundles/edu.tamu.tcat.oss.auth</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account</module>
+    <module>oss.auth/tests/edu.tamu.tcat.oss.account.test</module>
   </modules>
 
   <repositories>
