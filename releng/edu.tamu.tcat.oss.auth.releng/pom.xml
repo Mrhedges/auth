@@ -16,14 +16,23 @@
   
   <properties>
     <tycho-groupid>org.eclipse.tycho</tycho-groupid>
-    <tycho-version>0.20.0</tycho-version>
+    <!-- NOTE: using snapshot build -->
+    <tycho-version>0.21.0-SNAPSHOT</tycho-version>
     <tycho-extras-version>${tycho-version}</tycho-extras-version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven-plugins-groupid>org.apache.maven.plugins</maven-plugins-groupid>
-    <maven-antrun-version>1.7</maven-antrun-version> 
     <assembly-version>2.4</assembly-version>
+    <repo-base-url>https://build.citd.tamu.edu/hudson/job</repo-base-url>
   </properties>
+  
+  <!-- NOTE: To use tycho snapshot build, must use this upstream maven plugin repo (not on maven central) -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>tycho-snapshots</id>
+      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
+    </pluginRepository>
+  </pluginRepositories>
   
   <modules>
     <module>oss.auth/releng/edu.tamu.tcat.oss.auth.repo.product</module>
@@ -37,7 +46,23 @@
     <repository>
       <id>Eclipse Platform</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/luna/</url>
+<!--       <url>http://download.eclipse.org/releases/luna/</url> -->
+      <url>${repo-base-url}/Eclipse%20Repository%20Mirror/lastSuccessfulBuild/artifact/target/repository/</url>
+    </repository>
+    <repository>
+      <id>Crypto</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/Crypto/lastSuccessfulBuild/artifact/targetPlatform/</url>
+    </repository>
+    <repository>
+      <id>OSGI.Utils</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/OSGI.Utilities/lastSuccessfulBuild/artifact/targetPlatform/</url>
+    </repository>
+    <repository>
+      <id>Mirror.Deps</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/mirror.dependencies/lastSuccessfulBuild/artifact/targetPlatform/</url>
     </repository>
   </repositories>
 
