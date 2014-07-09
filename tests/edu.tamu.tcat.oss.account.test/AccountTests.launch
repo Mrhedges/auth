@@ -12,7 +12,7 @@
 <booleanAttribute key="clearwslog" value="false"/>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/pde-junit"/>
 <booleanAttribute key="default" value="false"/>
-<stringAttribute key="deselected_workspace_plugins" value="edu.tamu.tcat.oss.json,edu.tamu.tcat.oss.json.jackson,edu.tamu.tcat.sda.catalog,edu.tamu.tcat.sda.catalog.psql,edu.tamu.tcat.sda.catalog.psql.test,edu.tamu.tcat.sda.catalog.rest"/>
+<stringAttribute key="deselected_workspace_plugins" value="edu.tamu.tcat.epss.mobile.server.rest,edu.tamu.tcat.oss.json,edu.tamu.tcat.oss.json.jackson,edu.tamu.tcat.sda.catalog,edu.tamu.tcat.sda.catalog.psql,edu.tamu.tcat.sda.catalog.psql.test,edu.tamu.tcat.sda.catalog.rest"/>
 <booleanAttribute key="includeOptional" value="true"/>
 <stringAttribute key="location" value="${workspace_loc}/../junit-workspace"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
