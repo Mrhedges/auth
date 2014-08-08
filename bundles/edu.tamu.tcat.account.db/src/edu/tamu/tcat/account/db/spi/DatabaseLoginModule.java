@@ -1,18 +1,11 @@
-package edu.tamu.tcat.oss.account.test.module;
+package edu.tamu.tcat.account.db.spi;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
@@ -21,16 +14,12 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AccountNotFoundException;
-import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
-import edu.tamu.tcat.osgi.services.util.ServiceHelper;
-import edu.tamu.tcat.oss.account.test.CryptoUtil;
-import edu.tamu.tcat.oss.account.test.internal.Activator;
-import edu.tamu.tcat.oss.db.DbExecTask;
-import edu.tamu.tcat.oss.db.DbExecutor;
+import edu.tamu.tcat.account.db.internal.DatabaseAuthUtil;
+import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
+import edu.tamu.tcat.crypto.CryptoProvider;
 
 //TODO: get JAAS authn example working against database
 //      write tcat.oss.account wrapper for use with REST
@@ -46,6 +35,19 @@ import edu.tamu.tcat.oss.db.DbExecutor;
 
 // use pbkdf2impl for password storage, start with 10k rounds and calibrate
 // use securetokenimpl for token generation and processing
+
+/**
+ * A JAAS Security Provider Interface {@link LoginModule} implementation backed by a database.
+ * <p>
+ * This module requires the following callbacks provided by a {@link CallbackHandler}:
+ * 
+ * <ul><li>{@link NameCallback}</li>
+ *     <li>{@link PasswordCallback}</li>
+ *     <li>{@link CryptoProviderCallback}</li>
+ * </ul>
+ * 
+ * @see DatabaseLoginProvider for an implementation of {@link edu.tamu.tcat.account.login.LoginProvider}
+ */
 public class DatabaseLoginModule implements LoginModule
 {
    private static final Logger debug = Logger.getLogger(DatabaseLoginModule.class.getName());
@@ -56,18 +58,9 @@ public class DatabaseLoginModule implements LoginModule
    private boolean didCommit = false;
    
    // Store
-   private AccountRecord record;
+   private DatabaseAuthUtil.AccountRecord record;
+   private DatabaseAuthUtil.DbLoginData loginData;
    private Collection<DatabasePrincipal> dbps;
-   
-   static class AccountRecord
-   {
-      long uid;
-      String username;
-      String passwordHash;
-      String first;
-      String last;
-      String email;
-   }
    
    public DatabaseLoginModule()
    {
@@ -90,21 +83,30 @@ public class DatabaseLoginModule implements LoginModule
       // reset state
       didLogin = false;
       record = null;
+      loginData = null;
       
-      final AtomicReference<String> name = new AtomicReference<>();
-      final AtomicReference<String> passwordInput = new AtomicReference<>();
+      String inputUsername = null;
+      String inputPassword = null;
+      CryptoProvider inputCrypto = null;
       try
       {
-         List<Callback> cbs = new ArrayList<>();
          // There are a few library-defined callbacks commonly used
-         cbs.add(new NameCallback("gimme name!"));
-         cbs.add(new PasswordCallback("gimme pass!", false));
-         cbh.handle(cbs.toArray(new Callback[cbs.size()]));
+         NameCallback cbName = new NameCallback("Account Name");
+         PasswordCallback cbPwd = new PasswordCallback("Account Password", false);
+         CryptoProviderCallback cbCP = new CryptoProviderCallback();
          
-         String nm = ((NameCallback)cbs.get(0)).getName();
-         name.set(nm);
-         char[] pwd = ((PasswordCallback)cbs.get(1)).getPassword();
-         passwordInput.set(new String(pwd));
+         cbh.handle(new Callback[] {cbName, cbPwd, cbCP});
+         
+         inputUsername = cbName.getName();
+         char[] chars = cbPwd.getPassword();
+         if (chars != null)
+         {
+            if (chars.length == 0)
+               inputPassword = "";
+            else
+               inputPassword = new String(chars);
+         }
+         inputCrypto = cbCP.getProvider();
       }
       catch (UnsupportedCallbackException e)
       {
@@ -115,18 +117,32 @@ public class DatabaseLoginModule implements LoginModule
          throw new IllegalStateException("Failed handling callbacks", e);
       }
       
-      //String hashed = CryptoUtil.getHash(passwordInput.get());
-      
-      String nm = name.get();
-      // invalid username, just quit
-      if (nm == null || nm.trim().isEmpty())
+      // Just quit if values are invalid
+      // invalid username
+      if (inputUsername == null || inputUsername.trim().isEmpty())
+      {
+         debug.fine("Login attempt missing username");
          return true;
+      }
+      // missing password
+      if (inputPassword == null)
+      {
+         debug.fine("Login attempt missing password");
+         return true;
+      }
+      if (inputCrypto == null)
+      {
+         debug.fine("Login attempt missing crypto provider");
+         return true;
+      }
       
       try
       {
-         record = getRecord(name.get(), passwordInput.get());
+         String instanceId = DatabaseLoginModule.class.getName();
+         record = DatabaseAuthUtil.getRecord(inputCrypto, inputUsername, inputPassword);
          if (record == null)
             throw new IllegalStateException("Failed accessing user from database");
+         loginData = new DatabaseAuthUtil.DbLoginData(instanceId, record);
       }
       catch (Exception e)
       {
@@ -137,68 +153,6 @@ public class DatabaseLoginModule implements LoginModule
       return true;
    }
    
-   //TODO: same impl is here as well as DatabaseLoginProvider
-   //      to merge the impls, this spi LoginModule will need to be able to find the CryptoProvider,
-   //      probably through OSGI because this is instantiated by JAAS and can not receive context
-   //      information... could push it through the CBH as a callback
-   public static AccountRecord getRecord(String name, String password) throws Exception
-   {
-      final AtomicReference<String> nameInput = new AtomicReference<>(name);
-      final AtomicReference<String> passwordInput = new AtomicReference<>(password);
-
-      // validate credential
-      DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
-      {
-         @Override
-         public AccountRecord execute(Connection conn) throws Exception
-         {
-            String sql = "SELECT * FROM authn_local WHERE user_name = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql))
-            {
-               ps.setString(1, nameInput.get());
-               try (ResultSet rs = ps.executeQuery())
-               {
-                  if (!rs.next())
-                     throw new AccountNotFoundException("No user exists with name '"+nameInput.get()+"'");
-                  String storedHash = rs.getString("password_hash");
-
-                  boolean passed = CryptoUtil.authenticate(passwordInput.get(), storedHash);
-                  if (!passed)
-                     throw new FailedLoginException("password incorrect");
-
-                  AccountRecord rv = new AccountRecord();
-                  rv.uid = rs.getLong("scope_id");
-                  rv.username = nameInput.get();
-                  rv.first = rs.getString("first_name");
-                  rv.last = rs.getString("last_name");
-                  rv.email = rs.getString("email");
-
-                  // TODO: should this check be done?
-                  //if (rs.next())
-                  //   throw new AccountNotFoundException("Multiple users exist with name '"+userName+"'");
-
-                  return rv;
-               }
-            }
-
-            //throw new IllegalStateException("Failed accessing user from database");
-         }
-      };
-
-      try (ServiceHelper sh = new ServiceHelper(Activator.getBundleContext()))
-      {
-         DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
-         Future<AccountRecord> f = exec.submit(task);
-         // Store the data in fields to be used in commit()
-         AccountRecord rec = f.get(10, TimeUnit.SECONDS);
-         return rec;
-      }
-      catch (Exception e)
-      {
-         throw new LoginException("Failed database processing");
-      }
-   }
-
    @Override
    public boolean commit() throws LoginException
    {
@@ -210,10 +164,7 @@ public class DatabaseLoginModule implements LoginModule
       
       // Store principal as internal state independent from username string
       dbps = new ArrayList<>();
-      dbps.add(new DatabaseAccountNamePrincipal(record.username));
-      dbps.add(new DatabaseInfoPrincipal(record.email));
-      dbps.add(new DatabaseInfoPrincipal(record.first));
-      dbps.add(new DatabaseInfoPrincipal(record.last));
+      dbps.add(new DatabaseLoginDataPrincipal(record.username, loginData));
       
       Set<Principal> princs = subject.getPrincipals();
       // principals compare using ".equals"
@@ -223,6 +174,7 @@ public class DatabaseLoginModule implements LoginModule
       
       // clean up state - no need to retain since principals now exist
       record = null;
+      loginData = null;
       
       didCommit = true;
       return true;
@@ -241,6 +193,7 @@ public class DatabaseLoginModule implements LoginModule
       if (!didCommit)
       {
          record = null;
+         loginData = null;
          return true;
       }
       
@@ -269,6 +222,7 @@ public class DatabaseLoginModule implements LoginModule
       
       // Clean up state
       record = null;
+      loginData = null;
       dbps = null;
       
       return true;

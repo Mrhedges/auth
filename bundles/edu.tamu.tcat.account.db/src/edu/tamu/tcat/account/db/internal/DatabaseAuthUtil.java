@@ -1,4 +1,4 @@
-package edu.tamu.tcat.account.login.provider.db;
+package edu.tamu.tcat.account.db.internal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,47 +11,39 @@ import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.FailedLoginException;
 
 import edu.tamu.tcat.account.AccountException;
-import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
-import edu.tamu.tcat.account.login.LoginProvider;
 import edu.tamu.tcat.crypto.CryptoProvider;
+import edu.tamu.tcat.crypto.DigestType;
+import edu.tamu.tcat.crypto.PBKDF2;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
-import edu.tamu.tcat.oss.account.test.CryptoUtil;
-import edu.tamu.tcat.oss.account.test.internal.Activator;
 import edu.tamu.tcat.oss.db.DbExecTask;
 import edu.tamu.tcat.oss.db.DbExecutor;
 
-public class DatabaseLoginProvider implements LoginProvider
+/**
+ * A group of utilities for dealing with database-backed authentication.
+ */
+public final class DatabaseAuthUtil
 {
-   private String userName;
-   private String pass;
-   private String instanceId;
-   private CryptoProvider crypto;
-
-   public void init(String providerId, String username, String password, CryptoProvider cp)
+   /** Named key to request a value from {@link DbLoginData} type: Long  */
+   public static final String DATA_KEY_UID = "uid";
+   /** Named key to request a value from {@link DbLoginData} type: String */
+   public static final String DATA_KEY_USERNAME = "username";
+   /** Named key to request a value from {@link DbLoginData} type: String */
+   public static final String DATA_KEY_FIRST = "first";
+   /** Named key to request a value from {@link DbLoginData} type: String */
+   public static final String DATA_KEY_LAST = "last";
+   /** Named key to request a value from {@link DbLoginData} type: String */
+   public static final String DATA_KEY_EMAIL = "email";
+   
+   private static final String SQL_TABLENAME = "authn_local";
+   private static final String SQL_COL_USERNAME = "user_name";
+   private static final String SQL_COL_PWDHASHED = "password_hash";
+   
+   private DatabaseAuthUtil()
    {
-      this.instanceId = providerId;
-      this.userName = username;
-      this.pass = password;
-      this.crypto = cp;
-   }
-
-   @Override
-   public LoginData login() throws AccountLoginException
-   {
-      try
-      {
-         AccountRecord rec = getRecord(crypto, userName, pass);
-         LoginData rv = new DbLoginData(instanceId, rec);
-         return rv;
-      }
-      catch (Exception e)
-      {
-         throw new AccountLoginException(e);
-      }
    }
    
-   static class DbLoginData implements LoginData
+   public static class DbLoginData implements LoginData
    {
       private String pid;
       private AccountRecord rec;
@@ -80,31 +72,30 @@ public class DatabaseLoginProvider implements LoginProvider
          //HACK: these do not check requested type
          switch (key)
          {
-         case "uid": return (T)Long.valueOf(rec.uid);
-         case "username": return (T)rec.username;
-         case "first": return (T)rec.first;
-         case "last": return (T)rec.last;
-         case "email": return (T)rec.email;
+         case DATA_KEY_UID: return (T)Long.valueOf(rec.uid);
+         case DATA_KEY_USERNAME: return (T)rec.username;
+         case DATA_KEY_FIRST: return (T)rec.first;
+         case DATA_KEY_LAST: return (T)rec.last;
+         case DATA_KEY_EMAIL: return (T)rec.email;
          }
          return null;
       }
    }
    
-   static class AccountRecord
+   public static class AccountRecord
    {
-      long uid;
-      String username;
-      String passwordHash;
-      String first;
-      String last;
-      String email;
+      public long uid;
+      public String username;
+      public String passwordHash;
+      public String first;
+      public String last;
+      public String email;
    }
 
-   
-   private static AccountRecord getRecord(final CryptoProvider cp, String name, String password) throws Exception
+   public static AccountRecord getRecord(final CryptoProvider cp, String name, String passwordRaw) throws Exception
    {
       final AtomicReference<String> nameInput = new AtomicReference<>(name);
-      final AtomicReference<String> passwordInput = new AtomicReference<>(password);
+      final AtomicReference<String> passwordInput = new AtomicReference<>(passwordRaw);
 
       // validate credential
       DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
@@ -112,7 +103,7 @@ public class DatabaseLoginProvider implements LoginProvider
          @Override
          public AccountRecord execute(Connection conn) throws Exception
          {
-            String sql = "SELECT * FROM authn_local WHERE user_name = ?";
+            String sql = "SELECT * FROM "+SQL_TABLENAME+" WHERE "+SQL_COL_USERNAME+" = ?";
             try (PreparedStatement ps = conn.prepareStatement(sql))
             {
                ps.setString(1, nameInput.get());
@@ -120,9 +111,9 @@ public class DatabaseLoginProvider implements LoginProvider
                {
                   if (!rs.next())
                      throw new AccountNotFoundException("No user exists with name '"+nameInput.get()+"'");
-                  String storedHash = rs.getString("password_hash");
+                  String storedHash = rs.getString(SQL_COL_PWDHASHED);
                   
-                  boolean passed = CryptoUtil.authenticate(cp, passwordInput.get(), storedHash);
+                  boolean passed = authenticate(cp, passwordInput.get(), storedHash);
                   if (!passed)
                      throw new FailedLoginException("password incorrect");
                   
@@ -145,7 +136,7 @@ public class DatabaseLoginProvider implements LoginProvider
          }
       };
       
-      try (ServiceHelper sh = new ServiceHelper(Activator.getBundleContext()))
+      try (ServiceHelper sh = new ServiceHelper(Activator.getDefault().getContext()))
       {
          DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
          Future<AccountRecord> f = exec.submit(task);
@@ -157,5 +148,14 @@ public class DatabaseLoginProvider implements LoginProvider
       {
          throw new AccountException("Failed database processing", e);
       }
+   }
+   
+   public static boolean authenticate(CryptoProvider cp, String passwordRaw, String passwordHashed)
+   {
+      if (passwordHashed == null)
+         //TODO: log: "User ["+username+"] has no stored credential"
+         return false;
+      PBKDF2 pbkdf2Impl = cp.getPbkdf2(DigestType.SHA1);
+      return pbkdf2Impl.checkHash(passwordRaw, passwordHashed);
    }
 }
