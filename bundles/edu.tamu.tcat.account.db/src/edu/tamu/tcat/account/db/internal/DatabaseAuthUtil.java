@@ -15,7 +15,6 @@ import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.DigestType;
 import edu.tamu.tcat.crypto.PBKDF2;
-import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.db.DbExecTask;
 import edu.tamu.tcat.oss.db.DbExecutor;
 
@@ -92,7 +91,7 @@ public final class DatabaseAuthUtil
       public String email;
    }
 
-   public static AccountRecord getRecord(final CryptoProvider cp, String name, String passwordRaw) throws Exception
+   public static AccountRecord getRecord(final CryptoProvider cp, DbExecutor exec, String name, String passwordRaw) throws Exception
    {
       final AtomicReference<String> nameInput = new AtomicReference<>(name);
       final AtomicReference<String> passwordInput = new AtomicReference<>(passwordRaw);
@@ -136,9 +135,8 @@ public final class DatabaseAuthUtil
          }
       };
       
-      try (ServiceHelper sh = new ServiceHelper(Activator.getDefault().getContext()))
+      try
       {
-         DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
          Future<AccountRecord> f = exec.submit(task);
          // Store the data in fields to be used in commit()
          AccountRecord rec = f.get(10, TimeUnit.SECONDS);

@@ -19,7 +19,9 @@ import javax.security.auth.spi.LoginModule;
 
 import edu.tamu.tcat.account.db.internal.DatabaseAuthUtil;
 import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
+import edu.tamu.tcat.account.jaas.ServiceProviderCallback;
 import edu.tamu.tcat.crypto.CryptoProvider;
+import edu.tamu.tcat.oss.db.DbExecutor;
 
 //TODO: get JAAS authn example working against database
 //      write tcat.oss.account wrapper for use with REST
@@ -43,7 +45,7 @@ import edu.tamu.tcat.crypto.CryptoProvider;
  * 
  * <ul><li>{@link NameCallback}</li>
  *     <li>{@link PasswordCallback}</li>
- *     <li>{@link CryptoProviderCallback}</li>
+ *     <li>{@link ServiceProviderCallback} containing {@link CryptoProvider} and {@link DbExecutor}</li>
  * </ul>
  * 
  * @see DatabaseLoginProvider for an implementation of {@link edu.tamu.tcat.account.login.LoginProvider}
@@ -88,14 +90,15 @@ public class DatabaseLoginModule implements LoginModule
       String inputUsername = null;
       String inputPassword = null;
       CryptoProvider inputCrypto = null;
+      DbExecutor inputDbExec = null;
       try
       {
          // There are a few library-defined callbacks commonly used
          NameCallback cbName = new NameCallback("Account Name");
          PasswordCallback cbPwd = new PasswordCallback("Account Password", false);
-         CryptoProviderCallback cbCP = new CryptoProviderCallback();
+         ServiceProviderCallback cbSP = new ServiceProviderCallback();
          
-         cbh.handle(new Callback[] {cbName, cbPwd, cbCP});
+         cbh.handle(new Callback[] {cbName, cbPwd, cbSP});
          
          inputUsername = cbName.getName();
          char[] chars = cbPwd.getPassword();
@@ -106,7 +109,8 @@ public class DatabaseLoginModule implements LoginModule
             else
                inputPassword = new String(chars);
          }
-         inputCrypto = cbCP.getProvider();
+         inputCrypto = cbSP.getService(CryptoProvider.class);
+         inputDbExec = cbSP.getService(DbExecutor.class);
       }
       catch (UnsupportedCallbackException e)
       {
@@ -139,7 +143,7 @@ public class DatabaseLoginModule implements LoginModule
       try
       {
          String instanceId = DatabaseLoginModule.class.getName();
-         record = DatabaseAuthUtil.getRecord(inputCrypto, inputUsername, inputPassword);
+         record = DatabaseAuthUtil.getRecord(inputCrypto, inputDbExec, inputUsername, inputPassword);
          if (record == null)
             throw new IllegalStateException("Failed accessing user from database");
          loginData = new DatabaseAuthUtil.DbLoginData(instanceId, record);
