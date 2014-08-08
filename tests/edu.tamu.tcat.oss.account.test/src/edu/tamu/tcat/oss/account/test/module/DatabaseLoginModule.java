@@ -137,10 +137,14 @@ public class DatabaseLoginModule implements LoginModule
       return true;
    }
    
+   //TODO: same impl is here as well as DatabaseLoginProvider
+   //      to merge the impls, this spi LoginModule will need to be able to find the CryptoProvider,
+   //      probably through OSGI because this is instantiated by JAAS and can not receive context
+   //      information... could push it through the CBH as a callback
    public static AccountRecord getRecord(String name, String password) throws Exception
    {
-      final AtomicReference<String> nameInput = new AtomicReference<>();
-      final AtomicReference<String> passwordInput = new AtomicReference<>();
+      final AtomicReference<String> nameInput = new AtomicReference<>(name);
+      final AtomicReference<String> passwordInput = new AtomicReference<>(password);
 
       // validate credential
       DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
@@ -157,30 +161,30 @@ public class DatabaseLoginModule implements LoginModule
                   if (!rs.next())
                      throw new AccountNotFoundException("No user exists with name '"+nameInput.get()+"'");
                   String storedHash = rs.getString("password_hash");
-                  
+
                   boolean passed = CryptoUtil.authenticate(passwordInput.get(), storedHash);
                   if (!passed)
                      throw new FailedLoginException("password incorrect");
-                  
+
                   AccountRecord rv = new AccountRecord();
                   rv.uid = rs.getLong("scope_id");
                   rv.username = nameInput.get();
                   rv.first = rs.getString("first_name");
                   rv.last = rs.getString("last_name");
                   rv.email = rs.getString("email");
-                  
+
                   // TODO: should this check be done?
                   //if (rs.next())
                   //   throw new AccountNotFoundException("Multiple users exist with name '"+userName+"'");
-                  
+
                   return rv;
                }
             }
-            
+
             //throw new IllegalStateException("Failed accessing user from database");
          }
       };
-      
+
       try (ServiceHelper sh = new ServiceHelper(Activator.getBundleContext()))
       {
          DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);

@@ -1,5 +1,8 @@
 package edu.tamu.tcat.account;
 
+/**
+ * A base exception type for the Account library.
+ */
 public class AccountException extends Exception
 {
    public AccountException()
