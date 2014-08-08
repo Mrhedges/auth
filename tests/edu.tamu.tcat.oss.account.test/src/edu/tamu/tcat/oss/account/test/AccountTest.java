@@ -21,7 +21,7 @@ import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
-import edu.tamu.tcat.account.token.UuidTokenService;
+import edu.tamu.tcat.account.token.uuid.UuidTokenService;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.SecureToken;
 import edu.tamu.tcat.crypto.TokenException;
@@ -190,7 +190,7 @@ public class AccountTest
    static class MockEncryptingUuidTokenService implements UuidTokenService
    {
       final String keyb64_128 = "blahDiddlyBlahSchmacko";
-      final String keyb64_256 = "blahDiddlyBlahSchmackety+BitLongerThanThat+=";
+      final String keyb64_256 = "blahDiddlyBlahSchmackety+ABitLongerThanThat+";
       private final SecureToken secureToken;
       
       public MockEncryptingUuidTokenService(CryptoProvider cryptoProvider) throws AccountTokenException

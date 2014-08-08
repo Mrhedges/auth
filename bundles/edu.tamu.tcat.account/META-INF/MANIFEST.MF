@@ -6,4 +6,6 @@ Bundle-Version: 0.1.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: edu.tamu.tcat.account;version="0.1.0",
  edu.tamu.tcat.account.login;version="0.1.0",
- edu.tamu.tcat.account.store;version="0.1.0"
+ edu.tamu.tcat.account.store;version="0.1.0",
+ edu.tamu.tcat.account.token;version="0.1.0",
+ edu.tamu.tcat.account.token.uuid;version="0.1.0"

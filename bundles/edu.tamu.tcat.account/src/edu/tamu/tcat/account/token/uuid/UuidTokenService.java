@@ -1,6 +1,8 @@
-package edu.tamu.tcat.account.token;
+package edu.tamu.tcat.account.token.uuid;
 
 import java.util.UUID;
+
+import edu.tamu.tcat.account.token.TokenService;
 
 /**
  * A {@link TokenService} which uses {@link UUID} data as its payload.
