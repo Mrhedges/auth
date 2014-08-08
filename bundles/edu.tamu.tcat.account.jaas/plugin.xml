@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="osgiModule" name="OSGI JAAS Module" schema="schema/osgiModule.exsd"/>
+
+</plugin>

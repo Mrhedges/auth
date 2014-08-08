@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="edu.tamu.tcat.account.jaas.osgiModule">
+      <module
+            class="edu.tamu.tcat.account.db.spi.DatabaseLoginModule">
+      </module>
+   </extension>
+
+</plugin>

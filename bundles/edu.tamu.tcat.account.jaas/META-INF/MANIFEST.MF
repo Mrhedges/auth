@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JAAS support for TCAT Accounts
-Bundle-SymbolicName: edu.tamu.tcat.account.jaas
+Bundle-SymbolicName: edu.tamu.tcat.account.jaas;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: edu.tamu.tcat.account.jaas.internal.Activator
 Require-Bundle: org.eclipse.core.runtime
