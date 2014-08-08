@@ -14,9 +14,9 @@ import org.junit.Test;
 
 import edu.tamu.tcat.account.Account;
 import edu.tamu.tcat.account.AccountException;
+import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
-import edu.tamu.tcat.account.login.provider.db.DatabaseLoginProvider;
 import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.account.token.AccountTokenException;

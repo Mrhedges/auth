@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="edu.tamu.tcat.account.test.feature"
-      label="Feature"
+      label="Test Feature"
       version="1.0.0.qualifier">
 
    <description url="http://www.example.com/description">
@@ -92,5 +92,11 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.account.jaas"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
 
 </feature>
