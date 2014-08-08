@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
@@ -49,6 +50,7 @@ public class BasicJaasTest
    @Test
    public void testConcurrentLogin() throws Exception
    {
+      final AtomicReference<Exception> err = new AtomicReference<>();
       // Test login in a separate thread
       ExecutorService exec = Executors.newFixedThreadPool(3);
       Runnable lt =
@@ -63,15 +65,20 @@ public class BasicJaasTest
             }
             catch (Exception e)
             {
-               System.err.println("AuthN Failed!");
-               e.printStackTrace();
+//               System.err.println("AuthN Failed!");
+//               e.printStackTrace();
+               err.set(e);
             }
          }
       };
-      exec.execute(lt);
+      exec.submit(lt);
 //      exec.execute(lt);
       exec.shutdown();
       exec.awaitTermination(10, TimeUnit.MINUTES);
+      Exception ex = err.get();
+      if (ex != null)
+         throw ex;
+      
       debug.info("done");
    }
    
