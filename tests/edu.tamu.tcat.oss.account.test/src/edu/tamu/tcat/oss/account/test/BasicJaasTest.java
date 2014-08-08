@@ -18,9 +18,28 @@ import javax.security.auth.login.LoginContext;
 
 import org.junit.Test;
 
+import edu.tamu.tcat.account.jaas.LoginDataPrincipal;
 import edu.tamu.tcat.account.jaas.ServiceProviderCallback;
+import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.crypto.CryptoProvider;
+import edu.tamu.tcat.osgi.services.util.ServiceHelper;
+import edu.tamu.tcat.oss.account.test.internal.Activator;
 import edu.tamu.tcat.oss.db.DbExecutor;
+
+//TODO: get JAAS authn example working against database
+//      write tcat.oss.account wrapper for use with REST
+//        Token doLogin(String u, String p);
+//        void doLogout(Token t);
+//        String getUserInfo(String? key, Token t);
+//          back by OSGI service that can cache user subj/principles, flush on logout or on token expiration
+//        boolean hasPerm(String? perm, Token t);
+//          back by OSGI service that can crawl user/group space and build cache to be flushed on live perm change
+//      token: userid, exp time, ip addr, server secret, plus sha256 of uid+exp+ip+secret
+//      not exposing Subject and Principals until needed
+//      token returned in header, to be update in subsequent requests with moving timeout window
+
+// use pbkdf2impl for password storage, start with 10k rounds and calibrate
+// use securetokenimpl for token generation and processing
 
 public class BasicJaasTest
 {
@@ -76,7 +95,7 @@ public class BasicJaasTest
          String username = "paul.bilnoski";
          String password = "pass";
          CryptoProvider cp = CryptoUtil.getProvider();
-         DbExecutor dbexec = null;
+         DbExecutor dbexec = getDbExec();
          
          /*
           * After authentication, the Subject returned should contain principals for:
@@ -104,6 +123,13 @@ public class BasicJaasTest
             System.err.println(p);
          }
          
+         Set<LoginDataPrincipal> princsLogin = subj.getPrincipals(LoginDataPrincipal.class);
+         if (!princsLogin.isEmpty())
+         {
+            LoginDataPrincipal dataPrincipal = princsLogin.iterator().next();
+            LoginData loginData = dataPrincipal.getLoginData();
+         }
+         
          //TODO: need to research how to build custom Permission instances into a Policy or
          // ProtectionDomain or AccessControlContext or something...
          
@@ -120,6 +146,21 @@ public class BasicJaasTest
 //         });
       }
       
+      
+      
+      private DbExecutor getDbExec()
+      {
+         try (ServiceHelper sh = new ServiceHelper(Activator.getDefault().getContext()))
+         {
+            DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
+            return exec;
+         }
+         catch (Exception e)
+         {
+            throw new IllegalStateException("Failed accessing database executor", e);
+         }
+      }
+
       static class CBH implements CallbackHandler
       {
          public final String username;

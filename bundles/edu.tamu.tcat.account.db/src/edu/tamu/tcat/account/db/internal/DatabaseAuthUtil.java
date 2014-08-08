@@ -23,6 +23,8 @@ import edu.tamu.tcat.oss.db.DbExecutor;
  */
 public final class DatabaseAuthUtil
 {
+   //TODO: where to declare these keys? Can't be here, since this is internal.
+   //      Could go in some e.t.t.a.db.LoginDataKeys, perhaps?
    /** Named key to request a value from {@link DbLoginData} type: Long  */
    public static final String DATA_KEY_UID = "uid";
    /** Named key to request a value from {@link DbLoginData} type: String */

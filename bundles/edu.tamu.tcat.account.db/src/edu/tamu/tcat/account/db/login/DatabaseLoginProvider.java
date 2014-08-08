@@ -11,7 +11,7 @@ import edu.tamu.tcat.oss.db.DbExecutor;
 /**
  * An implementation of a {@link LoginProvider} which performs authentication against a database.
  * 
- * @see DatabaseLoginModule for an implementation of {@link javax.security.auth.spi.LoginModule} backed by a database.
+ * @see {@link DatabaseLoginModule} for an implementation of {@link javax.security.auth.spi.LoginModule} backed by a database.
  */
 public class DatabaseLoginProvider implements LoginProvider
 {

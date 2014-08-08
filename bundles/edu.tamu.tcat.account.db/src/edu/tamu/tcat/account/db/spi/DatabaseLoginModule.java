@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -23,21 +24,6 @@ import edu.tamu.tcat.account.jaas.ServiceProviderCallback;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.oss.db.DbExecutor;
 
-//TODO: get JAAS authn example working against database
-//      write tcat.oss.account wrapper for use with REST
-//        Token doLogin(String u, String p);
-//        void doLogout(Token t);
-//        String getUserInfo(String? key, Token t);
-//          back by OSGI service that can cache user subj/principles, flush on logout or on token expiration
-//        boolean hasPerm(String? perm, Token t);
-//          back by OSGI service that can crawl user/group space and build cache to be flushed on live perm change
-//      token: userid, exp time, ip addr, server secret, plus sha256 of uid+exp+ip+secret
-//      not exposing Subject and Principals until needed
-//      token returned in header, to be update in subsequent requests with moving timeout window
-
-// use pbkdf2impl for password storage, start with 10k rounds and calibrate
-// use securetokenimpl for token generation and processing
-
 /**
  * A JAAS Security Provider Interface {@link LoginModule} implementation backed by a database.
  * <p>
@@ -48,7 +34,13 @@ import edu.tamu.tcat.oss.db.DbExecutor;
  *     <li>{@link ServiceProviderCallback} containing {@link CryptoProvider} and {@link DbExecutor}</li>
  * </ul>
  * 
- * @see DatabaseLoginProvider for an implementation of {@link edu.tamu.tcat.account.login.LoginProvider}
+ * <p>
+ * This module provides the following Principals:
+ * 
+ * <ul><li>{@link DatabaseLoginDataPrincipal} backed by {@link DatabaseAuthUtil.DbLoginData} </li>
+ * </ul>
+ * 
+ * @see {@link DatabaseLoginProvider} for an implementation of {@link edu.tamu.tcat.account.login.LoginProvider}
  */
 public class DatabaseLoginModule implements LoginModule
 {
@@ -109,8 +101,16 @@ public class DatabaseLoginModule implements LoginModule
             else
                inputPassword = new String(chars);
          }
-         inputCrypto = cbSP.getService(CryptoProvider.class);
-         inputDbExec = cbSP.getService(DbExecutor.class);
+         
+         try
+         {
+            inputCrypto = cbSP.getService(CryptoProvider.class);
+            inputDbExec = cbSP.getService(DbExecutor.class);
+         }
+         catch (NoSuchElementException nsee)
+         {
+            throw new LoginException("Service provider callback missing required service: " + nsee.getMessage());
+         }
       }
       catch (UnsupportedCallbackException e)
       {
