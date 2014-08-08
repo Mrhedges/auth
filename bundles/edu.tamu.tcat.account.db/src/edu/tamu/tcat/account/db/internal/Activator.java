@@ -1,30 +1,18 @@
 package edu.tamu.tcat.account.db.internal;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import edu.tamu.tcat.osgi.services.util.ActivatorBase;
 
-public class Activator implements BundleActivator {
+public class Activator extends ActivatorBase
+{
+   private static Activator instance;
 
-	private static BundleContext context;
+   public Activator()
+   {
+      instance = this;
+   }
 
-	static BundleContext getContext() {
-		return context;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
-	 */
-	public void start(BundleContext bundleContext) throws Exception {
-		Activator.context = bundleContext;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext bundleContext) throws Exception {
-		Activator.context = null;
-	}
-
+   public static Activator getDefault()
+   {
+      return instance;
+   }
 }
