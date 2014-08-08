@@ -7,7 +7,9 @@ import edu.tamu.tcat.crypto.bouncycastle.BouncyCastleCryptoProvider;
 
 // This is needed to do crypto stuff.
 //HACK: this class is hack-ish.. should be exposed as a service
-public class CryptoUtil
+/** @deprecated These utilities should be exposed more locally to where they are needed */
+@Deprecated
+public final class CryptoUtil
 {
    public static boolean authenticate(String passwordRaw, String passwordHashed)
    {
@@ -34,7 +36,7 @@ public class CryptoUtil
       return pbkdf2Impl.deriveHash(passwordRaw);
    }
    
-   private static CryptoProvider getProvider()
+   public static CryptoProvider getProvider()
    {
       return new BouncyCastleCryptoProvider();
    }

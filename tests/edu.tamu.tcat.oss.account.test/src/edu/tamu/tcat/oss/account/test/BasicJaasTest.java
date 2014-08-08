@@ -16,8 +16,11 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 
-import org.junit.Ignore;
 import org.junit.Test;
+
+import edu.tamu.tcat.account.jaas.ServiceProviderCallback;
+import edu.tamu.tcat.crypto.CryptoProvider;
+import edu.tamu.tcat.oss.db.DbExecutor;
 
 public class BasicJaasTest
 {
@@ -72,6 +75,8 @@ public class BasicJaasTest
          debug.info("doing login");
          String username = "paul.bilnoski";
          String password = "pass";
+         CryptoProvider cp = CryptoUtil.getProvider();
+         DbExecutor dbexec = null;
          
          /*
           * After authentication, the Subject returned should contain principals for:
@@ -89,7 +94,7 @@ public class BasicJaasTest
           * IF authenticating with our custom provider, pull the Principals we know about
           * into our system.
           */
-         LoginContext ctx = new LoginContext("tcat.oss", new CBH(username, password));
+         LoginContext ctx = new LoginContext("tcat.oss", new CBH(username, password, cp, dbexec));
          ctx.login();
          Subject subj = ctx.getSubject();
          Set<Principal> principals = subj.getPrincipals();
@@ -119,11 +124,15 @@ public class BasicJaasTest
       {
          public final String username;
          public final String password;
+         private final CryptoProvider cp;
+         private DbExecutor dbExec;
          
-         public CBH(String u, String p)
+         public CBH(String u, String p, CryptoProvider cp, DbExecutor exec)
          {
             this.username = u;
             this.password = p;
+            this.cp = cp;
+            this.dbExec = exec;
          }
          
          @Override
@@ -144,6 +153,14 @@ public class BasicJaasTest
                {
                   PasswordCallback ncb = (PasswordCallback)cb;
                   ncb.setPassword(password.toCharArray());
+                  continue;
+               }
+               
+               if (cb instanceof ServiceProviderCallback)
+               {
+                  ServiceProviderCallback cpc = (ServiceProviderCallback)cb;
+                  cpc.setService(CryptoProvider.class, cp);
+                  cpc.setService(DbExecutor.class, dbExec);
                   continue;
                }
                

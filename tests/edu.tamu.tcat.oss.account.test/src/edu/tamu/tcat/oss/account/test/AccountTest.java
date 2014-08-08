@@ -26,6 +26,9 @@ import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.SecureToken;
 import edu.tamu.tcat.crypto.TokenException;
 import edu.tamu.tcat.crypto.bouncycastle.BouncyCastleCryptoProvider;
+import edu.tamu.tcat.osgi.services.util.ServiceHelper;
+import edu.tamu.tcat.oss.account.test.internal.Activator;
+import edu.tamu.tcat.oss.db.DbExecutor;
 
 public class AccountTest
 {
@@ -52,7 +55,8 @@ public class AccountTest
       // instantiate login provider with its configuration and initialize with credentials
       // This app only uses username/password credentials
       CryptoProvider crypto = getCryptoProvider();
-      LoginProvider loginProvider = getLoginProvider(providerId, username, password, crypto);
+      DbExecutor dbExec = getDbExecutor();
+      LoginProvider loginProvider = getLoginProvider(providerId, username, password, crypto, dbExec);
       
       // provider encapsulates everything, so try to log in (or fail)
       LoginData data = loginProvider.login();
@@ -101,12 +105,25 @@ public class AccountTest
       return new BouncyCastleCryptoProvider();
    }
    
-   private LoginProvider getLoginProvider(String providerId, String username, String password, CryptoProvider cp)
+   private DbExecutor getDbExecutor()
+   {
+      try (ServiceHelper sh = new ServiceHelper(Activator.getDefault().getContext()))
+      {
+         DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
+         return exec;
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException("Failed accessing database executor", e);
+      }
+   }
+   
+   private LoginProvider getLoginProvider(String providerId, String username, String password, CryptoProvider cp, DbExecutor dbExec)
    {
       if (providerId.equals(LOGIN_PROVIDER_DB))
       {
          DatabaseLoginProvider db = new DatabaseLoginProvider();
-         db.init(providerId, username, password, cp);
+         db.init(providerId, username, password, cp, dbExec);
          return db;
       }
       
