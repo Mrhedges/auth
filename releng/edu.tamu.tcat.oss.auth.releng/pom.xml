@@ -44,6 +44,9 @@
     <module>oss.auth/releng/edu.tamu.tcat.oss.auth.sdk.feature</module>
     
     <module>oss.auth/bundles/edu.tamu.tcat.account</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account.db</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account.jaas</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account.jaxrs</module>
     <module>oss.auth/tests/edu.tamu.tcat.oss.account.test</module>
   </modules>
 
