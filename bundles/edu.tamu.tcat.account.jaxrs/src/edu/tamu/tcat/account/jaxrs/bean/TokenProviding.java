@@ -8,8 +8,9 @@ import java.lang.annotation.Target;
 import javax.ws.rs.NameBinding;
 
 /**
- * This annotation is processed by  a DynamicFeature which adds an authn token header
- * to an HTTP response.
+ * This annotation is processed by a DynamicFeature which adds an authn token header
+ * to an HTTP response. The HTTP Method using this annotation must provide an instance
+ * of the payload type to the {@link ContextBean}.
  * <p>
  * Used to annotate a method also bearing an HTTP Method annotation such as {@link javax.ws.rs.POST}.
  */

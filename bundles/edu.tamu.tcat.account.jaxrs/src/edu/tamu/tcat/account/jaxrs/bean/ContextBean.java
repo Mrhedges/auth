@@ -53,6 +53,24 @@ public class ContextBean
       return wr.get();
    }
    
+   /**
+    * Set the given instance as the new value for the wrapper of its type.
+    * <p>
+    * Since this {@link ContextBean} is intended to store simple types, the actual
+    * concrete type of the instance passed is used to determine the wrapper in which
+    * it belongs.
+    * 
+    * @param obj
+    * @throws AccountException
+    */
+   public <T> void set(T obj) throws AccountException
+   {
+      PayloadWrapper<T> wr = (PayloadWrapper)ccp.get(obj.getClass());
+      if (wr == null)
+         throw new AccountException("No context found for the requested type ["+obj.getClass()+"]");
+      wr.set(obj);
+   }
+   
    public static class PayloadWrapper<PT>
    {
       PT payload;
