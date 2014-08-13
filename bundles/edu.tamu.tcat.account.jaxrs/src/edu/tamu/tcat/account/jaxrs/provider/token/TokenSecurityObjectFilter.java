@@ -1,4 +1,4 @@
-package edu.tamu.tcat.account.jaxrs.providers;
+package edu.tamu.tcat.account.jaxrs.provider.token;
 
 import java.io.IOException;
 
