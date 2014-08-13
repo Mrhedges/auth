@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="edu.tamu.tcat.oss.account.test.resource">
+   <implementation class="edu.tamu.tcat.oss.account.test.mock.MockResource"/>
+   <service>
+      <provide interface="edu.tamu.tcat.oss.account.test.mock.MockResource"/>
+   </service>
+</scr:component>
