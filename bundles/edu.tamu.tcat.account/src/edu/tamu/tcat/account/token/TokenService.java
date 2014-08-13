@@ -2,14 +2,24 @@ package edu.tamu.tcat.account.token;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * An API for creating and unpacking tokens of a particular "payload type".
+ *
+ * @param <PayloadType>
+ */
 public interface TokenService<PayloadType>
 {
    /**
     * A construct representing a secure token's data, including the token payload itself
     * and its expiration time.
     */
-   interface TokenData
+   interface TokenData<PT>
    {
+      /**
+       * Get the unencrypted payload encrypted into this token.
+       */
+      PT getPayload();
+      
       /** The (encrypted) token. This typically has the expiration time embedded which is used
        * in validation when processing.
        */
@@ -40,7 +50,7 @@ public interface TokenService<PayloadType>
     *         expiration timestamp.
     * @throws AccountTokenException If the token cannot be created.
     */
-   TokenData createTokenData(PayloadType uuid, long expiresIn, TimeUnit expiresInUnit) throws AccountTokenException;
+   TokenData<PayloadType> createTokenData(PayloadType uuid, long expiresIn, TimeUnit expiresInUnit) throws AccountTokenException;
    
    /**
     * Process the (encrypted) token string from the client. The string should be one previously
@@ -55,4 +65,12 @@ public interface TokenService<PayloadType>
     * @throws AccountTokenException If the token cannot be unpacked.
     */
    PayloadType unpackToken(String token) throws AccountTokenException;
+   
+   /**
+    * Provide a Class representing {@code <PayloadType>}. This is used to validate this service can handle
+    * type of payload available when both are retrieved anonymously.
+    * 
+    * @return The payload type. Does not return {@code null}
+    */
+   Class<PayloadType> getPayloadType();
 }

@@ -11,7 +11,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: edu.tamu.tcat.account;version="0.1.0",
  edu.tamu.tcat.account.db.login;version="0.1.0",
  edu.tamu.tcat.account.jaas;version="0.1.0",
- edu.tamu.tcat.account.jaxrs.annotation,
+ edu.tamu.tcat.account.jaxrs.bean,
  edu.tamu.tcat.account.login;version="0.1.0",
  edu.tamu.tcat.account.store;version="0.1.0",
  edu.tamu.tcat.account.token;version="0.1.0",
@@ -26,7 +26,7 @@ Import-Package: edu.tamu.tcat.account;version="0.1.0",
  javax.ws.rs.ext;version="2.0.0",
  org.junit;version="4.11.0"
 Bundle-ActivationPolicy: lazy
-Service-Component: OSGI-INF/props.xml,OSGI-INF/dbexec.xml,
- OSGI-INF/mock.res.xml
+Service-Component: OSGI-INF/props.xml,OSGI-INF/dbexec.xml,OSGI-INF/mock.res.xml,OSGI-INF/feature.token.xml,
+ OSGI-INF/tokensvc.xml
 Bundle-Activator: edu.tamu.tcat.oss.account.test.internal.Activator
 Bundle-ClassPath: .

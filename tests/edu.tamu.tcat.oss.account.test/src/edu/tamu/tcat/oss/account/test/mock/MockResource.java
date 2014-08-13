@@ -7,27 +7,28 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
-import edu.tamu.tcat.account.jaxrs.annotation.RequestServiceProvider;
-import edu.tamu.tcat.account.jaxrs.annotation.TokenSecured;
+import edu.tamu.tcat.account.AccountException;
+import edu.tamu.tcat.account.jaxrs.bean.ContextBean;
+import edu.tamu.tcat.account.jaxrs.bean.TokenSecured;
 
 @Path("/mock")
 public class MockResource
 {
    @GET
    @TokenSecured(payloadType=UUID.class)
-   public String doGet(@BeanParam RequestServiceProvider sp)
+   public String doGet(@BeanParam ContextBean bean)
    {
       System.out.println("get");
-//      TokenSecured.Service<UUID> svc = sp.getService(TokenSecured.Service.class);
+//      TokenSecured.Service<UUID> svc = bean.get(TokenSecured.Service.class);
       return "get!";
    }
    
    @POST
    @TokenSecured(payloadType=UUID.class)
-   public String doPost(@BeanParam RequestServiceProvider sp)
+   public String doPost(@BeanParam ContextBean bean) throws AccountException
    {
       System.out.println("post");
-//      TokenSecured.Service<UUID> svc = sp.getService(TokenSecured.Service.class);
+      UUID uuid = bean.get(UUID.class);
       return "post";
    }
 }

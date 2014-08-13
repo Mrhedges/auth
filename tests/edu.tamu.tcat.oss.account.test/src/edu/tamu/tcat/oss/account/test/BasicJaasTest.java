@@ -17,6 +17,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.tamu.tcat.account.jaas.LoginDataPrincipal;
