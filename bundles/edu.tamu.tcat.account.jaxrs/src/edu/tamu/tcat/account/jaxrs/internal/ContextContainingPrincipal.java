@@ -3,7 +3,6 @@ package edu.tamu.tcat.account.jaxrs.internal;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
@@ -72,13 +71,13 @@ public class ContextContainingPrincipal implements Principal
       return (ContextContainingPrincipal)context.getProperty(ContextContainingPrincipal.class.getName());
    }
    
-   @Deprecated
-   public static <T> T requireContext(SecurityContext context, Class<T> cls)
-   {
-      Objects.requireNonNull(context);
-      Principal principal = Objects.requireNonNull(context.getUserPrincipal());
-      if (!(principal instanceof ContextContainingPrincipal))
-         throw new NullPointerException();
-      return Objects.requireNonNull(((ContextContainingPrincipal)principal).get(cls));
-   }
+//   @Deprecated
+//   public static <T> T requireContext(SecurityContext context, Class<T> cls)
+//   {
+//      Objects.requireNonNull(context);
+//      Principal principal = Objects.requireNonNull(context.getUserPrincipal());
+//      if (!(principal instanceof ContextContainingPrincipal))
+//         throw new NullPointerException();
+//      return Objects.requireNonNull(((ContextContainingPrincipal)principal).get(cls));
+//   }
 }

@@ -8,6 +8,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.InterceptorContext;
 
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.jaxrs.internal.ContextContainingPrincipal;
@@ -27,8 +28,7 @@ import edu.tamu.tcat.account.jaxrs.internal.ContextContainingPrincipal;
  */
 public class ContextBean
 {
-   private SecurityContext context;
-   private ContextContainingPrincipal ccp;
+   private final ContextContainingPrincipal ccp;
 
    /**
     * Constructor used when provided to an HTTP Method method using {@code @BeanParam}
@@ -37,20 +37,24 @@ public class ContextBean
    public ContextBean(@Context SecurityContext context)
    {
       Objects.requireNonNull(context);
-      this.context = context;
       Principal principal = Objects.requireNonNull(context.getUserPrincipal());
       if (!(principal instanceof ContextContainingPrincipal))
          throw new IllegalStateException("Context Provider not initialized");
       this.ccp = (ContextContainingPrincipal)principal;
    }
    
+   private static <T> Container<T> getWrapper(ContextContainingPrincipal ccp, Class<T> type) throws AccountException
+   {
+      Container<T> wr = (Container)ccp.get(type);
+      if (wr == null)
+         throw new AccountException("No context found of the requested type ["+type+"]");
+      return wr;
+   }
+   
    // called by HTTP Method impls after constructor
    public <T> T get(Class<T> type) throws AccountException
    {
-      PayloadWrapper<T> wr = (PayloadWrapper)ccp.get(type);
-      if (wr == null)
-         throw new AccountException("No context found of the requested type");
-      return wr.get();
+      return getWrapper(ccp, type).get();
    }
    
    /**
@@ -65,15 +69,13 @@ public class ContextBean
     */
    public <T> void set(T obj) throws AccountException
    {
-      PayloadWrapper<T> wr = (PayloadWrapper)ccp.get(obj.getClass());
-      if (wr == null)
-         throw new AccountException("No context found for the requested type ["+obj.getClass()+"]");
-      wr.set(obj);
+      Class<T> cls = (Class)obj.getClass();
+      getWrapper(ccp, cls).set(obj);
    }
    
-   public static class PayloadWrapper<PT>
+   public static class Container<PT>
    {
-      PT payload;
+      private PT payload;
       
       public PT get()
       {
@@ -86,26 +88,31 @@ public class ContextBean
       }
    }
    
-   public static class Installer
+   public interface Installer
    {
-      private ContainerRequestContext contextRequest;
-      private ContextContainingPrincipal princ;
-      
       /**
-       * Install a {@link PayloadWrapper} of the given payload type into the active context.
+       * Install a {@link Container} of the given payload type into the active context.
        * 
        * @param payloadType
        * @return
        * @throws AccountException
        */
       // called by @Provider impls
-      public <T> PayloadWrapper<T> install(Class<T> payloadType) throws AccountException
+      <T> Container<T> install(Class<T> payloadType) throws AccountException;
+   }
+   
+   private static class InstallerImpl implements Installer
+   {
+      private ContextContainingPrincipal princ;
+      
+      @Override
+      public <T> Container<T> install(Class<T> payloadType) throws AccountException
       {
          try
          {
-            PayloadWrapper<T> wr = new PayloadWrapper<T>();
+            Container<T> wr = new Container<T>();
             
-            PayloadWrapper<T> existing = (PayloadWrapper)princ.putIfAbsent(payloadType, wr);
+            Container<T> existing = (Container)princ.putIfAbsent(payloadType, wr);
             return existing;
          }
          catch (Exception e)
@@ -125,22 +132,56 @@ public class ContextBean
    public static Installer from(ContainerRequestContext contextRequest)
    {
       // set up the app-context if not yet there
-      Installer inst = new Installer();
-      inst.contextRequest = contextRequest;
+      InstallerImpl inst = new InstallerImpl();
       inst.princ = ContextContainingPrincipal.setupPrincipal(contextRequest);
       return inst;
    }
 
    /**
-    * Convenience method to extract the payload of the given type from the given request context.
+    * Factory method to use within a {@link ContainerRequestFilter}.
+    * <p>
+    * Unlike {@link #from(ContainerRequestContext)}, this method requires the principal to already
+    * have been initialized by a call to that method by some other provider previously invoked in
+    * the HTTP Response call sequence.
     * 
-    * @param requestContext
-    * @param type
-    * @return
-    * @throws AccountException
+    * @param context
+    * @throws AccountException If the context bean container is not initialized.
     */
-   public static <T> T getValue(ContainerRequestContext requestContext, Class<T> type) throws AccountException
+   // Installs the ContextContainingPrinciple in the request context's SecurityContext if not yet there
+   public static Installer from(InterceptorContext ctx) throws AccountException
    {
-      return new ContextBean(requestContext.getSecurityContext()).get(type);
+      // set up the app-context if not yet there
+      InstallerImpl inst = new InstallerImpl();
+      inst.princ = ContextContainingPrincipal.getPrincipal(ctx);
+      if (inst.princ == null)
+         throw new AccountException("Context not initialized with principal");
+      return inst;
+   }
+   
+   /**
+    * Convenience method to extract the stored value of the given type from the given request context.
+    * 
+    * @param ctx
+    * @param type
+    * @return The current value in the {@link Container} for the given type. May be {@code null}
+    * @throws AccountException If no container is installed for the given type
+    */
+   public static <T> T getValue(ContainerRequestContext ctx, Class<T> type) throws AccountException
+   {
+      return new ContextBean(ctx.getSecurityContext()).get(type);
+   }
+   
+   /**
+    * Convenience method to extract the stored value of the given type from the given request context.
+    * 
+    * @param ctx
+    * @param type
+    * @return The current value in the {@link Container} for the given type. May be {@code null}
+    * @throws AccountException If no container is installed for the given type
+    */
+   public static <T> T getValue(InterceptorContext ctx, Class<T> type) throws AccountException
+   {
+      Container<T> pw = getWrapper(ContextContainingPrincipal.getPrincipal(ctx), type);
+      return pw.get();
    }
 }
