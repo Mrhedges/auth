@@ -5,9 +5,8 @@ import java.util.concurrent.TimeUnit;
 
 import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
-import edu.tamu.tcat.account.token.uuid.UuidTokenService;
 
-public class MockUuidTokenService implements UuidTokenService
+public class MockUuidTokenService implements TokenService<UUID>
 {
    @Override
    public TokenService.TokenData<UUID> createTokenData(UUID uuid, long expiresIn, TimeUnit expiresInUnit) throws AccountTokenException

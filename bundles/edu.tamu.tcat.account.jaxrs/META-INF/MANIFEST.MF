@@ -5,13 +5,13 @@ Bundle-SymbolicName: edu.tamu.tcat.account.jaxrs
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Texas A&M Engineering Experiment Station
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: edu.tamu.tcat.account;version="0.1.0",
- edu.tamu.tcat.account.store;version="0.1.0",
- edu.tamu.tcat.account.token;version="0.1.0",
+Import-Package: edu.tamu.tcat.account;version="1.0.0",
+ edu.tamu.tcat.account.store;version="1.0.0",
+ edu.tamu.tcat.account.token;version="1.0.0",
  javax.ws.rs;version="[2.0.0,3.0.0)",
- javax.ws.rs.container;version="2.0.0",
- javax.ws.rs.core;version="2.0.0",
- javax.ws.rs.ext;version="2.0.0"
-Export-Package: edu.tamu.tcat.account.jaxrs.bean,
- edu.tamu.tcat.account.jaxrs.internal;x-internal:=true,
- edu.tamu.tcat.account.jaxrs.provider.token
+ javax.ws.rs.container;version="[2.0.0,3.0.0)",
+ javax.ws.rs.core;version="[2.0.0,3.0.0)",
+ javax.ws.rs.ext;version="[2.0.0,3.0.0)"
+Export-Package: edu.tamu.tcat.account.jaxrs.bean;version="1.0.0",
+ edu.tamu.tcat.account.jaxrs.internal;version="1.0.0";x-internal:=true,
+ edu.tamu.tcat.account.jaxrs.provider.token;version="1.0.0"

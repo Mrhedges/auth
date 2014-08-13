@@ -11,13 +11,12 @@ import java.util.concurrent.TimeUnit;
 
 import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
-import edu.tamu.tcat.account.token.uuid.UuidTokenService;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.SecureToken;
 import edu.tamu.tcat.crypto.TokenException;
 import edu.tamu.tcat.oss.account.test.CryptoUtil;
 
-public class MockEncryptingUuidTokenService implements UuidTokenService
+public class MockEncryptingUuidTokenService implements TokenService<UUID>
 {
    final String keyb64_128 = "blahDiddlyBlahSchmacko";
    final String keyb64_256 = "blahDiddlyBlahSchmackety+ABitLongerThanThat+";

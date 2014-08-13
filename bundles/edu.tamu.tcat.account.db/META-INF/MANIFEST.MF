@@ -2,15 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Database Providers for Account Framework
 Bundle-SymbolicName: edu.tamu.tcat.account.db;singleton:=true
-Bundle-Version: 0.1.0.qualifier
-Require-Bundle: org.eclipse.core.runtime
+Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Import-Package: edu.tamu.tcat.account;version="0.1.0",
- edu.tamu.tcat.account.jaas;version="0.1.0",
- edu.tamu.tcat.account.login;version="0.1.0",
+Import-Package: edu.tamu.tcat.account;version="1.0.0",
+ edu.tamu.tcat.account.jaas;version="1.0.0",
+ edu.tamu.tcat.account.login;version="1.0.0",
  edu.tamu.tcat.crypto;version="1.1.0",
  edu.tamu.tcat.oss.db
-Export-Package: edu.tamu.tcat.account.db.internal;version="0.1.0";x-internal:=true,
- edu.tamu.tcat.account.db.login;version="0.1.0",
- edu.tamu.tcat.account.db.spi;version="0.1.0"
+Export-Package: edu.tamu.tcat.account.db.internal;version="1.0.0";x-internal:=true,
+ edu.tamu.tcat.account.db.login;version="1.0.0",
+ edu.tamu.tcat.account.db.spi;version="1.0.0"

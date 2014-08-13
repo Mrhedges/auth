@@ -15,7 +15,6 @@ import edu.tamu.tcat.account.login.LoginProvider;
 import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.account.token.TokenService;
-import edu.tamu.tcat.account.token.uuid.UuidTokenService;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.bouncycastle.BouncyCastleCryptoProvider;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
@@ -129,7 +128,7 @@ public class AccountTest
       return new MockAccountStore();
    }
    
-   private UuidTokenService getTokenService(CryptoProvider crypto) throws AccountException
+   private TokenService<UUID> getTokenService(CryptoProvider crypto) throws AccountException
    {
       return new MockEncryptingUuidTokenService(crypto);
    }
