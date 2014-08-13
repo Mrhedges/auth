@@ -20,6 +20,7 @@ import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.bouncycastle.BouncyCastleCryptoProvider;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
+import edu.tamu.tcat.oss.account.test.mock.MockAccountStore;
 import edu.tamu.tcat.oss.account.test.mock.MockEncryptingUuidTokenService;
 import edu.tamu.tcat.oss.db.DbExecutor;
 
@@ -63,7 +64,7 @@ public class AccountTest
       try
       {
          AccountStore store = getAccountStore();
-         account = store.lookup(data.getLoginProviderId(), data.getLoginUserId());
+         account = store.lookup(data);
       }
       catch (AccountNotFoundException nfe)
       {
@@ -131,29 +132,5 @@ public class AccountTest
    private UuidTokenService getTokenService(CryptoProvider crypto) throws AccountException
    {
       return new MockEncryptingUuidTokenService(crypto);
-   }
-   
-   static class MockAccountStore implements AccountStore
-   {
-      @Override
-      public Account lookup(String loginProviderId, String loginProviderUserId) throws AccountException
-      {
-         MockAccount acct = new MockAccount();
-         acct.pid = loginProviderUserId;
-         acct.uid = UUID.randomUUID();
-         return acct;
-      }
-   }
-   
-   static class MockAccount implements Account
-   {
-      String pid;
-      UUID uid;
-      
-      @Override
-      public UUID getId()
-      {
-         return uid;
-      }
    }
 }
