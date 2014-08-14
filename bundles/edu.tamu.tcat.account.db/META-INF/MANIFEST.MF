@@ -8,8 +8,10 @@ Bundle-ActivationPolicy: lazy
 Import-Package: edu.tamu.tcat.account;version="1.0.0",
  edu.tamu.tcat.account.jaas;version="1.0.0",
  edu.tamu.tcat.account.login;version="1.0.0",
+ edu.tamu.tcat.account.store;version="1.0.0",
  edu.tamu.tcat.crypto;version="1.1.0",
  edu.tamu.tcat.oss.db
 Export-Package: edu.tamu.tcat.account.db.internal;version="1.0.0";x-internal:=true,
  edu.tamu.tcat.account.db.login;version="1.0.0",
- edu.tamu.tcat.account.db.spi;version="1.0.0"
+ edu.tamu.tcat.account.db.spi;version="1.0.0",
+ edu.tamu.tcat.account.db.store;version="1.0.0"
