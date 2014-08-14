@@ -36,8 +36,8 @@ public class ContextBean
     */
    public ContextBean(@Context SecurityContext context)
    {
-      Objects.requireNonNull(context);
-      Principal principal = Objects.requireNonNull(context.getUserPrincipal());
+      Objects.requireNonNull(context, "SecurityContext not found");
+      Principal principal = Objects.requireNonNull(context.getUserPrincipal(), "SecurityContext bean principal not installed");
       if (!(principal instanceof ContextContainingPrincipal))
          throw new IllegalStateException("Context Provider not initialized");
       this.ccp = (ContextContainingPrincipal)principal;

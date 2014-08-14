@@ -15,10 +15,11 @@ import edu.tamu.tcat.account.token.TokenService;
 @Provider
 public class TokenDynamicFeature<PayloadType> implements DynamicFeature
 {
-   private TokenService<PayloadType> tokenService;
+   private TokenService<?> tokenService;
 
    //TODO: allow binding to multiple services defined in the app
-   public void bind(TokenService<PayloadType> svc)
+   // Can't trust the generic type, so check later after accepting the bind
+   public void bind(TokenService<?> svc)
    {
       this.tokenService = svc;
    }
@@ -39,7 +40,8 @@ public class TokenDynamicFeature<PayloadType> implements DynamicFeature
          // Only register if the annotation payload type matches the provided service
          if (Objects.equals(tokenService.getPayloadType(), payloadType))
          {
-            context.register(new TokenSecurityObjectFilter<PayloadType>(tokenService));
+            TokenService<PayloadType> typed = (TokenService)tokenService;
+            context.register(new TokenSecurityObjectFilter<PayloadType>(typed));
          }
       }
       
@@ -49,7 +51,10 @@ public class TokenDynamicFeature<PayloadType> implements DynamicFeature
          Class<?> payloadType = tokenProviding.payloadType();
          // Only register if the annotation payload type matches the provided service
          if (Objects.equals(tokenService.getPayloadType(), payloadType))
-            context.register(new TokenProvidingObjectFilter<PayloadType>(tokenService));
+         {
+            TokenService<PayloadType> typed = (TokenService)tokenService;
+            context.register(new TokenProvidingObjectFilter<PayloadType>(typed));
+         }
       }
    }
 }
