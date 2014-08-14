@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import edu.tamu.tcat.account.Account;
 import edu.tamu.tcat.account.AccountException;
+import edu.tamu.tcat.account.db.internal.DatabaseAuthUtil;
 import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
 import edu.tamu.tcat.account.db.store.DatabaseAccountStore;
 import edu.tamu.tcat.account.login.LoginData;
@@ -96,7 +97,28 @@ public class AccountTest
    
    @Ignore
    @Test
-   public void testCreate() throws Exception
+   public void testCreateAccount() throws Exception
+   {
+      DatabaseAccountStore store = getDbAccountStore();
+      store.createAccount("neal.audenaert");
+   }
+   
+   @Ignore
+   @Test
+   public void testCreateAuthn() throws Exception
+   {
+      DatabaseAuthUtil.AccountRecord data = new DatabaseAuthUtil.AccountRecord();
+      data.username = "neal.audenaert";
+      data.first = "Neal";
+      data.last = "Audenaert";
+      data.email = "neala@tamu.edu";
+      String passwordRaw = "pass";
+      DatabaseAuthUtil.AccountRecord created = DatabaseAuthUtil.createRecord(getCryptoProvider(), getDbExecutor(), data, passwordRaw);
+   }
+   
+   @Ignore
+   @Test
+   public void testCreateAccountAuthn() throws Exception
    {
       DatabaseAccountStore store = getDbAccountStore();
       store.createAccount("neal.audenaert");

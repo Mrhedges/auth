@@ -3,6 +3,7 @@ package edu.tamu.tcat.account.db.internal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -157,5 +158,72 @@ public final class DatabaseAuthUtil
          return false;
       PBKDF2 pbkdf2Impl = cp.getPbkdf2(DigestType.SHA1);
       return pbkdf2Impl.checkHash(passwordRaw, passwordHashed);
+   }
+   
+   public static String deriveHash(CryptoProvider cp, String passwordRaw)
+   {
+      PBKDF2 pbkdf2Impl = cp.getPbkdf2(DigestType.SHA1);
+      return pbkdf2Impl.deriveHash(passwordRaw);
+   }
+   
+   public static AccountRecord createRecord(final CryptoProvider cp, DbExecutor exec, final AccountRecord data, final String passwordRaw) throws Exception
+   {
+      DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
+      {
+         @Override
+         public AccountRecord execute(Connection conn) throws Exception
+         {
+            String passwordHashed = null;
+            try
+            {
+               passwordHashed = deriveHash(cp, passwordRaw);
+            }
+            catch (Exception e)
+            {
+               throw new IllegalStateException("Failed password hash derivation", e);
+            }
+            
+            String sql = "INSERT INTO "+SQL_TABLENAME+" (user_name, password_hash, first_name, last_name, email) VALUES (?,?,?,?,?)";
+            try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+            {
+               ps.setString(1, data.username);
+               ps.setString(2, passwordHashed);
+               ps.setString(3, data.first);
+               ps.setString(4, data.last);
+               ps.setString(5, data.email);
+               
+               ps.execute();
+               try (ResultSet rs = ps.getGeneratedKeys())
+               {
+                  if (!rs.next())
+                     throw new IllegalStateException("Failed account creation");
+                  
+                  AccountRecord rv = new AccountRecord();
+                  rv.uid = rs.getLong("user_id");
+                  rv.username = data.username;
+                  rv.first = data.first;
+                  rv.last = data.last;
+                  rv.email = data.email;
+                  
+                  //TODO: should the hashed password be exposed?
+                  //rv.passwordHash = passwordHashed;
+                  
+                  return rv;
+               }
+            }
+         }
+      };
+      
+      try
+      {
+         Future<AccountRecord> f = exec.submit(task);
+         // Store the data in fields to be used in commit()
+         AccountRecord rec = f.get(10, TimeUnit.SECONDS);
+         return rec;
+      }
+      catch (Exception e)
+      {
+         throw new AccountException("Failed database processing", e);
+      }
    }
 }

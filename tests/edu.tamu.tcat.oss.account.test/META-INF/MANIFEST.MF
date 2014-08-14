@@ -9,6 +9,7 @@ Require-Bundle: org.eclipse.core.runtime,
  edu.tamu.tcat.oss.db;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: edu.tamu.tcat.account;version="1.0.0",
+ edu.tamu.tcat.account.db.internal;version="1.0.0",
  edu.tamu.tcat.account.db.login;version="1.0.0",
  edu.tamu.tcat.account.db.store;version="1.0.0",
  edu.tamu.tcat.account.jaas;version="1.0.0",
