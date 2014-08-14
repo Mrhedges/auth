@@ -14,4 +14,16 @@ public class MockAccount implements Account
    {
       return uid;
    }
+
+   @Override
+   public String getTitle()
+   {
+      return "mock";
+   }
+
+   @Override
+   public boolean isActive()
+   {
+      return true;
+   }
 }

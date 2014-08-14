@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import edu.tamu.tcat.account.Account;
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.login.LoginData;
+import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.oss.db.DbExecTask;
 import edu.tamu.tcat.oss.db.DbExecutor;
@@ -49,6 +51,7 @@ public class DatabaseAccountStore implements AccountStore
       public UUID uuid;
       public String title;
       public String type;
+      public boolean isActive;
       
       public DatabaseAccount()
       {
@@ -60,6 +63,7 @@ public class DatabaseAccountStore implements AccountStore
          return uuid;
       }
       
+      @Override
       public String getTitle()
       {
          return title;
@@ -69,10 +73,14 @@ public class DatabaseAccountStore implements AccountStore
       {
          return type;
       }
+      
+      @Override
+      public boolean isActive()
+      {
+         return isActive;
+      }
    }
    
-   private static final String SQL_TABLENAME = "account";
-
    private DbExecutor dbExec;
    
    public void bind(DbExecutor db)
@@ -94,8 +102,87 @@ public class DatabaseAccountStore implements AccountStore
    @Override
    public Account lookup(LoginData loginData) throws AccountException
    {
-      // TODO Auto-generated method stub
-      return null;
+      Objects.requireNonNull(loginData, "Login data may not be null");
+      final String pid = loginData.getLoginProviderId();
+      if (pid == null || pid.trim().isEmpty())
+         throw new IllegalArgumentException("Login data provider id may not be empty");
+      final String puid = loginData.getLoginUserId();
+      if (puid == null || puid.trim().isEmpty())
+         throw new IllegalArgumentException("Login data provider user id may not be empty");
+      
+      DbExecTask<DatabaseAccount> task = new DbExecTask<DatabaseAccount>()
+      {
+         @Override
+         public DatabaseAccount execute(Connection conn) throws Exception
+         {
+            UUID uuid = null;
+            
+            String sql = "SELECT account_id FROM account_authn WHERE auth_provider_user_id = ? AND auth_provider_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql))
+            {
+               ps.setString(1, puid);
+               ps.setString(2, pid);
+               
+               try (ResultSet rs = ps.executeQuery())
+               {
+                  if (!rs.next())
+                     throw new AccountNotFoundException("No mapping exists for provider ["+pid+"] and user ["+puid+"]");
+                  
+                  String uuidStr = rs.getString("account_id");
+                  if (uuidStr == null || uuidStr.trim().isEmpty())
+                     throw new IllegalStateException("Mapping for provider ["+pid+"] and user ["+puid+"] has missing account id");
+                  
+                  try
+                  {
+                     uuid = UUID.fromString(uuidStr);
+                  }
+                  catch (Exception e)
+                  {
+                     throw new IllegalStateException("Mapping for provider ["+pid+"] and user ["+puid+"] has invalid account UUID ["+uuidStr+"]");
+                  }
+               }
+            }
+            
+            // Have a valid UUID, now find the account data for it
+            // This could be done with a join and more efficient query, but it may be helpful to have the extra logging
+            sql = "SELECT * FROM account WHERE account_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql))
+            {
+               ps.setString(1, uuid.toString());
+               
+               try (ResultSet rs = ps.executeQuery())
+               {
+                  if (!rs.next())
+                     throw new AccountNotFoundException("No account exists for id ["+uuid+"] from provider ["+pid+"] and user ["+puid+"]");
+                  
+                  if (rs.getBoolean("is_deleted"))
+                     throw new AccountNotFoundException("Cannot retrieve deleted account ["+uuid+"] from provider ["+pid+"] and user ["+puid+"]");
+                  
+                  DatabaseAccount rv = new DatabaseAccount();
+                  rv.id = rs.getLong("id");
+                  rv.uuid = uuid;
+                  rv.title = rs.getString("title");
+                  // For now, all accounts are "user"
+                  //rv.type = rs.getString("type");
+                  rv.isActive = rs.getBoolean("is_active");
+                  
+                  return rv;
+               }
+            }
+         }
+      };
+      
+      try
+      {
+         Future<DatabaseAccount> f = dbExec.submit(task);
+         // Store the data in fields to be used in commit()
+         DatabaseAccount rec = f.get(10, TimeUnit.SECONDS);
+         return rec;
+      }
+      catch (Exception e)
+      {
+         throw new AccountException("Failed database processing", e);
+      }
    }
 
    @Override
@@ -124,7 +211,7 @@ public class DatabaseAccountStore implements AccountStore
          {
             DatabaseAccount acct = ref.get();
             
-            String sql = "INSERT INTO "+SQL_TABLENAME+" (account_id, title, account_type, is_active, is_deleted) VALUES (?,?,?,?,?)";
+            String sql = "INSERT INTO account (account_id, title, account_type, is_active, is_deleted) VALUES (?,?,?,?,?)";
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
             {
                ps.setString(1, acct.uuid.toString());
