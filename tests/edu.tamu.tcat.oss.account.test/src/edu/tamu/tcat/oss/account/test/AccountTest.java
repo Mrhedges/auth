@@ -10,6 +10,7 @@ import org.junit.Test;
 import edu.tamu.tcat.account.Account;
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
+import edu.tamu.tcat.account.db.store.DatabaseAccountStore;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
 import edu.tamu.tcat.account.store.AccountNotFoundException;
@@ -93,6 +94,14 @@ public class AccountTest
       debug.info("done");
    }
    
+   @Ignore
+   @Test
+   public void testCreate() throws Exception
+   {
+      DatabaseAccountStore store = getDbAccountStore();
+      store.createAccount("neal.audenaert");
+   }
+   
    private CryptoProvider getCryptoProvider()
    {
       return new BouncyCastleCryptoProvider();
@@ -126,6 +135,13 @@ public class AccountTest
    private AccountStore getAccountStore()
    {
       return new MockAccountStore();
+   }
+   
+   private DatabaseAccountStore getDbAccountStore()
+   {
+      DatabaseAccountStore store = new DatabaseAccountStore();
+      store.bind(getDbExecutor());
+      return store;
    }
    
    private TokenService<UUID> getTokenService(CryptoProvider crypto) throws AccountException

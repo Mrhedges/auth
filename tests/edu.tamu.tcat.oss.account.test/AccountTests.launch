@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.pde.ui.JunitLaunchConfig">
 <setAttribute key="additional_plugins">
-<setEntry value="com.eclipsesource.jaxrs.publisher:3.2.0.201312310810:5:false"/>
-<setEntry value="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider:2.3.1:4:false"/>
-<setEntry value="org.eclipse.equinox.common:3.6.200.v20130402-1505:2:false"/>
-<setEntry value="org.eclipse.osgi:3.9.0.v20130529-1710:0:false"/>
-<setEntry value="org.glassfish.jersey.core.jersey-common:2.5.0:3:false"/>
+<setEntry value="com.eclipsesource.jaxrs.publisher:3.2.0.201312310810:5:true"/>
+<setEntry value="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider:2.3.1:4:true"/>
+<setEntry value="edu.tamu.tcat.oss.account.test:1.0.0.qualifier:default:true"/>
+<setEntry value="org.eclipse.equinox.common:3.6.200.v20130402-1505:2:true"/>
+<setEntry value="org.eclipse.osgi:3.9.0.v20130529-1710:0:true"/>
+<setEntry value="org.glassfish.jersey.core.jersey-common:2.5.0:3:true"/>
 </setAttribute>
 <booleanAttribute key="append.args" value="true"/>
 <stringAttribute key="application" value="org.eclipse.pde.junit.runtime.coretestapplication"/>
