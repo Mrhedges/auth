@@ -119,7 +119,7 @@ public final class DatabaseAuthUtil
                      throw new FailedLoginException("password incorrect");
                   
                   AccountRecord rv = new AccountRecord();
-                  rv.uid = rs.getLong("scope_id");
+                  rv.uid = rs.getLong("user_id");
                   rv.username = nameInput.get();
                   rv.first = rs.getString("first_name");
                   rv.last = rs.getString("last_name");
