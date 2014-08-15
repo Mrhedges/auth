@@ -5,7 +5,7 @@
 <setEntry value="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider:2.3.1:4:true"/>
 <setEntry value="edu.tamu.tcat.oss.account.test:1.0.0.qualifier:default:true"/>
 <setEntry value="org.eclipse.equinox.common:3.6.200.v20130402-1505:2:true"/>
-<setEntry value="org.eclipse.osgi:3.9.0.v20130529-1710:0:true"/>
+<setEntry value="org.eclipse.osgi:3.10.0.v20140606-1445:0:true"/>
 <setEntry value="org.glassfish.jersey.core.jersey-common:2.5.0:3:true"/>
 </setAttribute>
 <booleanAttribute key="append.args" value="true"/>

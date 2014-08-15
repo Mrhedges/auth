@@ -55,7 +55,17 @@
       <id>Eclipse Platform</id>
       <layout>p2</layout>
 <!--       <url>http://download.eclipse.org/releases/luna/</url> -->
-      <url>${repo-base-url}/Eclipse%20Repository%20Mirror/lastSuccessfulBuild/artifact/target/repository/</url>
+      <url>${repo-base-url}/Eclipse.Repository.Mirror.Luna/lastSuccessfulBuild/artifact/target/repository/</url>
+    </repository>
+    <repository>
+      <id>Eclipse Orbit</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/Eclipse%20Orbit%20Repository%20Mirror/lastSuccessfulBuild/artifact/target/repository/</url>
+    </repository>
+    <repository>
+      <id>Database Utilities</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/oss.db.utils-dev/lastSuccessfulBuild/artifact/targetPlatform/</url>
     </repository>
     <repository>
       <id>Crypto</id>
@@ -71,6 +81,16 @@
       <id>Mirror.Deps</id>
       <layout>p2</layout>
       <url>${repo-base-url}/mirror.dependencies/lastSuccessfulBuild/artifact/targetPlatform/</url>
+    </repository>
+    <repository>
+      <id>Jackson</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/Jackson.P2/lastSuccessfulBuild/artifact/targetPlatform/</url>
+    </repository>
+    <repository>
+      <id>JAX-RS</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/JAX-RS.Mirror/lastSuccessfulBuild/artifact/target/repository/</url>
     </repository>
   </repositories>
 
