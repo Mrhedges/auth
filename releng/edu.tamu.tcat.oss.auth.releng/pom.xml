@@ -18,7 +18,6 @@
     <tycho-groupid>org.eclipse.tycho</tycho-groupid>
     <!-- NOTE: using staging build -->
     <tycho-version>0.21.0</tycho-version>
-<!--     <tycho-version>0.20.0</tycho-version> -->
     <tycho-extras-version>${tycho-version}</tycho-extras-version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -26,18 +25,6 @@
     <assembly-version>2.4</assembly-version>
     <repo-base-url>https://build.citd.tamu.edu/hudson/job</repo-base-url>
   </properties>
-  
-  <!-- NOTE: To use tycho snapshot build, must use this upstream maven plugin repo (not on maven central) -->
-  <pluginRepositories>
-<!--     <pluginRepository> -->
-<!--       <id>tycho-snapshots</id> -->
-<!--       <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url> -->
-<!--     </pluginRepository> -->
-    <pluginRepository>
-      <id>tycho-staged</id>
-      <url>https://oss.sonatype.org/content/repositories/orgeclipsetycho-1018/</url>
-    </pluginRepository>
-  </pluginRepositories>
   
   <modules>
     <module>oss.auth/releng/edu.tamu.tcat.oss.auth.releng/repo</module>
