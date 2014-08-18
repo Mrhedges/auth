@@ -6,7 +6,7 @@ import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
 import edu.tamu.tcat.crypto.CryptoProvider;
-import edu.tamu.tcat.oss.db.DbExecutor;
+import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 
 /**
  * An implementation of a {@link LoginProvider} which performs authentication against a database.
@@ -19,9 +19,9 @@ public class DatabaseLoginProvider implements LoginProvider
    private String pass;
    private String instanceId;
    private CryptoProvider crypto;
-   private DbExecutor exec;
+   private SqlExecutor exec;
 
-   public void init(String providerId, String username, String password, CryptoProvider cp, DbExecutor dbExec)
+   public void init(String providerId, String username, String password, CryptoProvider cp, SqlExecutor dbExec)
    {
       this.instanceId = providerId;
       this.userName = username;

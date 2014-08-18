@@ -80,13 +80,6 @@
          unpack="false"/>
 
    <plugin
-         id="edu.tamu.tcat.oss.db.psql"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="edu.tamu.tcat.account.db"
          download-size="0"
          install-size="0"
@@ -136,6 +129,34 @@
 
    <plugin
          id="org.eclipse.equinox.http.registry"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.db.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.db.exec"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.db.postgresql"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.db.postgresql.exec"
          download-size="0"
          install-size="0"
          version="0.0.0"

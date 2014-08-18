@@ -15,8 +15,7 @@ import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
-import edu.tamu.tcat.oss.db.DbExecTask;
-import edu.tamu.tcat.oss.db.DbExecutor;
+import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 
 /**
  * An implementation of {@link AccountStore} backed by a database. Uses this table definition to store accounts:
@@ -81,9 +80,9 @@ public class DatabaseAccountStore implements AccountStore
       }
    }
    
-   private DbExecutor dbExec;
+   private SqlExecutor dbExec;
    
-   public void bind(DbExecutor db)
+   public void bind(SqlExecutor db)
    {
       dbExec = db;
    }
@@ -110,7 +109,7 @@ public class DatabaseAccountStore implements AccountStore
       if (puid == null || puid.trim().isEmpty())
          throw new IllegalArgumentException("Login data provider user id may not be empty");
       
-      DbExecTask<DatabaseAccount> task = new DbExecTask<DatabaseAccount>()
+      SqlExecutor.ExecutorTask<DatabaseAccount> task = new SqlExecutor.ExecutorTask<DatabaseAccount>()
       {
          @Override
          public DatabaseAccount execute(Connection conn) throws Exception
@@ -204,7 +203,7 @@ public class DatabaseAccountStore implements AccountStore
       
       final AtomicReference<DatabaseAccount> ref = new AtomicReference<>(newAcct);
       
-      DbExecTask<DatabaseAccount> task = new DbExecTask<DatabaseAccount>()
+      SqlExecutor.ExecutorTask<DatabaseAccount> task = new SqlExecutor.ExecutorTask<DatabaseAccount>()
       {
          @Override
          public DatabaseAccount execute(Connection conn) throws Exception

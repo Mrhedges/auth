@@ -16,8 +16,7 @@ import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.DigestType;
 import edu.tamu.tcat.crypto.PBKDF2;
-import edu.tamu.tcat.oss.db.DbExecTask;
-import edu.tamu.tcat.oss.db.DbExecutor;
+import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 
 /**
  * A group of utilities for dealing with database-backed authentication.
@@ -94,13 +93,13 @@ public final class DatabaseAuthUtil
       public String email;
    }
 
-   public static AccountRecord getRecord(final CryptoProvider cp, DbExecutor exec, String name, String passwordRaw) throws Exception
+   public static AccountRecord getRecord(final CryptoProvider cp, SqlExecutor exec, String name, String passwordRaw) throws Exception
    {
       final AtomicReference<String> nameInput = new AtomicReference<>(name);
       final AtomicReference<String> passwordInput = new AtomicReference<>(passwordRaw);
 
       // validate credential
-      DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
+      SqlExecutor.ExecutorTask<AccountRecord> task = new SqlExecutor.ExecutorTask<AccountRecord>()
       {
          @Override
          public AccountRecord execute(Connection conn) throws Exception
@@ -166,9 +165,9 @@ public final class DatabaseAuthUtil
       return pbkdf2Impl.deriveHash(passwordRaw);
    }
    
-   public static AccountRecord createRecord(final CryptoProvider cp, DbExecutor exec, final AccountRecord data, final String passwordRaw) throws Exception
+   public static AccountRecord createRecord(final CryptoProvider cp, SqlExecutor exec, final AccountRecord data, final String passwordRaw) throws Exception
    {
-      DbExecTask<AccountRecord> task = new DbExecTask<AccountRecord>()
+      SqlExecutor.ExecutorTask<AccountRecord> task = new SqlExecutor.ExecutorTask<AccountRecord>()
       {
          @Override
          public AccountRecord execute(Connection conn) throws Exception

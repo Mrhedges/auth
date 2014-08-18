@@ -19,11 +19,11 @@ import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.account.token.TokenService;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.bouncycastle.BouncyCastleCryptoProvider;
+import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
 import edu.tamu.tcat.oss.account.test.mock.MockAccountStore;
 import edu.tamu.tcat.oss.account.test.mock.MockEncryptingUuidTokenService;
-import edu.tamu.tcat.oss.db.DbExecutor;
 
 public class AccountTest
 {
@@ -50,7 +50,7 @@ public class AccountTest
       // instantiate login provider with its configuration and initialize with credentials
       // This app only uses username/password credentials
       CryptoProvider crypto = getCryptoProvider();
-      DbExecutor dbExec = getDbExecutor();
+      SqlExecutor dbExec = getDbExecutor();
       LoginProvider loginProvider = getLoginProvider(providerId, username, password, crypto, dbExec);
       
       // provider encapsulates everything, so try to log in (or fail)
@@ -129,11 +129,11 @@ public class AccountTest
       return new BouncyCastleCryptoProvider();
    }
    
-   private DbExecutor getDbExecutor()
+   private SqlExecutor getDbExecutor()
    {
       try (ServiceHelper sh = new ServiceHelper(Activator.getDefault().getContext()))
       {
-         DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
+         SqlExecutor exec = sh.waitForService(SqlExecutor.class, 5_000);
          return exec;
       }
       catch (Exception e)
@@ -142,7 +142,7 @@ public class AccountTest
       }
    }
    
-   private LoginProvider getLoginProvider(String providerId, String username, String password, CryptoProvider cp, DbExecutor dbExec)
+   private LoginProvider getLoginProvider(String providerId, String username, String password, CryptoProvider cp, SqlExecutor dbExec)
    {
       if (providerId.equals(LOGIN_PROVIDER_DB))
       {

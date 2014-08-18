@@ -24,9 +24,9 @@ import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.bouncycastle.BouncyCastleCryptoProvider;
+import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
-import edu.tamu.tcat.oss.db.DbExecutor;
 
 @Path("/mock")
 public class MockResource
@@ -57,7 +57,7 @@ public class MockResource
       String providerId = LOGIN_PROVIDER_DB;
       
       CryptoProvider crypto = getCryptoProvider();
-      DbExecutor dbExec = getDbExecutor();
+      SqlExecutor dbExec = getDbExecutor();
       LoginProvider loginProvider = getLoginProvider(providerId, username, password, crypto, dbExec);
       
       try
@@ -122,11 +122,11 @@ public class MockResource
       return new BouncyCastleCryptoProvider();
    }
    
-   private static DbExecutor getDbExecutor()
+   private static SqlExecutor getDbExecutor()
    {
       try (ServiceHelper sh = new ServiceHelper(Activator.getDefault().getContext()))
       {
-         DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
+         SqlExecutor exec = sh.waitForService(SqlExecutor.class, 5_000);
          return exec;
       }
       catch (Exception e)
@@ -135,7 +135,7 @@ public class MockResource
       }
    }
    
-   private static LoginProvider getLoginProvider(String providerId, String username, String password, CryptoProvider cp, DbExecutor dbExec)
+   private static LoginProvider getLoginProvider(String providerId, String username, String password, CryptoProvider cp, SqlExecutor dbExec)
    {
       if (providerId.equals(LOGIN_PROVIDER_DB))
       {
