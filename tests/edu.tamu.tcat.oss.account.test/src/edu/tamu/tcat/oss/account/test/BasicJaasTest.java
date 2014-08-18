@@ -24,9 +24,9 @@ import edu.tamu.tcat.account.jaas.LoginDataPrincipal;
 import edu.tamu.tcat.account.jaas.ServiceProviderCallback;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.crypto.CryptoProvider;
+import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 import edu.tamu.tcat.oss.account.test.internal.Activator;
-import edu.tamu.tcat.oss.db.DbExecutor;
 
 //TODO: get JAAS authn example working against database
 //      write tcat.oss.account wrapper for use with REST
@@ -103,7 +103,7 @@ public class BasicJaasTest
          String username = "paul.bilnoski";
          String password = "pass";
          CryptoProvider cp = CryptoUtil.getProvider();
-         DbExecutor dbexec = getDbExec();
+         SqlExecutor dbexec = getDbExec();
          
          /*
           * After authentication, the Subject returned should contain principals for:
@@ -156,11 +156,11 @@ public class BasicJaasTest
       
       
       
-      private DbExecutor getDbExec()
+      private SqlExecutor getDbExec()
       {
          try (ServiceHelper sh = new ServiceHelper(Activator.getDefault().getContext()))
          {
-            DbExecutor exec = sh.waitForService(DbExecutor.class, 5_000);
+            SqlExecutor exec = sh.waitForService(SqlExecutor.class, 5_000);
             return exec;
          }
          catch (Exception e)
@@ -174,9 +174,9 @@ public class BasicJaasTest
          public final String username;
          public final String password;
          private final CryptoProvider cp;
-         private DbExecutor dbExec;
+         private SqlExecutor dbExec;
          
-         public CBH(String u, String p, CryptoProvider cp, DbExecutor exec)
+         public CBH(String u, String p, CryptoProvider cp, SqlExecutor exec)
          {
             this.username = u;
             this.password = p;
@@ -209,7 +209,7 @@ public class BasicJaasTest
                {
                   ServiceProviderCallback cpc = (ServiceProviderCallback)cb;
                   cpc.setService(CryptoProvider.class, cp);
-                  cpc.setService(DbExecutor.class, dbExec);
+                  cpc.setService(SqlExecutor.class, dbExec);
                   continue;
                }
                

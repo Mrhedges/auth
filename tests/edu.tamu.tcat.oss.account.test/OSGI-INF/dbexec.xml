@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="dispose" name="edu.tamu.tcat.account.test.db.exec">
-   <implementation class="edu.tamu.tcat.oss.db.psql.PsqlDbExec"/>
-   <reference bind="setConfigurationProperties" cardinality="1..1" interface="edu.tamu.tcat.osgi.config.ConfigurationProperties" name="ConfigurationProperties" policy="static"/>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="dispose" name="edu.tamu.tcat.oss.account.test.dbexec">
+   <implementation class="edu.tamu.tcat.db.postgresql.exec.PostgreSqlExecutorService"/>
    <service>
-      <provide interface="edu.tamu.tcat.oss.db.DbExecutor"/>
+      <provide interface="edu.tamu.tcat.db.exec.sql.SqlExecutor"/>
    </service>
+   <reference bind="bind" cardinality="1..1" interface="edu.tamu.tcat.db.provider.DataSourceProvider" name="DataSourceProvider" policy="static"/>
 </scr:component>

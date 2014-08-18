@@ -22,7 +22,7 @@ import edu.tamu.tcat.account.db.internal.DatabaseAuthUtil;
 import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
 import edu.tamu.tcat.account.jaas.ServiceProviderCallback;
 import edu.tamu.tcat.crypto.CryptoProvider;
-import edu.tamu.tcat.oss.db.DbExecutor;
+import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 
 /**
  * A JAAS Security Provider Interface {@link LoginModule} implementation backed by a database.
@@ -31,7 +31,7 @@ import edu.tamu.tcat.oss.db.DbExecutor;
  * 
  * <ul><li>{@link NameCallback}</li>
  *     <li>{@link PasswordCallback}</li>
- *     <li>{@link ServiceProviderCallback} containing {@link CryptoProvider} and {@link DbExecutor}</li>
+ *     <li>{@link ServiceProviderCallback} containing {@link CryptoProvider} and {@link SqlExecutor}</li>
  * </ul>
  * 
  * <p>
@@ -82,7 +82,7 @@ public class DatabaseLoginModule implements LoginModule
       String inputUsername = null;
       String inputPassword = null;
       CryptoProvider inputCrypto = null;
-      DbExecutor inputDbExec = null;
+      SqlExecutor inputDbExec = null;
       try
       {
          // There are a few library-defined callbacks commonly used
@@ -105,7 +105,7 @@ public class DatabaseLoginModule implements LoginModule
          try
          {
             inputCrypto = cbSP.getService(CryptoProvider.class);
-            inputDbExec = cbSP.getService(DbExecutor.class);
+            inputDbExec = cbSP.getService(SqlExecutor.class);
          }
          catch (NoSuchElementException nsee)
          {
