@@ -51,7 +51,7 @@
     <repository>
       <id>Database Utilities</id>
       <layout>p2</layout>
-      <url>${repo-base-url}/oss.db.utils-dev/lastSuccessfulBuild/artifact/targetPlatform/</url>
+      <url>${repo-base-url}/Database.Utilities/lastSuccessfulBuild/artifact/targetPlatform/</url>
     </repository>
     <repository>
       <id>Crypto</id>
