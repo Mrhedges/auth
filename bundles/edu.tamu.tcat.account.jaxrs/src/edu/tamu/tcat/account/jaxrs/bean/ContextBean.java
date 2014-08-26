@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 Texas A&M Engineering Experiment Station
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.tamu.tcat.account.jaxrs.bean;
 
 import java.security.Principal;
@@ -23,7 +38,7 @@ import edu.tamu.tcat.account.jaxrs.internal.ContextContainingPrincipal;
  * Other
  * injects include {@code @PathParam}, {@code @HeaderParam},
  * {@code @FormParam}, {@code @QueryParam} and {@code @CookieParam}.
- * 
+ *
  * @see BeanParam
  */
 public class ContextBean
@@ -42,7 +57,7 @@ public class ContextBean
          throw new IllegalStateException("Context Provider not initialized");
       this.ccp = (ContextContainingPrincipal)principal;
    }
-   
+
    private static <T> Container<T> getWrapper(ContextContainingPrincipal ccp, Class<T> type) throws AccountException
    {
       Container<T> wr = (Container)ccp.get(type);
@@ -50,20 +65,20 @@ public class ContextBean
          throw new AccountException("No context found of the requested type ["+type+"]");
       return wr;
    }
-   
+
    // called by HTTP Method impls after constructor
    public <T> T get(Class<T> type) throws AccountException
    {
       return getWrapper(ccp, type).get();
    }
-   
+
    /**
     * Set the given instance as the new value for the wrapper of its type.
     * <p>
     * Since this {@link ContextBean} is intended to store simple types, the actual
     * concrete type of the instance passed is used to determine the wrapper in which
     * it belongs.
-    * 
+    *
     * @param obj
     * @throws AccountException
     */
@@ -72,27 +87,27 @@ public class ContextBean
       Class<T> cls = (Class)obj.getClass();
       getWrapper(ccp, cls).set(obj);
    }
-   
+
    public static class Container<PT>
    {
       private PT payload;
-      
+
       public PT get()
       {
          return payload;
       }
-      
+
       public void set(PT obj)
       {
          payload = obj;
       }
    }
-   
+
    public interface Installer
    {
       /**
        * Install a {@link Container} of the given payload type into the active context.
-       * 
+       *
        * @param payloadType
        * @return
        * @throws AccountException
@@ -100,18 +115,18 @@ public class ContextBean
       // called by @Provider impls
       <T> Container<T> install(Class<T> payloadType) throws AccountException;
    }
-   
+
    private static class InstallerImpl implements Installer
    {
       private ContextContainingPrincipal princ;
-      
+
       @Override
       public <T> Container<T> install(Class<T> payloadType) throws AccountException
       {
          try
          {
             Container<T> wr = new Container<T>();
-            
+
             Container<T> existing = (Container)princ.putIfAbsent(payloadType, wr);
             return existing;
          }
@@ -121,10 +136,10 @@ public class ContextBean
          }
       }
    }
-   
+
    /**
     * Factory method to use within a {@link ContainerRequestFilter}.
-    * 
+    *
     * @param context
     * @return
     */
@@ -143,7 +158,7 @@ public class ContextBean
     * Unlike {@link #from(ContainerRequestContext)}, this method requires the principal to already
     * have been initialized by a call to that method by some other provider previously invoked in
     * the HTTP Response call sequence.
-    * 
+    *
     * @param context
     * @throws AccountException If the context bean container is not initialized.
     */
@@ -157,10 +172,10 @@ public class ContextBean
          throw new AccountException("Context not initialized with principal");
       return inst;
    }
-   
+
    /**
     * Convenience method to extract the stored value of the given type from the given request context.
-    * 
+    *
     * @param ctx
     * @param type
     * @return The current value in the {@link Container} for the given type. May be {@code null}
@@ -170,10 +185,10 @@ public class ContextBean
    {
       return new ContextBean(ctx.getSecurityContext()).get(type);
    }
-   
+
    /**
     * Convenience method to extract the stored value of the given type from the given request context.
-    * 
+    *
     * @param ctx
     * @param type
     * @return The current value in the {@link Container} for the given type. May be {@code null}
