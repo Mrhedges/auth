@@ -4,12 +4,27 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
-  <groupId>edu.tamu.tcat.oss</groupId>
+  <groupId>edu.tamu.tcat</groupId>
   <artifactId>auth</artifactId>
   <version>1</version>
   <packaging>pom</packaging>
+  
   <name>Auth Utilities</name>
 
+  <organization>
+    <name>Texas Center for Applied Technology</name>
+    <url>http://tcat.tamu.edu</url>
+  </organization>
+  
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments></comments>
+    </license>
+  </licenses>
+  
   <prerequisites>
     <maven>3.0</maven>
   </prerequisites>
@@ -54,16 +69,6 @@
       <url>${repo-base-url}/Database.Utilities/lastSuccessfulBuild/artifact/targetPlatform/</url>
     </repository>
     <repository>
-      <id>Crypto</id>
-      <layout>p2</layout>
-      <url>${repo-base-url}/Crypto/lastSuccessfulBuild/artifact/targetPlatform/</url>
-    </repository>
-    <repository>
-      <id>OSGI.Utils</id>
-      <layout>p2</layout>
-      <url>${repo-base-url}/OSGI.Utilities/lastSuccessfulBuild/artifact/targetPlatform/</url>
-    </repository>
-    <repository>
       <id>Mirror.Deps</id>
       <layout>p2</layout>
       <url>${repo-base-url}/mirror.dependencies/lastSuccessfulBuild/artifact/targetPlatform/</url>
@@ -77,6 +82,18 @@
       <id>JAX-RS</id>
       <layout>p2</layout>
       <url>${repo-base-url}/JAX-RS.Mirror/lastSuccessfulBuild/artifact/target/repository/</url>
+    </repository>
+    
+    <repository>
+      <id>Crypto</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/Crypto/lastSuccessfulBuild/artifact/targetPlatform/</url>
+    </repository>
+    
+    <repository>
+      <id>OSGI.Utils</id>
+      <layout>p2</layout>
+      <url>${repo-base-url}/OSGI.Utilities/lastSuccessfulBuild/artifact/targetPlatform/</url>
     </repository>
   </repositories>
 
