@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Import-Package: edu.tamu.tcat.account;version="1.0.0",
- edu.tamu.tcat.account.jaas;version="1.0.0",
+ edu.tamu.tcat.account.jaas;version="1.0.0";resolution:=optional,
  edu.tamu.tcat.account.login;version="1.0.0",
  edu.tamu.tcat.account.store;version="1.0.0",
  edu.tamu.tcat.crypto;version="1.1.0",
