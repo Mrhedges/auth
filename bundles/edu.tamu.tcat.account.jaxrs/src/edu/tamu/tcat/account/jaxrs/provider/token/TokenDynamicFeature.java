@@ -16,7 +16,8 @@
 package edu.tamu.tcat.account.jaxrs.provider.token;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;
@@ -28,20 +29,25 @@ import edu.tamu.tcat.account.jaxrs.bean.TokenSecured;
 import edu.tamu.tcat.account.token.TokenService;
 
 @Provider
-public class TokenDynamicFeature<PayloadType> implements DynamicFeature
+public class TokenDynamicFeature implements DynamicFeature
 {
-   private TokenService<?> tokenService;
+   private Map<ClassAndId, TokenService<?>> tokenServices = new HashMap<>();
 
-   //TODO: allow binding to multiple services defined in the app
-   // Can't trust the generic type, so check later after accepting the bind
-   public void bind(TokenService<?> svc)
+   public void bind(TokenService<?> svc, Map<String, Object> properties)
    {
-      this.tokenService = svc;
+      Class<?> payloadType = svc.getPayloadType();
+      Object idObj = properties.get("tokenId");
+      String id = "";
+      if (idObj != null && idObj instanceof String)
+      {
+         id = (String)idObj;
+      }
+      
+      tokenServices.put(new ClassAndId(payloadType, id), svc);
    }
    
    public void activate()
    {
-      //Objects.requireNonNull(tokenService);
    }
    
    @Override
@@ -52,26 +58,78 @@ public class TokenDynamicFeature<PayloadType> implements DynamicFeature
       if (tokenSecured != null)
       {
          Class<?> payloadType = tokenSecured.payloadType();
-         // Only register if the annotation payload type matches the provided service
-         if (Objects.equals(tokenService.getPayloadType(), payloadType))
-         {
-            @SuppressWarnings("unchecked")
-            TokenService<PayloadType> typed = (TokenService<PayloadType>)tokenService;
-            context.register(new TokenSecurityObjectFilter<PayloadType>(typed));
-         }
+         String tokenId = tokenSecured.tokenId();
+         
+         registerSecurity(payloadType, tokenId, context);
       }
       
       TokenProviding tokenProviding = method.getAnnotation(TokenProviding.class);
       if (tokenProviding != null)
       {
          Class<?> payloadType = tokenProviding.payloadType();
-         // Only register if the annotation payload type matches the provided service
-         if (Objects.equals(tokenService.getPayloadType(), payloadType))
+         String tokenId = tokenProviding.tokenId();
+         
+         registerProviding(payloadType, tokenId, context);
+      }
+   }
+   
+   private <T> void registerSecurity(Class<T> payloadType, String tokenId, FeatureContext context)
+   {
+      @SuppressWarnings("unchecked")
+      TokenService<T> tokenService = (TokenService<T>)tokenServices.get(new ClassAndId(payloadType, tokenId));
+      context.register(new TokenSecurityObjectFilter<T>(tokenService));
+   }
+   
+   private <T> void registerProviding(Class<T> payloadType, String tokenId, FeatureContext context)
+   {
+      @SuppressWarnings("unchecked")
+      TokenService<T> tokenService = (TokenService<T>)tokenServices.get(new ClassAndId(payloadType, tokenId));
+      context.register(new TokenProvidingObjectFilter<T>(tokenService));
+   }
+   
+   private static class ClassAndId
+   {
+      public final Class<?> cls;
+      public final String id;
+      public ClassAndId(Class<?> cls, String id)
+      {
+         this.cls = cls;
+         this.id = id;
+      }
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((cls == null) ? 0 : cls.hashCode());
+         result = prime * result + ((id == null) ? 0 : id.hashCode());
+         return result;
+      }
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (getClass() != obj.getClass())
+            return false;
+         ClassAndId other = (ClassAndId)obj;
+         if (cls == null)
          {
-            @SuppressWarnings("unchecked")
-            TokenService<PayloadType> typed = (TokenService<PayloadType>)tokenService;
-            context.register(new TokenProvidingObjectFilter<PayloadType>(typed));
+            if (other.cls != null)
+               return false;
          }
+         else if (!cls.equals(other.cls))
+            return false;
+         if (id == null)
+         {
+            if (other.id != null)
+               return false;
+         }
+         else if (!id.equals(other.id))
+            return false;
+         return true;
       }
    }
 }

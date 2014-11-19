@@ -35,4 +35,5 @@ import javax.ws.rs.NameBinding;
 public @interface TokenProviding
 {
    Class<?> payloadType();
+   String tokenId() default "";
 }

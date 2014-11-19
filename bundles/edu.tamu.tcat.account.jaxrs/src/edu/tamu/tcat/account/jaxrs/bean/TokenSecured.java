@@ -39,4 +39,5 @@ import java.lang.annotation.Target;
 public @interface TokenSecured
 {
    Class<?> payloadType();
+   String tokenId() default "";
 }
