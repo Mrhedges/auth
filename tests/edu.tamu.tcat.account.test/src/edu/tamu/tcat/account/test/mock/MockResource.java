@@ -17,6 +17,7 @@ package edu.tamu.tcat.account.test.mock;
 
 import java.util.UUID;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.FormParam;
@@ -61,19 +62,20 @@ public class MockResource
    @Path ("/authenticate")
    @Produces (MediaType.APPLICATION_JSON)
    @TokenProviding(payloadType=UUID.class)
-   public AccountSDV authenticate(@FormParam("username") String username, @FormParam("password") String password, @BeanParam ContextBean bean) throws AccountException
+   public AccountSDV authenticate(@FormParam("username") String username, @FormParam("password") String password, @BeanParam ContextBean bean)
+   // This should get mapped to a 500 error if not done by default
+   throws AccountException
    {
       if (username == null || username.length() == 0)
-         throw new AccountException("Username not specified\n");
+         // Could be <application>BadRequestException to craft a client Response
+         throw new BadRequestException("Username not specified\n");
       if (password == null || password.length() == 0)
-         throw new AccountException("Password not specified\n");
+         throw new BadRequestException("Password not specified\n");
       
       //TODO: later, allow the user to select a Login Provider
       String providerId = LOGIN_PROVIDER_DB;
       
-      CryptoProvider crypto = getCryptoProvider();
-      SqlExecutor dbExec = getDbExecutor();
-      LoginProvider loginProvider = getLoginProvider(providerId, username, password, crypto, dbExec);
+      LoginProvider loginProvider = getLoginProvider(providerId, username, password, getCryptoProvider(), getDbExecutor());
       
       try
       {
@@ -88,6 +90,13 @@ public class MockResource
       {
          throw new ForbiddenException();
       }
+      
+      //Response resp = Response.status(Response.Status.BAD_REQUEST)
+      //   .entity("Unknown login provider ["+providerId+"]")
+      //   .type(MediaType.TEXT_PLAIN)
+      //   .build();
+      //throw new BadRequestException(resp);
+
    }
    
    /** a serialization data vehicl for {@link Account} */
@@ -161,6 +170,4 @@ public class MockResource
       
       throw new IllegalStateException("Unknown provider id: " + providerId);
    }
-
-   
 }
