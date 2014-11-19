@@ -55,7 +55,8 @@ public class TokenDynamicFeature<PayloadType> implements DynamicFeature
          // Only register if the annotation payload type matches the provided service
          if (Objects.equals(tokenService.getPayloadType(), payloadType))
          {
-            TokenService<PayloadType> typed = (TokenService)tokenService;
+            @SuppressWarnings("unchecked")
+            TokenService<PayloadType> typed = (TokenService<PayloadType>)tokenService;
             context.register(new TokenSecurityObjectFilter<PayloadType>(typed));
          }
       }
@@ -67,7 +68,8 @@ public class TokenDynamicFeature<PayloadType> implements DynamicFeature
          // Only register if the annotation payload type matches the provided service
          if (Objects.equals(tokenService.getPayloadType(), payloadType))
          {
-            TokenService<PayloadType> typed = (TokenService)tokenService;
+            @SuppressWarnings("unchecked")
+            TokenService<PayloadType> typed = (TokenService<PayloadType>)tokenService;
             context.register(new TokenProvidingObjectFilter<PayloadType>(typed));
          }
       }
