@@ -53,4 +53,6 @@ public @interface TokenProviding
    String scopeId() default "";
    
    String label() default "";
+   
+   boolean strict() default true;
 }

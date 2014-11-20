@@ -24,15 +24,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.tamu.tcat.account.jaxrs.bean.ContextBean;
+import edu.tamu.tcat.account.jaxrs.bean.TokenSecured;
 import edu.tamu.tcat.account.token.TokenService;
 
 public class TokenSecurityObjectFilter<PayloadType> implements ContainerRequestFilter
 {
    private final TokenService<PayloadType> tokenService;
+   private final TokenSecured annot;
    
-   public TokenSecurityObjectFilter(TokenService<PayloadType> svc)
+   public TokenSecurityObjectFilter(TokenService<PayloadType> svc, TokenSecured annot)
    {
       this.tokenService = svc;
+      this.annot = annot;
    }
 
    @Override
@@ -47,7 +50,7 @@ public class TokenSecurityObjectFilter<PayloadType> implements ContainerRequestF
       try
       {
          PayloadType tokenPayload = tokenService.unpackToken(tokenHeader);
-         ContextBean.from(requestContext).install(tokenService.getPayloadType()).set(tokenPayload);
+         ContextBean.from(requestContext).install(tokenService.getPayloadType()).set(annot.label(), tokenPayload);
       }
       catch (Exception e)
       {

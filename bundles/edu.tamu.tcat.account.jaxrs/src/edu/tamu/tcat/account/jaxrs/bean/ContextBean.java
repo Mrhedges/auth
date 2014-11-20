@@ -205,9 +205,9 @@ public class ContextBean
     * @return The current value in the {@link Container} for the given type. May be {@code null}
     * @throws AccountException If no container is installed for the given type
     */
-   public static <T> T getValue(ContainerRequestContext ctx, Class<T> type) throws AccountException
+   public static <T> T getValue(ContainerRequestContext ctx, Class<T> type, String label) throws AccountException
    {
-      return new ContextBean(ctx.getSecurityContext()).get(type);
+      return new ContextBean(ctx.getSecurityContext()).get(type, label);
    }
 
    /**

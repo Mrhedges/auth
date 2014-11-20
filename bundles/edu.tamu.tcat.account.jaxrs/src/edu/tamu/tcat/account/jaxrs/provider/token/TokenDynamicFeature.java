@@ -72,32 +72,26 @@ public class TokenDynamicFeature implements DynamicFeature
       TokenSecured tokenSecured = method.getAnnotation(TokenSecured.class);
       if (tokenSecured != null)
       {
-         Class<?> payloadType = tokenSecured.payloadType();
-         String scopeId = tokenSecured.scopeId();
-         
-         registerSecurity(payloadType, scopeId, context);
+         registerSecurity(context, tokenSecured, tokenSecured.payloadType());
       }
       
       TokenProviding tokenProviding = method.getAnnotation(TokenProviding.class);
       if (tokenProviding != null)
       {
-         Class<?> payloadType = tokenProviding.payloadType();
-         String scopeId = tokenProviding.scopeId();
-         
-         registerProviding(payloadType, scopeId, context);
+         registerProviding(context, tokenProviding, tokenProviding.payloadType());
       }
    }
    
-   private <T> void registerSecurity(Class<T> payloadType, String scopeId, FeatureContext context)
+   private <T> void registerSecurity(FeatureContext context, TokenSecured tokenSecured, Class<T> payloadType)
    {
-      TokenService<T> tokenService = getService(payloadType, scopeId);
-      context.register(new TokenSecurityObjectFilter<T>(tokenService));
+      TokenService<T> tokenService = getService(payloadType, tokenSecured.scopeId());
+      context.register(new TokenSecurityObjectFilter<T>(tokenService, tokenSecured));
    }
    
-   private <T> void registerProviding(Class<T> payloadType, String scopeId, FeatureContext context)
+   private <T> void registerProviding(FeatureContext context, TokenProviding annot, Class<T> payloadType)
    {
-      TokenService<T> tokenService = getService(payloadType, scopeId);
-      context.register(new TokenProvidingObjectFilter<T>(tokenService));
+      TokenService<T> tokenService = getService(payloadType, annot.scopeId());
+      context.register(new TokenProvidingObjectFilter<T>(tokenService, annot));
    }
    
    private synchronized <T> TokenService<T> getService(Class<T> payloadType, String scopeId)
