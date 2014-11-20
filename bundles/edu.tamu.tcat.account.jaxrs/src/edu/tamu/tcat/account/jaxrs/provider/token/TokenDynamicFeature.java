@@ -31,19 +31,33 @@ import edu.tamu.tcat.account.token.TokenService;
 @Provider
 public class TokenDynamicFeature implements DynamicFeature
 {
+   private static final String TOKEN_ID_KEY = "tokenId";
+   
    private Map<ClassAndId, TokenService<?>> tokenServices = new HashMap<>();
 
-   public void bind(TokenService<?> svc, Map<String, Object> properties)
+   public synchronized void bind(TokenService<?> svc, Map<String, Object> properties)
+   {
+      ClassAndId classAndId = getClassAndId(svc, properties);
+      
+      tokenServices.put(classAndId, svc);
+   }
+
+   private ClassAndId getClassAndId(TokenService<?> svc, Map<String, Object> properties)
    {
       Class<?> payloadType = svc.getPayloadType();
-      Object idObj = properties.get("tokenId");
-      String id = "";
-      if (idObj != null && idObj instanceof String)
+      String id = (String)properties.get(TOKEN_ID_KEY);
+      if (id == null)
       {
-         id = (String)idObj;
+         id = "";
       }
-      
-      tokenServices.put(new ClassAndId(payloadType, id), svc);
+      ClassAndId classAndId = new ClassAndId(payloadType, id);
+      return classAndId;
+   }
+   
+   public synchronized void unbind(TokenService<?> svc, Map<String, Object> properties)
+   {
+      ClassAndId classAndId = getClassAndId(svc, properties);
+      tokenServices.remove(classAndId);
    }
    
    public void activate()
@@ -75,16 +89,21 @@ public class TokenDynamicFeature implements DynamicFeature
    
    private <T> void registerSecurity(Class<T> payloadType, String tokenId, FeatureContext context)
    {
-      @SuppressWarnings("unchecked")
-      TokenService<T> tokenService = (TokenService<T>)tokenServices.get(new ClassAndId(payloadType, tokenId));
+      TokenService<T> tokenService = getService(payloadType, tokenId);
       context.register(new TokenSecurityObjectFilter<T>(tokenService));
    }
    
    private <T> void registerProviding(Class<T> payloadType, String tokenId, FeatureContext context)
    {
+      TokenService<T> tokenService = getService(payloadType, tokenId);
+      context.register(new TokenProvidingObjectFilter<T>(tokenService));
+   }
+   
+   private synchronized <T> TokenService<T> getService(Class<T> payloadType, String tokenId)
+   {
       @SuppressWarnings("unchecked")
       TokenService<T> tokenService = (TokenService<T>)tokenServices.get(new ClassAndId(payloadType, tokenId));
-      context.register(new TokenProvidingObjectFilter<T>(tokenService));
+      return tokenService;
    }
    
    private static class ClassAndId
