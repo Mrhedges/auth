@@ -64,11 +64,6 @@
       <url>${repo-base-url}/Eclipse%20Orbit%20Repository%20Mirror/lastSuccessfulBuild/artifact/target/repository/</url>
     </repository>
     <repository>
-      <id>Database Utilities</id>
-      <layout>p2</layout>
-      <url>${repo-base-url}/Database.Utilities/lastSuccessfulBuild/artifact/targetPlatform/</url>
-    </repository>
-    <repository>
       <id>Mirror.Deps</id>
       <layout>p2</layout>
       <url>${repo-base-url}/mirror.dependencies/lastSuccessfulBuild/artifact/targetPlatform/</url>
@@ -85,16 +80,11 @@
     </repository>
     
     <repository>
-      <id>Crypto</id>
+      <id>CITD Releases</id>
       <layout>p2</layout>
-      <url>${repo-base-url}/Crypto/lastSuccessfulBuild/artifact/targetPlatform/</url>
+      <url>https://download.citd.tamu.edu/sdk</url>
     </repository>
     
-    <repository>
-      <id>OSGI.Utils</id>
-      <layout>p2</layout>
-      <url>${repo-base-url}/OSGI.Utilities/lastSuccessfulBuild/artifact/targetPlatform/</url>
-    </repository>
   </repositories>
 
   <build>
