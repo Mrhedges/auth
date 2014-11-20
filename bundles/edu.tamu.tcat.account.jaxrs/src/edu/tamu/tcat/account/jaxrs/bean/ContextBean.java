@@ -16,6 +16,8 @@
 package edu.tamu.tcat.account.jaxrs.bean;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.ws.rs.BeanParam;
@@ -44,7 +46,9 @@ import edu.tamu.tcat.account.jaxrs.internal.ContextContainingPrincipal;
 public class ContextBean
 {
    private final ContextContainingPrincipal ccp;
-
+   /** This is the same value as used for 'default' in the {@link TokenProviding} and {@link TokenSecured} annotations. */
+   private static final String DEFAULT_LABEL = "";
+   
    /**
     * Constructor used when provided to an HTTP Method method using {@code @BeanParam}
     * @param context
@@ -69,7 +73,14 @@ public class ContextBean
    // called by HTTP Method impls after constructor
    public <T> T get(Class<T> type) throws AccountException
    {
-      return getWrapper(ccp, type).get();
+      return get(type, DEFAULT_LABEL);
+   }
+   
+   public <T> T get(Class<T> type, String label) throws AccountException
+   {
+      Objects.requireNonNull(type);
+      Objects.requireNonNull(label);
+      return getWrapper(ccp, type).get(label);
    }
 
    /**
@@ -84,22 +95,35 @@ public class ContextBean
     */
    public <T> void set(T obj) throws AccountException
    {
-      Class<T> cls = (Class)obj.getClass();
-      getWrapper(ccp, cls).set(obj);
+      set(obj, DEFAULT_LABEL);
+   }
+   
+   public <T> void set(T obj, String label) throws AccountException
+   {
+      set(obj, (Class)obj.getClass(), label);
+   }
+   
+   public <T> void set(T obj, Class<T> type, String label) throws AccountException
+   {
+      Objects.requireNonNull(obj);
+      Objects.requireNonNull(type);
+      Objects.requireNonNull(label);
+      
+      getWrapper(ccp, type).set(label, obj);
    }
 
    public static class Container<PT>
    {
-      private PT payload;
-
-      public PT get()
+      private final Map<String, PT> payloads = new HashMap<>();
+      
+      public PT get(String label)
       {
-         return payload;
+         return payloads.get(label);
       }
 
-      public void set(PT obj)
+      public void set(String label, PT obj)
       {
-         payload = obj;
+         payloads.put(label, obj);
       }
    }
 
@@ -194,9 +218,9 @@ public class ContextBean
     * @return The current value in the {@link Container} for the given type. May be {@code null}
     * @throws AccountException If no container is installed for the given type
     */
-   public static <T> T getValue(InterceptorContext ctx, Class<T> type) throws AccountException
+   public static <T> T getValue(InterceptorContext ctx, Class<T> type, String label) throws AccountException
    {
       Container<T> pw = getWrapper(ContextContainingPrincipal.getPrincipal(ctx), type);
-      return pw.get();
+      return pw.get(label);
    }
 }
