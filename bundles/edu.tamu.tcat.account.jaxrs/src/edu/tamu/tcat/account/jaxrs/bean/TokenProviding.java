@@ -28,12 +28,27 @@ import javax.ws.rs.NameBinding;
  * of the payload type to the {@link ContextBean}.
  * <p>
  * Used to annotate a method also bearing an HTTP Method annotation such as {@link javax.ws.rs.POST}.
+ * <p>
+ * <pre>
+ *    &#64;POST &#64;TokenProviding(payloadType=UUID.class)
+ *    public Object authenticate(&#64;FormParam("username") String username, &#64;FormParam("password") String password, &#64;BeanParam ContextBean bean) {
+ *       UUID accountId = // authenticate and locate account ID
+ *       bean.set(accountId);
+ * </pre>
  */
 @NameBinding
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface TokenProviding
 {
+   /**
+    * @return The type of object embedded as payload in the secure token
+    */
    Class<?> payloadType();
-   String tokenId() default "";
+   
+   /**
+    * @return An identifier defining a token processing "scope". Useful for when multiple token
+    *         services exist in a system and each service can be associated with a scope.
+    */
+   String scopeId() default "";
 }

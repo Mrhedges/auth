@@ -18,6 +18,7 @@ package edu.tamu.tcat.account.jaxrs.provider.token;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;
@@ -31,7 +32,7 @@ import edu.tamu.tcat.account.token.TokenService;
 @Provider
 public class TokenDynamicFeature implements DynamicFeature
 {
-   private static final String TOKEN_ID_KEY = "tokenId";
+   private static final String SCOPE_ID_KEY = "scopeId";
    
    private Map<ClassAndId, TokenService<?>> tokenServices = new HashMap<>();
 
@@ -45,7 +46,7 @@ public class TokenDynamicFeature implements DynamicFeature
    private ClassAndId getClassAndId(TokenService<?> svc, Map<String, Object> properties)
    {
       Class<?> payloadType = svc.getPayloadType();
-      String id = (String)properties.get(TOKEN_ID_KEY);
+      String id = (String)properties.get(SCOPE_ID_KEY);
       if (id == null)
       {
          id = "";
@@ -72,37 +73,38 @@ public class TokenDynamicFeature implements DynamicFeature
       if (tokenSecured != null)
       {
          Class<?> payloadType = tokenSecured.payloadType();
-         String tokenId = tokenSecured.tokenId();
+         String scopeId = tokenSecured.scopeId();
          
-         registerSecurity(payloadType, tokenId, context);
+         registerSecurity(payloadType, scopeId, context);
       }
       
       TokenProviding tokenProviding = method.getAnnotation(TokenProviding.class);
       if (tokenProviding != null)
       {
          Class<?> payloadType = tokenProviding.payloadType();
-         String tokenId = tokenProviding.tokenId();
+         String scopeId = tokenProviding.scopeId();
          
-         registerProviding(payloadType, tokenId, context);
+         registerProviding(payloadType, scopeId, context);
       }
    }
    
-   private <T> void registerSecurity(Class<T> payloadType, String tokenId, FeatureContext context)
+   private <T> void registerSecurity(Class<T> payloadType, String scopeId, FeatureContext context)
    {
-      TokenService<T> tokenService = getService(payloadType, tokenId);
+      TokenService<T> tokenService = getService(payloadType, scopeId);
       context.register(new TokenSecurityObjectFilter<T>(tokenService));
    }
    
-   private <T> void registerProviding(Class<T> payloadType, String tokenId, FeatureContext context)
+   private <T> void registerProviding(Class<T> payloadType, String scopeId, FeatureContext context)
    {
-      TokenService<T> tokenService = getService(payloadType, tokenId);
+      TokenService<T> tokenService = getService(payloadType, scopeId);
       context.register(new TokenProvidingObjectFilter<T>(tokenService));
    }
    
-   private synchronized <T> TokenService<T> getService(Class<T> payloadType, String tokenId)
+   private synchronized <T> TokenService<T> getService(Class<T> payloadType, String scopeId)
    {
       @SuppressWarnings("unchecked")
-      TokenService<T> tokenService = (TokenService<T>)tokenServices.get(new ClassAndId(payloadType, tokenId));
+      TokenService<T> tokenService = (TokenService<T>)tokenServices.get(new ClassAndId(payloadType, scopeId));
+      Objects.requireNonNull(tokenService, "Unable to access TokenService<id:"+scopeId+","+payloadType.getSimpleName()+">");
       return tokenService;
    }
    
