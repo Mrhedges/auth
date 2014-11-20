@@ -16,7 +16,6 @@
 package edu.tamu.tcat.account.test.mock;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
@@ -24,9 +23,9 @@ import edu.tamu.tcat.account.token.TokenService;
 public class MockUuidTokenService implements TokenService<UUID>
 {
    @Override
-   public TokenService.TokenData<UUID> createTokenData(UUID uuid, long expiresIn, TimeUnit expiresInUnit) throws AccountTokenException
+   public TokenService.TokenData<UUID> createTokenData(UUID uuid) throws AccountTokenException
    {
-      return new MockTokenData(uuid.toString(), uuid, String.valueOf(expiresIn) + "." + expiresInUnit.toString());
+      return new MockTokenData(uuid.toString(), uuid, "Expires eventually");
    }
 
    @Override

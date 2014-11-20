@@ -16,7 +16,6 @@
 package edu.tamu.tcat.account.test;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
@@ -98,7 +97,7 @@ public class AccountTest
       // stage 4 - "log in" by creating a secure token
       UUID acctId = account.getId();
       TokenService<UUID> tokenService = getTokenService(crypto);
-      TokenService.TokenData<UUID> tokenData = tokenService.createTokenData(acctId, 5, TimeUnit.MINUTES);
+      TokenService.TokenData<UUID> tokenData = tokenService.createTokenData(acctId);
       
       StringBuilder sbCookie = new StringBuilder();
       sbCookie.append("token=").append(tokenData.getToken())

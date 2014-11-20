@@ -16,7 +16,6 @@
 package edu.tamu.tcat.account.jaxrs.provider.token;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,7 +65,7 @@ public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequest
          PayloadType payload = ContextBean.getValue(requestContext, tokenService.getPayloadType(), annot.label());
          if (payload != null)
          {
-            TokenData<PayloadType> data = tokenService.createTokenData(payload, 2 * 7, TimeUnit.DAYS);
+            TokenData<PayloadType> data = tokenService.createTokenData(payload);
             String token = data.getToken();
             responseContext.getHeaders().add("Token", token);
          }

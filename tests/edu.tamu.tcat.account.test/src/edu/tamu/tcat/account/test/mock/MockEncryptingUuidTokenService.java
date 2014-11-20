@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import edu.tamu.tcat.account.test.CryptoUtil;
 import edu.tamu.tcat.account.token.AccountTokenException;
@@ -64,7 +63,7 @@ public class MockEncryptingUuidTokenService implements TokenService<UUID>
    }
    
    @Override
-   public TokenService.TokenData<UUID> createTokenData(UUID id, long expiresIn, TimeUnit expiresInUnit) throws AccountTokenException
+   public TokenService.TokenData<UUID> createTokenData(UUID id) throws AccountTokenException
    {
       ByteBuffer buffer = ByteBuffer.allocate(4 + 8 + 16);
       ZonedDateTime now = ZonedDateTime.now();
