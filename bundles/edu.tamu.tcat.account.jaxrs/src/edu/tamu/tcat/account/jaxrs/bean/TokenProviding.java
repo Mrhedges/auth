@@ -51,4 +51,8 @@ public @interface TokenProviding
     *         services exist in a system and each service can be associated with a scope.
     */
    String scopeId() default "";
+   
+   String label() default "";
+   
+   boolean strict() default true;
 }

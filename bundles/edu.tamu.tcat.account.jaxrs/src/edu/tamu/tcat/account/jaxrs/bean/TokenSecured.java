@@ -48,4 +48,6 @@ public @interface TokenSecured
     *         services exist in a system and each service can be associated with a scope.
     */
    String scopeId() default "";
+   
+   String label() default "";
 }

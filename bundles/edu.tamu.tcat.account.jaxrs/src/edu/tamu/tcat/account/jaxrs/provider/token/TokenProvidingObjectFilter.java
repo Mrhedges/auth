@@ -28,6 +28,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.jaxrs.bean.ContextBean;
+import edu.tamu.tcat.account.jaxrs.bean.TokenProviding;
 import edu.tamu.tcat.account.token.TokenService;
 import edu.tamu.tcat.account.token.TokenService.TokenData;
 
@@ -35,10 +36,12 @@ public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequest
 {
    private static final Logger debug = Logger.getLogger(TokenProvidingObjectFilter.class.getName());
    private final TokenService<PayloadType> tokenService;
+   private final TokenProviding annot;
    
-   public TokenProvidingObjectFilter(TokenService<PayloadType> tokenService)
+   public TokenProvidingObjectFilter(TokenService<PayloadType> tokenService, TokenProviding annot)
    {
       this.tokenService = tokenService;
+      this.annot = annot;
    }
 
    @Override
@@ -60,12 +63,16 @@ public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequest
    {
       try
       {
-         PayloadType payload = ContextBean.getValue(requestContext, tokenService.getPayloadType());
+         PayloadType payload = ContextBean.getValue(requestContext, tokenService.getPayloadType(), annot.label());
          if (payload != null)
          {
             TokenData<PayloadType> data = tokenService.createTokenData(payload, 2 * 7, TimeUnit.DAYS);
             String token = data.getToken();
             responseContext.getHeaders().add("Token", token);
+         }
+         else if (annot.strict())
+         {
+            throw new IllegalStateException("TokenProviding in strict mode but no payload set");
          }
       }
       catch (Exception e)
