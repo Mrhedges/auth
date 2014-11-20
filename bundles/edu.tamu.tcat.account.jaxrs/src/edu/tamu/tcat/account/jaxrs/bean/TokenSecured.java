@@ -28,15 +28,24 @@ import java.lang.annotation.Target;
  * <p>
  * A method, such as:
  * <pre>
- * &#64;GET &#64;TokenSecured public Object getObject(@Context SecurityContext context) {
- *    TokenSecuredContext tokenSecuredContext = ContextContainingPrincipal.requireContext(context, TokenSecuredContext.class);
- *    UUID accountId = tokenSecuredContext.uuid;
+ * &#64;GET &#64;TokenSecured(payloadType=UUID.class)
+ * public Object getObject(&#64;BeanParam ContextBean bean) {
+ *    UUID accountId = bean.get(UUID.class);
  * </pre>
- * Will have a {@link TokenSecuredContext} availabler in the provided {@code context}
+ * Will have a {@link ContextBean} with the requested payload.
  */
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface TokenSecured
 {
+   /**
+    * @return The type of object embedded as payload in the secure token
+    */
    Class<?> payloadType();
+   
+   /**
+    * @return An identifier defining a token processing "scope". Useful for when multiple token
+    *         services exist in a system and each service can be associated with a scope.
+    */
+   String scopeId() default "";
 }

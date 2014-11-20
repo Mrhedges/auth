@@ -16,6 +16,8 @@
 package edu.tamu.tcat.account.jaxrs.provider.token;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.ws.rs.container.DynamicFeature;
@@ -28,20 +30,39 @@ import edu.tamu.tcat.account.jaxrs.bean.TokenSecured;
 import edu.tamu.tcat.account.token.TokenService;
 
 @Provider
-public class TokenDynamicFeature<PayloadType> implements DynamicFeature
+public class TokenDynamicFeature implements DynamicFeature
 {
-   private TokenService<?> tokenService;
+   private static final String SCOPE_ID_KEY = "scopeId";
+   
+   private Map<ClassAndId, TokenService<?>> tokenServices = new HashMap<>();
 
-   //TODO: allow binding to multiple services defined in the app
-   // Can't trust the generic type, so check later after accepting the bind
-   public void bind(TokenService<?> svc)
+   public synchronized void bind(TokenService<?> svc, Map<String, Object> properties)
    {
-      this.tokenService = svc;
+      ClassAndId classAndId = getClassAndId(svc, properties);
+      
+      tokenServices.put(classAndId, svc);
+   }
+
+   private ClassAndId getClassAndId(TokenService<?> svc, Map<String, Object> properties)
+   {
+      Class<?> payloadType = svc.getPayloadType();
+      String id = (String)properties.get(SCOPE_ID_KEY);
+      if (id == null)
+      {
+         id = "";
+      }
+      ClassAndId classAndId = new ClassAndId(payloadType, id);
+      return classAndId;
+   }
+   
+   public synchronized void unbind(TokenService<?> svc, Map<String, Object> properties)
+   {
+      ClassAndId classAndId = getClassAndId(svc, properties);
+      tokenServices.remove(classAndId);
    }
    
    public void activate()
    {
-      //Objects.requireNonNull(tokenService);
    }
    
    @Override
@@ -52,26 +73,84 @@ public class TokenDynamicFeature<PayloadType> implements DynamicFeature
       if (tokenSecured != null)
       {
          Class<?> payloadType = tokenSecured.payloadType();
-         // Only register if the annotation payload type matches the provided service
-         if (Objects.equals(tokenService.getPayloadType(), payloadType))
-         {
-            @SuppressWarnings("unchecked")
-            TokenService<PayloadType> typed = (TokenService<PayloadType>)tokenService;
-            context.register(new TokenSecurityObjectFilter<PayloadType>(typed));
-         }
+         String scopeId = tokenSecured.scopeId();
+         
+         registerSecurity(payloadType, scopeId, context);
       }
       
       TokenProviding tokenProviding = method.getAnnotation(TokenProviding.class);
       if (tokenProviding != null)
       {
          Class<?> payloadType = tokenProviding.payloadType();
-         // Only register if the annotation payload type matches the provided service
-         if (Objects.equals(tokenService.getPayloadType(), payloadType))
+         String scopeId = tokenProviding.scopeId();
+         
+         registerProviding(payloadType, scopeId, context);
+      }
+   }
+   
+   private <T> void registerSecurity(Class<T> payloadType, String scopeId, FeatureContext context)
+   {
+      TokenService<T> tokenService = getService(payloadType, scopeId);
+      context.register(new TokenSecurityObjectFilter<T>(tokenService));
+   }
+   
+   private <T> void registerProviding(Class<T> payloadType, String scopeId, FeatureContext context)
+   {
+      TokenService<T> tokenService = getService(payloadType, scopeId);
+      context.register(new TokenProvidingObjectFilter<T>(tokenService));
+   }
+   
+   private synchronized <T> TokenService<T> getService(Class<T> payloadType, String scopeId)
+   {
+      @SuppressWarnings("unchecked")
+      TokenService<T> tokenService = (TokenService<T>)tokenServices.get(new ClassAndId(payloadType, scopeId));
+      Objects.requireNonNull(tokenService, "Unable to access TokenService<id:"+scopeId+","+payloadType.getSimpleName()+">");
+      return tokenService;
+   }
+   
+   private static class ClassAndId
+   {
+      public final Class<?> cls;
+      public final String id;
+      public ClassAndId(Class<?> cls, String id)
+      {
+         this.cls = cls;
+         this.id = id;
+      }
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((cls == null) ? 0 : cls.hashCode());
+         result = prime * result + ((id == null) ? 0 : id.hashCode());
+         return result;
+      }
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (getClass() != obj.getClass())
+            return false;
+         ClassAndId other = (ClassAndId)obj;
+         if (cls == null)
          {
-            @SuppressWarnings("unchecked")
-            TokenService<PayloadType> typed = (TokenService<PayloadType>)tokenService;
-            context.register(new TokenProvidingObjectFilter<PayloadType>(typed));
+            if (other.cls != null)
+               return false;
          }
+         else if (!cls.equals(other.cls))
+            return false;
+         if (id == null)
+         {
+            if (other.id != null)
+               return false;
+         }
+         else if (!id.equals(other.id))
+            return false;
+         return true;
       }
    }
 }
