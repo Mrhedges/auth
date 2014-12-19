@@ -14,7 +14,6 @@ import edu.tamu.tcat.account.jaxrs.bean.ContextBean;
 import edu.tamu.tcat.account.jaxrs.bean.SignatureSecured;
 import edu.tamu.tcat.account.jaxrs.provider.signature.SignatureStreamVerifier.SignatureStreamWithPublicKeyVerifier;
 import edu.tamu.tcat.account.signature.SignatureService;
-import edu.tamu.tcat.account.signature.SigningAccount;
 
 public class SignedObjectInterceptor<PayloadType> implements ReaderInterceptor
 {
@@ -33,12 +32,12 @@ public class SignedObjectInterceptor<PayloadType> implements ReaderInterceptor
       String authorizationScope = signatureService.getAuthorizationScope();
       try
       {
-         PartialContext partialContext = ContextBean.from(context).install(PartialContext.class).get("");
+         @SuppressWarnings("unchecked")
+         PartialContext<PayloadType> partialContext = ContextBean.from(context).install(PartialContext.class).get("");
          if (partialContext == null)
             throw new NotAuthorizedException(authorizationScope);
-         @SuppressWarnings("unchecked")
-         SigningAccount<PayloadType> signingAccount = (SigningAccount<PayloadType>)partialContext.signingAccount;
-         if (signingAccount == null)
+         PayloadType payload = partialContext.payload;
+         if (payload == null)
             throw new NotAuthorizedException(authorizationScope);
          
          try (InputStream inputStream = context.getInputStream())
@@ -50,7 +49,7 @@ public class SignedObjectInterceptor<PayloadType> implements ReaderInterceptor
             
             verifier.checkSignature();
             
-            ContextBean.from(context).install(signatureService.getPayloadType()).set(signatureSecured.label(), signingAccount.getPayload());
+            ContextBean.from(context).install(signatureService.getPayloadType()).set(signatureSecured.label(), payload);
             
             return result;
          }

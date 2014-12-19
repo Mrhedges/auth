@@ -15,11 +15,11 @@ import edu.tamu.tcat.account.signature.SignatureService.Verifier;
 
 public class SignatureVerification
 {
-   public static void requireValid(SelfSignedVerifier verifier, byte[] publicKeyBytes, byte[] message, String authorizationScope)
+   public static <T> void requireValid(SelfSignedVerifier<T> verifier, T payload, byte[] message, String authorizationScope)
    {
       try
       {
-         verifier.useKey(publicKeyBytes);
+         verifier.usePayload(payload);
          verifier.processSignedData(message);
          requireVerification(verifier);
       }
@@ -38,9 +38,9 @@ public class SignatureVerification
                .build());
    }
    
-   public static SignatureStreamDelayedPublicKeyVerifier createVerifier(SelfSignedVerifier verifier, byte[] messageStart, InputStream input, String authorizationScope) throws IOException
+   public static <T> SignatureStreamDelayedPublicKeyVerifier<T> createVerifier(SelfSignedVerifier<T> verifier, byte[] messageStart, InputStream input, String authorizationScope) throws IOException
    {
-      return new SignatureStreamDelayedPublicKeyVerifier()
+      return new SignatureStreamDelayedPublicKeyVerifier<T>()
       {
          InputStreamByteArrayProxy proxy = new InputStreamByteArrayProxy(input, messageStart);
          
@@ -51,9 +51,9 @@ public class SignatureVerification
          }
          
          @Override
-         public void checkSignature(byte[] publicKeyBytes)
+         public void checkSignature(T payload)
          {
-            requireValid(verifier, publicKeyBytes, proxy.getBytes(), authorizationScope);
+            requireValid(verifier, payload, proxy.getBytes(), authorizationScope);
          }
       };
    }

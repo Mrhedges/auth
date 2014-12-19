@@ -23,7 +23,6 @@ import edu.tamu.tcat.account.jaxrs.bean.SignatureSecured;
 import edu.tamu.tcat.account.signature.SignatureException;
 import edu.tamu.tcat.account.signature.SignatureService;
 import edu.tamu.tcat.account.signature.SignatureService.Verifier;
-import edu.tamu.tcat.account.signature.SigningAccount;
 
 public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
 {
@@ -41,12 +40,12 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
    @Override
    public void filter(ContainerRequestContext requestContext) throws IOException
    {
-      PartialContext partialContext = parseAuthorizationToken(requestContext);
+      PartialContext<PayloadType> partialContext = parseAuthorizationToken(requestContext);
       
-      SigningAccount<PayloadType> signingAccount;
+      PayloadType payload;
       try
       {
-         signingAccount = signatureService.getSigningAccount(partialContext.accountIdentifier);
+         payload = signatureService.getPayload(partialContext.accountIdentifier);
       }
       catch (SignatureException e)
       {
@@ -61,16 +60,16 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
       Verifier verifier;
       if (signatureService.mayBeSelfSigned())
       {
-         if (signingAccount == null && method.equals("GET"))
+         if (payload == null && method.equals("GET"))
             throw new ForbiddenException();
          verifier = partialContext.selfSignedVerifier = signatureService.getVerifier(partialContext.signature);
       }
       else
       {
-         if (signingAccount == null)
+         if (payload == null)
             throw new ForbiddenException();
-         partialContext.signingAccount = signingAccount;
-         verifier = partialContext.verifier = signatureService.getVerifier(signingAccount, partialContext.signature);
+         partialContext.payload = payload;
+         verifier = partialContext.verifier = signatureService.getVerifier(payload, partialContext.signature);
       }
       
       String path = requestContext.getUriInfo().getPath();
@@ -98,7 +97,7 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
             verifier.processSignedData(signPrefix.getBytes());
             if (!verifier.verify())
                throw buildBadRequestException("Failed integrity");
-            ContextBean.from(requestContext).install(signatureService.getPayloadType()).set(signatureSecured.label(), signingAccount.getPayload());
+            ContextBean.from(requestContext).install(signatureService.getPayloadType()).set(signatureSecured.label(), payload);
          }
          else
          {
@@ -116,7 +115,7 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
       }
    }
    
-   protected PartialContext parseAuthorizationToken(ContainerRequestContext requestContext)
+   protected PartialContext<PayloadType> parseAuthorizationToken(ContainerRequestContext requestContext)
    {
       String authHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
       String authorizationScope = signatureService.getAuthorizationScope();
@@ -138,7 +137,7 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
          throw buildBadRequestException("Invalid authorization format");
       }
       String identifier = split[0];
-      return new PartialContext(identifier, signature);
+      return new PartialContext<>(identifier, signature);
    }
    
    private static BadRequestException buildBadRequestException(String clientMessage)

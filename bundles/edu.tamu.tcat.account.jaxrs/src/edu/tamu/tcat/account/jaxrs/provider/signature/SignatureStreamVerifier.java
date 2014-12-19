@@ -6,9 +6,9 @@ public interface SignatureStreamVerifier
 {
    InputStream getProxyStream();
    
-   interface SignatureStreamDelayedPublicKeyVerifier extends SignatureStreamVerifier
+   interface SignatureStreamDelayedPublicKeyVerifier<PayloadType> extends SignatureStreamVerifier
    {
-      void checkSignature(byte[] publicKeyBytes);
+      void checkSignature(PayloadType payload);
    }
    
    interface SignatureStreamWithPublicKeyVerifier extends SignatureStreamVerifier

@@ -1,15 +1,14 @@
 package edu.tamu.tcat.account.jaxrs.provider.signature;
 
-import edu.tamu.tcat.account.signature.SignatureService.SelfSignedVerifier;
 import edu.tamu.tcat.account.signature.SignatureService.Verifier;
-import edu.tamu.tcat.account.signature.SigningAccount;
+import edu.tamu.tcat.account.signature.SignatureService.SelfSignedVerifier;
 
-class PartialContext
+class PartialContext<PayloadType>
 {
-   public SigningAccount<?> signingAccount;
    public String accountIdentifier;
    public Verifier verifier;
-   public SelfSignedVerifier selfSignedVerifier;
+   public SelfSignedVerifier<PayloadType> selfSignedVerifier;
+   public PayloadType payload;
    public byte[] signature;
    public String signPrefix;
    

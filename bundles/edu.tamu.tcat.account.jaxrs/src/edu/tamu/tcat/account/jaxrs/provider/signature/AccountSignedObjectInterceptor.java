@@ -14,7 +14,6 @@ import edu.tamu.tcat.account.jaxrs.bean.ContextBean;
 import edu.tamu.tcat.account.jaxrs.bean.SignatureSecured;
 import edu.tamu.tcat.account.jaxrs.provider.signature.SignatureStreamVerifier.SignatureStreamDelayedPublicKeyVerifier;
 import edu.tamu.tcat.account.signature.SignatureService;
-import edu.tamu.tcat.account.signature.SigningAccount;
 
 public class AccountSignedObjectInterceptor<PayloadType> implements ReaderInterceptor
 {
@@ -33,28 +32,28 @@ public class AccountSignedObjectInterceptor<PayloadType> implements ReaderInterc
       String authorizationScope = signatureService.getAuthorizationScope();
       try
       {
-         PartialContext partialContext = ContextBean.from(context).install(PartialContext.class).get("");
+         @SuppressWarnings("unchecked")
+         PartialContext<PayloadType> partialContext = ContextBean.from(context).install(PartialContext.class).get("");
          if (partialContext == null)
             throw new NotAuthorizedException(authorizationScope);
-         @SuppressWarnings("unchecked")
-         SigningAccount<PayloadType> existingAccount = (SigningAccount<PayloadType>)partialContext.signingAccount;
+         PayloadType existingPayload = partialContext.payload;
          
          try (InputStream inputStream = context.getInputStream())
          {
-            SignatureStreamDelayedPublicKeyVerifier verifier = SignatureVerification.createVerifier(partialContext.selfSignedVerifier, partialContext.signPrefix.getBytes(),
+            SignatureStreamDelayedPublicKeyVerifier<PayloadType> verifier = SignatureVerification.createVerifier(partialContext.selfSignedVerifier, partialContext.signPrefix.getBytes(),
                   inputStream, authorizationScope);
             context.setInputStream(verifier.getProxyStream());
             Object result = context.proceed();
             
-            SigningAccount<PayloadType> signingAccount;
-            if (existingAccount != null)
-               signingAccount = existingAccount;
+            PayloadType payload;
+            if (existingPayload != null)
+               payload = existingPayload;
             else
-               signingAccount = signatureService.getSelfSigningAccount(result);
+               payload = signatureService.getSelfSigningPayload(result);
             
-            verifier.checkSignature(signingAccount.getPublicKey());
+            verifier.checkSignature(payload);
             
-            ContextBean.from(context).install(signatureService.getPayloadType()).set(signatureSecured.label(), signingAccount.getPayload());
+            ContextBean.from(context).install(signatureService.getPayloadType()).set(signatureSecured.label(), payload);
             
             return result;
          }

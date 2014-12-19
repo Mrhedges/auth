@@ -40,7 +40,7 @@ public interface SignatureService<PayloadType>
     * @throws SignatureException Thrown if the identifier is not in a valid format.
     * @throws AccountException Thrown if the payload cannot be fetched.
     */
-   SigningAccount<PayloadType> getSigningAccount(String identifier) throws SignatureException, AccountException;
+   PayloadType getPayload(String identifier) throws SignatureException, AccountException;
    
    /**
     * Provide a Class representing {@code <PayloadType>}. This is used to validate this service can handle
@@ -63,7 +63,7 @@ public interface SignatureService<PayloadType>
     * @param result The request payload object after deserialization.
     * @return The payload.  May not be <code>null</code>.
     */
-   SigningAccount<PayloadType> getSelfSigningAccount(Object result);
+   PayloadType getSelfSigningPayload(Object result);
    
    /**
     * The scope used in the Authorization header.
@@ -79,16 +79,16 @@ public interface SignatureService<PayloadType>
     * @param signature The signature in the authorization header.
     * @return A {@link Verifier} used to verify requests.
     */
-   Verifier getVerifier(SigningAccount<PayloadType> account, byte[] signature);
+   Verifier getVerifier(PayloadType account, byte[] signature);
    
    /**
     * Get a request verifier with a security payload to be provided later.
     * @param signature The signature in the authorization header.
     * @return A {@link SelfSignedVerifier} used to verify requests.
     */
-   SelfSignedVerifier getVerifier(byte[] signature);
+   SelfSignedVerifier<PayloadType> getVerifier(byte[] signature);
    
-   public interface Verifier
+   interface Verifier
    {
       /**
        * Get a list of headers to add to signature content
@@ -126,12 +126,12 @@ public interface SignatureService<PayloadType>
       boolean verify();
    }
    
-   public interface SelfSignedVerifier extends Verifier
+   interface SelfSignedVerifier<PayloadType> extends Verifier
    {
       /**
        * Sets the public key to use.  The verifier would not have the public key yet
-       * @param publicKey The bytes representation of the public key
+       * @param payload The payload to returned by {@link SignatureService#getSelfSigningPayload(Object)}.
        */
-      void useKey(byte[] publicKey);
+      void usePayload(PayloadType payload);
    }
 }
