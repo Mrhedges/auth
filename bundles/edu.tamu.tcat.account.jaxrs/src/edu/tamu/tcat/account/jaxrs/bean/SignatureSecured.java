@@ -5,6 +5,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * This annotation is processed by a DynamicFeature which adds an authn signature header
+ * to an HTTP response.
+ * <p>
+ * Used to annotate a method also bearing an HTTP Method annotation such as {@link javax.ws.rs.POST}.
+ * <p>
+ * A method, such as:
+ * <pre>
+ * &#64;GET &#64;SignatureSecured(payloadType=UUID.class)
+ * public Object getObject(&#64;BeanParam ContextBean bean) {
+ *    UUID accountId = bean.get(UUID.class);
+ * </pre>
+ * Will have a {@link ContextBean} with the requested payload.
+ */
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface SignatureSecured
