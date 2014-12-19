@@ -18,12 +18,12 @@ import edu.tamu.tcat.account.signature.SignatureService;
 public class SignedObjectInterceptor<PayloadType> implements ReaderInterceptor
 {
    private final SignatureService<PayloadType> signatureService;
-   private final SignatureSecured signatureSecured;
+   private final SignatureSecured annot;
 
-   public SignedObjectInterceptor(SignatureService<PayloadType> signatureService, SignatureSecured signatureSecured)
+   public SignedObjectInterceptor(SignatureService<PayloadType> signatureService, SignatureSecured annot)
    {
       this.signatureService = signatureService;
-      this.signatureSecured = signatureSecured;
+      this.annot = annot;
    }
 
    @Override
@@ -49,7 +49,7 @@ public class SignedObjectInterceptor<PayloadType> implements ReaderInterceptor
             
             verifier.checkSignature();
             
-            ContextBean.from(context).install(signatureService.getPayloadType()).set(signatureSecured.label(), payload);
+            ContextBean.from(context).install(signatureService.getPayloadType()).set(annot.label(), payload);
             
             return result;
          }

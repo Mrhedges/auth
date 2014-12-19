@@ -68,7 +68,7 @@ public class SignatureDynamicFeature implements DynamicFeature
       context.register(new SignedObjectFilter<T>(signatureService, signatureSecured));
       ReaderInterceptor interceptor;
       if (signatureService.mayBeSelfSigned())
-         interceptor = new AccountSignedObjectInterceptor<T>(signatureService, signatureSecured);
+         interceptor = new SelfSignedObjectInterceptor<T>(signatureService, signatureSecured);
       else
          interceptor = new SignedObjectInterceptor<T>(signatureService, signatureSecured);
       context.register(interceptor);

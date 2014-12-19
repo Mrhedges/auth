@@ -6,6 +6,9 @@ import java.io.InputStream;
 import edu.tamu.tcat.account.signature.SignatureException;
 import edu.tamu.tcat.account.signature.SignatureService.Verifier;
 
+/**
+ * Proxy input stream which feeds data through a verifier during read.
+ */
 public class InputStreamSignatureVerifierProxy extends InputStream
 {
    private final InputStream proxy;

@@ -29,12 +29,12 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
    private static final Logger debug = Logger.getLogger(SignedObjectFilter.class.getName());
    
    private SignatureService<PayloadType> signatureService;
-   private SignatureSecured signatureSecured;
+   private SignatureSecured annot;
    
-   public SignedObjectFilter(SignatureService<PayloadType> signatureService, SignatureSecured signatureSecured)
+   public SignedObjectFilter(SignatureService<PayloadType> signatureService, SignatureSecured annot)
    {
       this.signatureService = signatureService;
-      this.signatureSecured = signatureSecured;
+      this.annot = annot;
    }
    
    @Override
@@ -97,7 +97,7 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
             verifier.processSignedData(signPrefix.getBytes());
             if (!verifier.verify())
                throw buildBadRequestException("Failed integrity");
-            ContextBean.from(requestContext).install(signatureService.getPayloadType()).set(signatureSecured.label(), payload);
+            ContextBean.from(requestContext).install(signatureService.getPayloadType()).set(annot.label(), payload);
          }
          else
          {

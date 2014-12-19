@@ -4,6 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Proxy input stream which saves data read through it for later insertion in a verifier.
+ */
 public class InputStreamByteArrayProxy extends InputStream
 {
    private final InputStream proxy;

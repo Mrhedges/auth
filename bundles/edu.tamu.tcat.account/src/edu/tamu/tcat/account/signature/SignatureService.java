@@ -88,6 +88,9 @@ public interface SignatureService<PayloadType>
     */
    SelfSignedVerifier<PayloadType> getVerifier(byte[] signature);
    
+   /**
+    * An API for an object that is used to verify signatures.
+    */
    interface Verifier
    {
       /**
@@ -126,10 +129,19 @@ public interface SignatureService<PayloadType>
       boolean verify();
    }
    
+   /**
+    * A specialization of {@link Verifier} which is not initialized with the means of fetching
+    * the public key used to verify signatures.  This is provided later via {@link #usePayload(Object)}.
+    *
+    * @param <PayloadType> The type of the payload expected.
+    */
    interface SelfSignedVerifier<PayloadType> extends Verifier
    {
       /**
-       * Sets the public key to use.  The verifier would not have the public key yet
+       * Sets the payload used to fetch the public key.  The verifier would not have the public key during initialization.
+       * <p>
+       * Note: {@link #processSignedData(byte[])} and {@link #processSignedData(byte[], int, int)} will be called before
+       * this method.
        * @param payload The payload to returned by {@link SignatureService#getSelfSigningPayload(Object)}.
        */
       void usePayload(PayloadType payload);

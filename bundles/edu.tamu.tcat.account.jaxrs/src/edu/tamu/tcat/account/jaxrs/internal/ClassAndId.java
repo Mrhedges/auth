@@ -1,5 +1,8 @@
 package edu.tamu.tcat.account.jaxrs.internal;
 
+/**
+ * Simple container for a class and id (String) object used as a key in a map.
+ */
 public class ClassAndId
 {
    public final Class<?> cls;

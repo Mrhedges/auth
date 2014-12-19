@@ -15,15 +15,15 @@ import edu.tamu.tcat.account.jaxrs.bean.SignatureSecured;
 import edu.tamu.tcat.account.jaxrs.provider.signature.SignatureStreamVerifier.SignatureStreamDelayedPublicKeyVerifier;
 import edu.tamu.tcat.account.signature.SignatureService;
 
-public class AccountSignedObjectInterceptor<PayloadType> implements ReaderInterceptor
+public class SelfSignedObjectInterceptor<PayloadType> implements ReaderInterceptor
 {
    private final SignatureService<PayloadType> signatureService;
-   private final SignatureSecured signatureSecured;
+   private final SignatureSecured annot;
 
-   public AccountSignedObjectInterceptor(SignatureService<PayloadType> signatureService, SignatureSecured signatureSecured)
+   public SelfSignedObjectInterceptor(SignatureService<PayloadType> signatureService, SignatureSecured annot)
    {
       this.signatureService = signatureService;
-      this.signatureSecured = signatureSecured;
+      this.annot = annot;
    }
 
    @Override
@@ -53,7 +53,7 @@ public class AccountSignedObjectInterceptor<PayloadType> implements ReaderInterc
             
             verifier.checkSignature(payload);
             
-            ContextBean.from(context).install(signatureService.getPayloadType()).set(signatureSecured.label(), payload);
+            ContextBean.from(context).install(signatureService.getPayloadType()).set(annot.label(), payload);
             
             return result;
          }

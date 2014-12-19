@@ -13,8 +13,18 @@ import edu.tamu.tcat.account.jaxrs.provider.signature.SignatureStreamVerifier.Si
 import edu.tamu.tcat.account.signature.SignatureService.SelfSignedVerifier;
 import edu.tamu.tcat.account.signature.SignatureService.Verifier;
 
+/**
+ * Helper class for verifying signatures
+ */
 public class SignatureVerification
 {
+   /**
+    * Method to check a signature and return if valid, throw if not
+    * @param verifier The verifier to use
+    * @param payload The payload object which is used by the verifier
+    * @param message The message on which to check the signature
+    * @param authorizationScope The scope of the authorization (used for HTTP response in case of failure)
+    */
    public static <T> void requireValid(SelfSignedVerifier<T> verifier, T payload, byte[] message, String authorizationScope)
    {
       try
@@ -38,6 +48,13 @@ public class SignatureVerification
                .build());
    }
    
+   /**
+    * Method to fetch a {@link SignatureStreamDelayedPublicKeyVerifier} to check a message's signature
+    * @param verifier The verifier to use
+    * @param messageStart The start of the message on which to check the signature
+    * @param input An {@link InputStream} through which the rest of the message will be read
+    * @param authorizationScope The scope of the authorization (used for HTTP response in case of failure)
+    */
    public static <T> SignatureStreamDelayedPublicKeyVerifier<T> createVerifier(SelfSignedVerifier<T> verifier, byte[] messageStart, InputStream input, String authorizationScope) throws IOException
    {
       return new SignatureStreamDelayedPublicKeyVerifier<T>()
@@ -58,6 +75,13 @@ public class SignatureVerification
       };
    }
 
+   /**
+    * Method to fetch a {@link SignatureStreamWithPublicKeyVerifier} to check a message's signature
+    * @param verifier The verifier to use
+    * @param messageStart The start of the message on which to check the signature
+    * @param input An {@link InputStream} through which the rest of the message will be read
+    * @param authorizationScope The scope of the authorization (used for HTTP response in case of failure)
+    */
    public static SignatureStreamWithPublicKeyVerifier createVerifier(Verifier verifier, byte[] messageStart, InputStream input, String authorizationScope) throws IOException
    {
       try
