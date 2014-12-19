@@ -4,8 +4,9 @@ Bundle-Name: JAX-RS additions to Account Framework
 Bundle-SymbolicName: edu.tamu.tcat.account.jaxrs
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Texas A&M Engineering Experiment Station
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.tamu.tcat.account;version="1.0.0",
+ edu.tamu.tcat.account.signature;version="1.0.0",
  edu.tamu.tcat.account.store;version="1.0.0",
  edu.tamu.tcat.account.token;version="1.0.0",
  javax.ws.rs;version="[2.0.0,2.0.0]",
