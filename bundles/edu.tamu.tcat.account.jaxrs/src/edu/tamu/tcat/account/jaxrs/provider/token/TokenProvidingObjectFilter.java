@@ -60,6 +60,14 @@ public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequest
    @Override
    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException
    {
+      switch (responseContext.getStatusInfo().getFamily())
+      {
+         case CLIENT_ERROR:
+         case SERVER_ERROR:
+            return;
+         default:
+            break;
+      }
       try
       {
          PayloadType payload = ContextBean.getValue(requestContext, tokenService.getPayloadType(), annot.label());
