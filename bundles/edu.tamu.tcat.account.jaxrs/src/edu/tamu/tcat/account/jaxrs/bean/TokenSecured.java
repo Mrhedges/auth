@@ -49,5 +49,8 @@ public @interface TokenSecured
     */
    String scopeId() default "";
    
+   /**
+    * @return A label used to distinguish this annotation from others of the same type
+    */
    String label() default "";
 }
