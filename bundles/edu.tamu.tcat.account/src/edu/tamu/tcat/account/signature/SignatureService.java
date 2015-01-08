@@ -31,9 +31,9 @@ import edu.tamu.tcat.account.AccountException;
 public interface SignatureService<PayloadType>
 {
    /**
-    * Get a {@link SigningAccount} given the provided identifier.
+    * Get a payload given the provided identifier.
     * @param identifier The identifier as provided by the request
-    * @return A {@link SigningAccount} used to get public keys and check signatures.
+    * @return A payload used to get public keys and check signatures.
     *          May return <code>null</code>.
     *          If identifier is formatted correctly but no account exists.  If {@link #mayBeSelfSigned()} returns <code>true</code>,
     *          this must return <code>null</code> over throwing for a non-existant account.
@@ -125,8 +125,9 @@ public interface SignatureService<PayloadType>
       /**
        * Verify the signature.  No futher operations will be performed on this verifier after this method
        * @return <code>true</code> if the signature is valid, <code>false</code> otherwise.
+       * @throws SignatureException Thrown if the veficier cannot verify the signature.
        */
-      boolean verify();
+      boolean verify() throws SignatureException;
    }
    
    /**

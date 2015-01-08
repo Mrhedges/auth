@@ -2,6 +2,8 @@ package edu.tamu.tcat.account.jaxrs.provider.signature;
 
 import java.io.InputStream;
 
+import edu.tamu.tcat.account.signature.SignatureException;
+
 /**
  * Base interface for stream based signature verifiers.
  */
@@ -32,7 +34,8 @@ public interface SignatureStreamVerifier
    {
       /**
        * Check the signature through the stream is valid or throw if not.
+       * @throws SignatureException 
        */
-      void checkSignature();
+      void checkSignature() throws SignatureException;
    }
 }

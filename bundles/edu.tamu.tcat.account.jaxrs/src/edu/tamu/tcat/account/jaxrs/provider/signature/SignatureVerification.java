@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 
 import edu.tamu.tcat.account.jaxrs.provider.signature.SignatureStreamVerifier.SignatureStreamDelayedPublicKeyVerifier;
 import edu.tamu.tcat.account.jaxrs.provider.signature.SignatureStreamVerifier.SignatureStreamWithPublicKeyVerifier;
+import edu.tamu.tcat.account.signature.SignatureException;
 import edu.tamu.tcat.account.signature.SignatureService.SelfSignedVerifier;
 import edu.tamu.tcat.account.signature.SignatureService.Verifier;
 
@@ -39,7 +40,7 @@ public class SignatureVerification
       }
    }
    
-   private static void requireVerification(Verifier verifier)
+   private static void requireVerification(Verifier verifier) throws SignatureException
    {
       if (!verifier.verify())
          throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
@@ -102,7 +103,7 @@ public class SignatureVerification
          }
          
          @Override
-         public void checkSignature()
+         public void checkSignature() throws SignatureException
          {
             requireVerification(verifier);
          }
