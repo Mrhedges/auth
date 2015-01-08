@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
@@ -67,7 +68,7 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
       else
       {
          if (payload == null)
-            throw new ForbiddenException();
+            throw new ClientErrorException(Response.Status.UNAUTHORIZED);
          partialContext.payload = payload;
          verifier = partialContext.verifier = signatureService.getVerifier(payload, partialContext.signature);
       }
