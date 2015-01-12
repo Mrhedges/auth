@@ -52,7 +52,13 @@ public @interface TokenProviding
     */
    String scopeId() default "";
    
+   /**
+    * @return A label used to distinguish this annotation from others of the same type
+    */
    String label() default "";
    
+   /**
+    * @return <code>true</code> if the method must set a token, <code>false</code> if the token is optional.
+    */
    boolean strict() default true;
 }
