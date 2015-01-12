@@ -125,7 +125,7 @@ public interface SignatureService<PayloadType>
       /**
        * Verify the signature.  No futher operations will be performed on this verifier after this method
        * @return <code>true</code> if the signature is valid, <code>false</code> otherwise.
-       * @throws SignatureException Thrown if the veficier cannot verify the signature.
+       * @throws SignatureException Thrown if the verifier cannot verify the signature.
        */
       boolean verify() throws SignatureException;
    }

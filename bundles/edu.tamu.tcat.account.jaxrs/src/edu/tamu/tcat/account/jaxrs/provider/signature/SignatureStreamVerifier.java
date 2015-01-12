@@ -34,7 +34,7 @@ public interface SignatureStreamVerifier
    {
       /**
        * Check the signature through the stream is valid or throw if not.
-       * @throws SignatureException 
+       * @throws SignatureException Thrown if the signature cannot be checked.  Should not be thrown if the signature is simply not valid for the content.
        */
       void checkSignature() throws SignatureException;
    }
