@@ -95,9 +95,10 @@ public interface SignatureService<PayloadType>
    {
       /**
        * Get a list of headers to add to signature content
-       * @return A {@link List} of header names.  May not be <code>null</code>.
+       * @param headers The headers provided by the request.  This map is a copy and may be modified.
+       * @return A {@link Map} of header names to values.  May not be <code>null</code>.
        */
-      List<String> getSignedHeaders();
+      Map<String, List<String>> getSignedHeaders(Map<String,List<String>> headers);
       
       /**
        * Validate headers for any contraints, such as Date ranges.

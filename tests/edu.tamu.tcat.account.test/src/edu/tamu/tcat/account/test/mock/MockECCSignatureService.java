@@ -11,6 +11,9 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -172,11 +175,12 @@ public class MockECCSignatureService implements SignatureService<MockAccount>
             throw new InternalServerErrorException("Could not verify signature", e);
          }
       }
-
+      
       @Override
-      public List<String> getSignedHeaders()
+      public Map<String, List<String>> getSignedHeaders(Map<String, List<String>> headers)
       {
-         return Arrays.asList(HttpHeaders.DATE);
+         headers.keySet().retainAll(Collections.singleton(HttpHeaders.DATE));
+         return headers;
       }
 
       @Override
@@ -238,11 +242,12 @@ public class MockECCSignatureService implements SignatureService<MockAccount>
       }
       
       @Override
-      public List<String> getSignedHeaders()
+      public Map<String, List<String>> getSignedHeaders(Map<String, List<String>> headers)
       {
-         return Arrays.asList(HttpHeaders.DATE);
+         headers.keySet().retainAll(Collections.singleton(HttpHeaders.DATE));
+         return headers;
       }
-
+      
       @Override
       public void validateAdditionalHeaders(String method, Map<String, List<String>> headers)
       {

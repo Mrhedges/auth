@@ -2,7 +2,10 @@ package edu.tamu.tcat.account.jaxrs.provider.signature;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.TreeSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,6 +19,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import edu.tamu.tcat.account.AccountException;
@@ -77,15 +81,18 @@ public class SignedObjectFilter<PayloadType> implements ContainerRequestFilter
       if (!path.startsWith("/"))
          path = '/' + path;
       
-      verifier.validateAdditionalHeaders(method, requestContext.getHeaders());
+      MultivaluedMap<String, String> requestHeaders = requestContext.getHeaders();
+      verifier.validateAdditionalHeaders(method, requestHeaders);
       
       StringBuilder buffer = new StringBuilder(method).append(' ').append(path).append('\n');
-      TreeSet<String> headers = new TreeSet<>(verifier.getSignedHeaders());
-      for (String header : headers)
+      TreeMap<String, List<String>> headers = new TreeMap<>(verifier.getSignedHeaders(new HashMap<>(requestHeaders)));
+      for (Map.Entry<String, List<String>> header : headers.entrySet())
       {
-         String value = requestContext.getHeaderString(header);
-         if (value != null)
-            buffer.append(header + ": ").append(value).append("\n");
+         String key = header.getKey();
+         for (String value : header.getValue())
+         {
+            buffer.append(key + ": ").append(value).append("\n");
+         }
       }
       
       String signPrefix = buffer.append('\n').toString();
