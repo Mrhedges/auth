@@ -9,3 +9,4 @@ Export-Package: edu.tamu.tcat.account;version="1.0.0",
  edu.tamu.tcat.account.signature;version="1.0.0",
  edu.tamu.tcat.account.store;version="1.0.0",
  edu.tamu.tcat.account.token;version="1.0.0"
+Bundle-Vendor: Texas A&M Engineering Experiment Station
