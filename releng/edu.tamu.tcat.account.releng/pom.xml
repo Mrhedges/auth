@@ -37,9 +37,8 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven-plugins-groupid>org.apache.maven.plugins</maven-plugins-groupid>
     <assembly-version>2.4</assembly-version>
-    <repo-base-url>https://build.citd.tamu.edu/hudson/job</repo-base-url>
-    <keystore.path>keystore</keystore.path>
-    <keystore.pwd></keystore.pwd>
+<!--     <keystore.path>keystore</keystore.path> -->
+<!--     <keystore.pwd></keystore.pwd> -->
 <!--     <keystore.tsa>http://timestamp.comodoca.com/rfc3161</keystore.tsa> -->
   </properties>
   
@@ -58,18 +57,17 @@
     <repository>
       <id>Eclipse Platform</id>
       <layout>p2</layout>
-<!--       <url>http://download.eclipse.org/releases/luna/</url> -->
-      <url>${repo-base-url}/Eclipse.Repository.Mirror.Luna/lastSuccessfulBuild/artifact/target/repository/</url>
+      <url>http://download.eclipse.org/releases/luna/</url>
     </repository>
     <repository>
       <id>Eclipse Orbit</id>
       <layout>p2</layout>
-      <url>${repo-base-url}/Eclipse%20Orbit%20Repository%20Mirror/lastSuccessfulBuild/artifact/target/repository/</url>
+      <url>http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository</url>
     </repository>
     <repository>
-      <id>TCAT OSS</id>
+      <id>TCAT OSS Github</id>
       <layout>p2</layout>
-      <url>${repo-base-url}/mirror.tcat.oss/lastSuccessfulBuild/artifact/targetPlatform/</url>
+      <url>https://tcat-tamu.github.io/releng/p2/</url>
     </repository>
     <repository>
       <id>JAX RS</id>
@@ -130,26 +128,26 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>1.4</version>
-        <executions>
-            <execution>
-                <id>sign</id>
-                <goals>
-                    <goal>sign</goal>
-                </goals>
-            </execution>
-        </executions>
-        <configuration>
-            <keystore>${keystore.path}</keystore>
-            <alias>1</alias>
-            <storepass>${keystore.pwd}</storepass>
-            <storetype>pkcs12</storetype>
+<!--       <plugin> -->
+<!--         <groupId>org.apache.maven.plugins</groupId> -->
+<!--         <artifactId>maven-jarsigner-plugin</artifactId> -->
+<!--         <version>1.4</version> -->
+<!--         <executions> -->
+<!--             <execution> -->
+<!--                 <id>sign</id> -->
+<!--                 <goals> -->
+<!--                     <goal>sign</goal> -->
+<!--                 </goals> -->
+<!--             </execution> -->
+<!--         </executions> -->
+<!--         <configuration> -->
+<!--             <keystore>${keystore.path}</keystore> -->
+<!--             <alias>1</alias> -->
+<!--             <storepass>${keystore.pwd}</storepass> -->
+<!--             <storetype>pkcs12</storetype> -->
 <!--             <tsa>${keystore.tsa}</tsa> -->
-        </configuration>
-      </plugin>
+<!--         </configuration> -->
+<!--       </plugin> -->
     </plugins>
   </build>
 </project>
