@@ -1,5 +1,6 @@
 package edu.tamu.tcat.account.apacheds;
 
+import java.util.Map;
 import java.util.Properties;
 
 import edu.tamu.tcat.account.apacheds.internal.LdapHelperAdImpl;
@@ -21,15 +22,23 @@ public class LdapHelperADFactory
    public LdapHelperReader getReader(Properties props){
       return getHelper(props);
    }
+   
+   public LdapHelperReader getReader(Map<String, ?> props){
+      return getHelper(props);
+   }
 
    public LdapHelperMutator getWriter(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
       return getHelper(ip, port, userDn, userPassword, useSsl, defaultSearchOu);
    }
-   
+
    public LdapHelperMutator getWriter(Properties props){
       return getHelper(props);
    }
    
+   public LdapHelperMutator getWriter(Map<String, ?> props){
+      return getHelper(props);
+   }
+
    private LdapHelperAdImpl getHelper(Properties props)
    {
       return getHelper(props.getProperty(IP), 
@@ -38,6 +47,16 @@ public class LdapHelperADFactory
             props.getProperty(USER_PASSWORD), 
             Boolean.parseBoolean(props.getProperty(USE_SSL)), 
             props.getProperty(DEFAULT_SEARCH_OU));
+   }
+   
+   private LdapHelperAdImpl getHelper(Map<String, ?> props)
+   {
+      return getHelper((String)props.get(IP), 
+            (Integer)props.get(PORT),
+            (String)props.get(USER_DN), 
+            (String)props.get(USER_PASSWORD), 
+            (Boolean)props.get(USE_SSL), 
+            (String)props.get(DEFAULT_SEARCH_OU));
    }
    
    private LdapHelperAdImpl getHelper(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
