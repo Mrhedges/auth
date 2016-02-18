@@ -50,6 +50,11 @@
     <module>oss.auth/bundles/edu.tamu.tcat.account.db</module>
     <module>oss.auth/bundles/edu.tamu.tcat.account.jaas</module>
     <module>oss.auth/bundles/edu.tamu.tcat.account.jaxrs</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds.ad.login</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds.test.application</module>
+    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds.test.application.feature</module>
+    <module>oss.auth/releng/edu.tamu.tcat.account.apacheds.test.application.product</module>
     <module>oss.auth/tests/edu.tamu.tcat.account.test</module>
   </modules>
 
