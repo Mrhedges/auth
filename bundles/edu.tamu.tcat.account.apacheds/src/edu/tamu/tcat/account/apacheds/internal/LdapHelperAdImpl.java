@@ -14,6 +14,7 @@ import org.apache.directory.api.ldap.codec.protocol.mina.LdapProtocolCodecFactor
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.entry.ModificationOperation;
+import org.apache.directory.api.ldap.model.entry.Value;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
@@ -348,7 +349,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
                //extract all the groups the user is a memberof
                if (attribute.getId().equalsIgnoreCase(attributeId))
-                  values.add(attribute.get());
+               {
+                  Value<?> e = attribute.get();
+                  values.add(e.getValue());
+               }
 //                  System.out.println('['+attribute.getId() +']'+ attribute.get());
             });
          }
@@ -480,7 +484,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             cursor.forEach(entry -> {
                if (entry.contains(attributeId, value))
                {
-                  matches .add(String.valueOf(entry.get("distinguishedName")));
+                  matches .add(String.valueOf(entry.get("distinguishedName").get()));
                }
             });
             return matches;
@@ -516,7 +520,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             cursor.forEach(entry -> {
                if (entry.contains(attributeId, value))
                {
-                  matches .add(String.valueOf(entry.get("distinguishedName")));
+                  matches .add(String.valueOf(entry.get("distinguishedName").get()));
                }
             });
             return matches;
