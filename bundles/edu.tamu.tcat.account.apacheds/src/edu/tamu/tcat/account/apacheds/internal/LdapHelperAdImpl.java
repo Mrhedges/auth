@@ -548,6 +548,6 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       });
       if (found.get() != null)
          return found.get();
-      throw new LdapException(distinguishedName + "not found.");
+      throw new LdapAuthException(distinguishedName + "not found.");
    }
 }
