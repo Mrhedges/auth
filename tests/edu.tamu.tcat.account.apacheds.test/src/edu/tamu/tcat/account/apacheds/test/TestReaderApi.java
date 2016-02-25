@@ -70,7 +70,7 @@ public class TestReaderApi
    public void testUserGroups() throws Exception
    {
       LdapHelperReader helper = new LdapHelperAdFactory().getReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
-      List<String> groups = helper.getGroups(DISABLED_USER);
+      List<String> groups = helper.getGroupNames(DISABLED_USER);
       Assert.assertTrue("Expected to be in at least 1 group", !groups.isEmpty());
       for (String g : groups)
          System.out.println(DISABLED_USER + " is in group " + g);

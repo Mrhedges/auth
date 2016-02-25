@@ -60,7 +60,7 @@ public class Application implements IApplication
          }
          else if (args.contains("groups"))
          {
-            for (String g : helper.getGroups(user))
+            for (String g : helper.getGroupNames(user))
                System.out.println("User [" + user + "] is in group [" + g + "]");
          }
          else if (args.contains("attribute"))

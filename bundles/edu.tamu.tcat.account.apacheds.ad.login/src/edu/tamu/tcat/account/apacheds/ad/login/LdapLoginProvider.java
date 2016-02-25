@@ -80,7 +80,7 @@ public class LdapLoginProvider implements LoginProvider
          //email?
          email = String.valueOf(helper.getAttributes(ouDistinguishedName, "userPrincipalName").stream().findFirst().orElse(null));
          // strip CN=*, out from distinguished names here
-         groups = helper.getGroups(ouDistinguishedName).stream().map(dn -> {
+         groups = helper.getGroupNames(ouDistinguishedName).stream().map(dn -> {
             return dn.substring(dn.indexOf('=') + 1, dn.indexOf(','));
          }).collect(Collectors.toList());
       }

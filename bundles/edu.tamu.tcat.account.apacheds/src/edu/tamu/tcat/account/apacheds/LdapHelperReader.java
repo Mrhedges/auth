@@ -43,30 +43,30 @@ public interface LdapHelperReader
    /**
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     * *@return return list of distinguished names for entries that are members of the group specified by groupDistinguishedName in the specified ou*/
-   List<String> getMembersOfGroup(String ouSearchPrefix, String groupDistinguishedName) throws LdapException;
+   List<String> getMemberNamesOfGroup(String ouSearchPrefix, String groupDistinguishedName) throws LdapException;
 
    /***@return return list of distinguished names for entries that are members of the group specified by groupDistinguishedName */
-   List<String> getMembersOfGroup(String groupDistinguishedName) throws LdapException;
+   List<String> getMemberNamesOfGroup(String groupDistinguishedName) throws LdapException;
    
    /***This is a recursive search
     * @return return list of distinguished names for the groups for the distinguished name */
-   List<String> getGroups(String userDistinguishedName) throws LdapException;
+   List<String> getGroupNames(String userDistinguishedName) throws LdapException;
 
    /***This is a recursive search
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName    
     * @return return list of distinguished names for the groups for the distinguished name starting in specified ou*/
-   List<String> getGroups(String ouSearchPrefix, String userDistinguishedName) throws LdapException, LdapAuthException;
+   List<String> getGroupNames(String ouSearchPrefix, String userDistinguishedName) throws LdapException, LdapAuthException;
 
    /***This is a recursive search
     * @throws LdapAuthException if the user is not valid or the password is not valid
     * @return return list of distinguished names for the groups for the distinguished name */
-   List<String> getGroupsAndValidate(String userDistinguishedName, String password) throws LdapException, LdapAuthException;
+   List<String> getGroupNamesAndValidate(String userDistinguishedName, String password) throws LdapException, LdapAuthException;
 
    /***This is a recursive search
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     * @throws LdapAuthException if the user is not valid or the password is not valid
     * @return return list of distinguished names for the groups for the distinguished name starting in specified ou*/
-   List<String> getGroupsAndValidate(String ouSearchPrefix, String userDistinguishedName, String password) throws LdapException;
+   List<String> getGroupNamesAndValidate(String ouSearchPrefix, String userDistinguishedName, String password) throws LdapException;
 
    /**
     * Expected return types are String and byte[]

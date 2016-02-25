@@ -151,13 +151,13 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    }
 
    @Override
-   public List<String> getMembersOfGroup(String userDistinguishedName) throws LdapException
+   public List<String> getMemberNamesOfGroup(String userDistinguishedName) throws LdapException
    {
-      return getMembersOfGroup(computeDefaultOu(userDistinguishedName), userDistinguishedName);
+      return getMemberNamesOfGroup(computeDefaultOu(userDistinguishedName), userDistinguishedName);
    }
    
    @Override
-   public List<String> getMembersOfGroup(String ouSearchPrefix, String distinguishedName) throws LdapException
+   public List<String> getMemberNamesOfGroup(String ouSearchPrefix, String distinguishedName) throws LdapException
    {
       List<String> members = new ArrayList<>();
       // in ou search prefix, list all distinguished names that have the memberof attribute = to the parameter
@@ -194,9 +194,9 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    }
 
    @Override
-   public List<String> getGroups(String userDistinguishedName) throws LdapException
+   public List<String> getGroupNames(String userDistinguishedName) throws LdapException
    {
-      return getGroups(computeDefaultOu(userDistinguishedName), userDistinguishedName);
+      return getGroupNames(computeDefaultOu(userDistinguishedName), userDistinguishedName);
    }
    
    private void getGroupsInternal(String userDistinguishedName, Set<String> groups) throws LdapException
@@ -242,7 +242,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    }
 
    @Override
-   public List<String> getGroups(String ouSearchPrefix, String userDistinguishedName) throws LdapException
+   public List<String> getGroupNames(String ouSearchPrefix, String userDistinguishedName) throws LdapException
    {
       List<String> groups = new ArrayList<>();
       try (LdapConnection connection = new LdapNetworkConnection(config))
@@ -281,13 +281,13 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    }
 
    @Override
-   public List<String> getGroupsAndValidate(String userDistinguishedName, String password) throws LdapException
+   public List<String> getGroupNamesAndValidate(String userDistinguishedName, String password) throws LdapException
    {
-      return getGroupsAndValidate(computeDefaultOu(userDistinguishedName), userDistinguishedName, password);
+      return getGroupNamesAndValidate(computeDefaultOu(userDistinguishedName), userDistinguishedName, password);
    }
 
    @Override
-   public List<String> getGroupsAndValidate(String ouSearchPrefix, String userDistinguishedName, String password) throws LdapException
+   public List<String> getGroupNamesAndValidate(String ouSearchPrefix, String userDistinguishedName, String password) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
