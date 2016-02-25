@@ -1,4 +1,4 @@
-package edu.tamu.tcat.ldap.apacheds.test;
+package edu.tamu.tcat.account.apacheds.test;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import edu.tamu.tcat.account.apacheds.LdapHelperAdFactory;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
-import edu.tamu.tcat.ldap.apacheds.test.internal.Activator;
+import edu.tamu.tcat.account.apacheds.test.internal.Activator;
 import edu.tamu.tcat.osgi.config.ConfigurationProperties;
 import edu.tamu.tcat.osgi.services.util.ServiceHelper;
 

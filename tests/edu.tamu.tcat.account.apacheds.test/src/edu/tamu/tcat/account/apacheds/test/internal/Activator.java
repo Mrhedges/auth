@@ -1,4 +1,4 @@
-package edu.tamu.tcat.ldap.apacheds.test.internal;
+package edu.tamu.tcat.account.apacheds.test.internal;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
