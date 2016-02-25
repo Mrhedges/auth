@@ -79,6 +79,13 @@
       <url>http://hstaudacher.github.io/osgi-jax-rs-connector</url>
       <layout>p2</layout>
     </repository>
+    <repository>
+      <id>Apache Directory Studio</id>
+      <!-- availalble @  https://directory.apache.org/studio/-->
+      <layout>p2</layout>
+      <url>http://directory.apache.org/studio/update/</url>
+      <!-- <url>http://directory.apache.org/studio/update/</url> -->
+    </repository>
   </repositories>
 
   <build>

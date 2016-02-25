@@ -13,13 +13,4 @@
   <artifactId>edu.tamu.tcat.account.apacheds.test.application</artifactId>
   <packaging>eclipse-plugin</packaging>
   <version>1.0.0-SNAPSHOT</version>
-    <repositories>
-    <repository>
-      <id>Apache Directory Studio</id>
-      <!-- availalble @  https://directory.apache.org/studio/-->
-      <layout>p2</layout>
-      <url>http://directory.apache.org/studio/update/</url>
-      <!-- <url>http://directory.apache.org/studio/update/</url> -->
-    </repository>
-    </repositories>
 </project>
