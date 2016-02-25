@@ -8,13 +8,13 @@ Bundle-Vendor: Texas A&M Engineering Experiment Station
 Require-Bundle: org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Import-Package: org.apache.directory.api.ldap.codec.api;version="1.0.0.M33",
- org.apache.directory.api.ldap.codec.protocol.mina;version="1.0.0.M33",
- org.apache.directory.api.ldap.model.cursor;version="1.0.0.M33",
- org.apache.directory.api.ldap.model.entry;version="1.0.0.M33",
- org.apache.directory.api.ldap.model.exception;version="1.0.0.M33",
- org.apache.directory.api.ldap.model.message;version="1.0.0.M33",
- org.apache.directory.ldap.client.api;version="1.0.0.M33",
- org.apache.mina.filter.codec;version="2.0.10"
+Import-Package: org.apache.directory.api.ldap.codec.api;version="[1.0.0.M33,2.0.0)",
+ org.apache.directory.api.ldap.codec.protocol.mina;version="[1.0.0.M33,2.0.0)",
+ org.apache.directory.api.ldap.model.cursor;version="[1.0.0.M33,2.0.0)",
+ org.apache.directory.api.ldap.model.entry;version="[1.0.0.M33,2.0.0)",
+ org.apache.directory.api.ldap.model.exception;version="[1.0.0.M33,2.0.0)",
+ org.apache.directory.api.ldap.model.message;version="[1.0.0.M33,2.0.0)",
+ org.apache.directory.ldap.client.api;version="[1.0.0.M33,2.0.0)",
+ org.apache.mina.filter.codec;version="[2.0.10,3.0.0)"
 Export-Package: edu.tamu.tcat.account.apacheds;version="1.0.0",
  edu.tamu.tcat.account.apacheds.internal;version="1.0.0";x-friends:="edu.tamu.tcat.ldap.apacheds.test"
