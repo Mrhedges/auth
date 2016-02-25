@@ -5,7 +5,7 @@ import java.util.Properties;
 
 import edu.tamu.tcat.account.apacheds.internal.LdapHelperAdImpl;
 
-public class LdapHelperADFactory
+public class LdapHelperAdFactory
 {
 
    private static final String DEFAULT_SEARCH_OU = "edu.tamu.tcat.ldap.ad.defaultSearchOu";

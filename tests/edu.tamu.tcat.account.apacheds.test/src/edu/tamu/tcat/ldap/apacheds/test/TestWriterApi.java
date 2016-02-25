@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.tamu.tcat.account.apacheds.LdapHelperADFactory;
+import edu.tamu.tcat.account.apacheds.LdapHelperAdFactory;
 import edu.tamu.tcat.account.apacheds.LdapHelperMutator;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 import edu.tamu.tcat.ldap.apacheds.test.internal.Activator;
@@ -49,14 +49,14 @@ public class TestWriterApi
    @Test
    public void testInit()
    {
-      new LdapHelperADFactory().getWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      new LdapHelperAdFactory().getWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
    }
 
    @Test
    public void testValidUser() throws Exception
    {
-      LdapHelperMutator helper = new LdapHelperADFactory().getWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
-      LdapHelperReader helperReader = new LdapHelperADFactory().getReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperMutator helper = new LdapHelperAdFactory().getWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helperReader = new LdapHelperAdFactory().getReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
       helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
       Collection<?> values = helperReader.getAttributes(defaultSearchOu, "test attribute");
       Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", values.contains("test value"));

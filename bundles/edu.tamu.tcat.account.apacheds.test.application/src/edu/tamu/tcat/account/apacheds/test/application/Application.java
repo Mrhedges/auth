@@ -11,7 +11,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
-import edu.tamu.tcat.account.apacheds.LdapHelperADFactory;
+import edu.tamu.tcat.account.apacheds.LdapHelperAdFactory;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 
 /**
@@ -79,7 +79,7 @@ public class Application implements IApplication
       {
          Properties p = new Properties();
          p.load(is);
-         return new LdapHelperADFactory().getReader(p);
+         return new LdapHelperAdFactory().getReader(p);
       }
    }
 
