@@ -15,33 +15,33 @@ public class LdapHelperAdFactory
    private static final String PORT = "edu.tamu.tcat.ldap.ad.port";
    private static final String IP = "edu.tamu.tcat.ldap.ad.ip";
 
-   public LdapHelperReader getReader(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
-      return getHelper(ip, port, userDn, userPassword, useSsl, defaultSearchOu);
+   public LdapHelperReader buildReader(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
+      return buildHelper(ip, port, userDn, userPassword, useSsl, defaultSearchOu);
    }
 
-   public LdapHelperReader getReader(Properties props){
-      return getHelper(props);
+   public LdapHelperReader buildReader(Properties props){
+      return buildHelper(props);
    }
    
-   public LdapHelperReader getReader(Map<String, ?> props){
-      return getHelper(props);
+   public LdapHelperReader buildReader(Map<String, ?> props){
+      return buildHelper(props);
    }
 
-   public LdapHelperMutator getWriter(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
-      return getHelper(ip, port, userDn, userPassword, useSsl, defaultSearchOu);
+   public LdapHelperMutator buildWriter(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
+      return buildHelper(ip, port, userDn, userPassword, useSsl, defaultSearchOu);
    }
 
-   public LdapHelperMutator getWriter(Properties props){
-      return getHelper(props);
+   public LdapHelperMutator buildWriter(Properties props){
+      return buildHelper(props);
    }
    
-   public LdapHelperMutator getWriter(Map<String, ?> props){
-      return getHelper(props);
+   public LdapHelperMutator buildWriter(Map<String, ?> props){
+      return buildHelper(props);
    }
 
-   private LdapHelperAdImpl getHelper(Properties props)
+   private LdapHelperAdImpl buildHelper(Properties props)
    {
-      return getHelper(props.getProperty(IP), 
+      return buildHelper(props.getProperty(IP), 
             Integer.parseInt(props.getProperty(PORT)),
             props.getProperty(USER_DN), 
             props.getProperty(USER_PASSWORD), 
@@ -49,9 +49,9 @@ public class LdapHelperAdFactory
             props.getProperty(DEFAULT_SEARCH_OU));
    }
    
-   private LdapHelperAdImpl getHelper(Map<String, ?> props)
+   private LdapHelperAdImpl buildHelper(Map<String, ?> props)
    {
-      return getHelper((String)props.get(IP), 
+      return buildHelper((String)props.get(IP), 
             (Integer)props.get(PORT),
             (String)props.get(USER_DN), 
             (String)props.get(USER_PASSWORD), 
@@ -59,7 +59,7 @@ public class LdapHelperAdFactory
             (String)props.get(DEFAULT_SEARCH_OU));
    }
    
-   private LdapHelperAdImpl getHelper(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
+   private LdapHelperAdImpl buildHelper(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu){
       LdapHelperAdImpl helper = new LdapHelperAdImpl();
       helper.configure(ip, port, userDn, userPassword, useSsl, defaultSearchOu);
       helper.init();

@@ -79,7 +79,7 @@ public class Application implements IApplication
       {
          Properties p = new Properties();
          p.load(is);
-         return new LdapHelperAdFactory().getReader(p);
+         return new LdapHelperAdFactory().buildReader(p);
       }
    }
 

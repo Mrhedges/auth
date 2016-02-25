@@ -49,14 +49,14 @@ public class TestWriterApi
    @Test
    public void testInit()
    {
-      new LdapHelperAdFactory().getWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
    }
 
    @Test
    public void testValidUser() throws Exception
    {
-      LdapHelperMutator helper = new LdapHelperAdFactory().getWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
-      LdapHelperReader helperReader = new LdapHelperAdFactory().getReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperMutator helper = new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helperReader = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
       helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
       Collection<?> values = helperReader.getAttributes(defaultSearchOu, "test attribute");
       Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", values.contains("test value"));
