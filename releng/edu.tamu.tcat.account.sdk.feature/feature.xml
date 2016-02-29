@@ -44,7 +44,7 @@ limitations under the License.
          id="edu.tamu.tcat.account.source"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="1.0.0.20150127-1603"
          unpack="false"/>
 
    <plugin
@@ -58,7 +58,7 @@ limitations under the License.
          id="edu.tamu.tcat.account.db.source"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="1.0.0.20150127-1603"
          unpack="false"/>
 
    <plugin
@@ -72,7 +72,7 @@ limitations under the License.
          id="edu.tamu.tcat.account.jaas.source"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="1.0.0.20150127-1603"
          unpack="false"/>
 
    <plugin
@@ -84,6 +84,34 @@ limitations under the License.
 
    <plugin
          id="edu.tamu.tcat.account.jaxrs.source"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.20150127-1603"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.account.apacheds"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.account.apacheds.source"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.account.apacheds.ad.login"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.account.apacheds.ad.login.source"
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"
