@@ -66,8 +66,18 @@ public class Application implements IApplication
          else if (args.contains("attribute"))
          {
             index = args.indexOf("-a");
-            for (Object a : helper.getAttributes(user, args.get(index + 1)))
-               System.out.println("User [" + user + "] is in group [" + a + "]");
+            String attr = args.get(index + 1);
+            for (Object a : helper.getAttributes(user, attr))
+               System.out.println("User [" + user + "] is has attribute ["+attr+"] value [" + a + "]");
+         }
+         else if (args.contains("matches"))
+         {
+            index = args.indexOf("-a");
+            String att = args.get(index + 1);
+            index = args.indexOf("-v");
+            String val = args.get(index + 1);
+            for (Object a : helper.getMatches(null, att, val))
+               System.out.println("User [" + a + "] has attribute ["+att+"] value [" + val + "]");
          }
       }
       return IApplication.EXIT_OK;
@@ -100,9 +110,11 @@ public class Application implements IApplication
       System.out.println("\t<testUser {does this user exist} | ");
       System.out.println("\t\ttestPassword {does this user password combination validate} | ");
       System.out.println("\t\tgroups {get the groups of user} | ");
+      System.out.println("\t\tmatches {get the users matching an attribute value pair} | ");
       System.out.println("\t\tattribute {get the specified attributes for this user} >");
       System.out.println("\t[-p <user password>]");
       System.out.println("\t[-a <attribute id>]");
+      System.out.println("\t[-v <value>]");
 
       //TODO add mutate
 
