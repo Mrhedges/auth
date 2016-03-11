@@ -97,7 +97,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 
    protected String computeDefaultOu(String user)
    {
-      return defaultSearchOu == null || defaultSearchOu.isEmpty() ? user.substring(user.indexOf(',') + 1) : defaultSearchOu;
+      return user == null || user.isEmpty() ? defaultSearchOu : user.substring(user.indexOf(',', user.lastIndexOf("CN")) + 1);
    }
 
    @Override
@@ -334,6 +334,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    @Override
    public Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException
    {
+      
       return getAttributes(computeDefaultOu(userDistinguishedName), userDistinguishedName, attributeId);
    }
 
@@ -584,7 +585,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 
    private boolean isMemberOfInternal(LdapConnection connection, String groupDn, String userDn) throws org.apache.directory.api.ldap.model.exception.LdapException
    {
-      String ouSearchPrefix = groupDn.substring(groupDn.indexOf(',') + 1);
+      String ouSearchPrefix = computeDefaultOu(groupDn);
       EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=group)", SearchScope.ONELEVEL, "*");
       AtomicBoolean found = new AtomicBoolean(false);
       cursor.forEach(entry -> {
