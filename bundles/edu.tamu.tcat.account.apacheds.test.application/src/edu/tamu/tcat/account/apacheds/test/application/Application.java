@@ -36,6 +36,17 @@ public class Application implements IApplication
          System.out.println("ldap configuration file must be specified");
          printHelp();
       }
+      else if (args.contains("matches"))
+      {
+         int index = args.indexOf("-f");
+         LdapHelperReader helper = createLdap(args.get(index + 1));
+         index = args.indexOf("-a");
+         String att = args.get(index + 1);
+         index = args.indexOf("-v");
+         String val = args.get(index + 1);
+         for (Object a : helper.getMatches(null, att, val))
+            System.out.println("User [" + a + "] has attribute ["+att+"] value [" + val + "]");
+      }
       else if (!args.contains("-u"))
       {
          System.out.println("user distinguished name must be specified");
@@ -70,14 +81,11 @@ public class Application implements IApplication
             for (Object a : helper.getAttributes(user, attr))
                System.out.println("User [" + user + "] is has attribute ["+attr+"] value [" + a + "]");
          }
-         else if (args.contains("matches"))
+         else if (args.contains("member"))
          {
-            index = args.indexOf("-a");
-            String att = args.get(index + 1);
-            index = args.indexOf("-v");
-            String val = args.get(index + 1);
-            for (Object a : helper.getMatches(null, att, val))
-               System.out.println("User [" + a + "] has attribute ["+att+"] value [" + val + "]");
+            index = args.indexOf("-g");
+            String group = args.get(index + 1);
+            System.out.println("User [" + user + "] is "+ (helper.isMemberOf(group, user) ? "" : "not")+" a member of group ["+group+"]");
          }
       }
       return IApplication.EXIT_OK;
@@ -112,9 +120,11 @@ public class Application implements IApplication
       System.out.println("\t\tgroups {get the groups of user} | ");
       System.out.println("\t\tmatches {get the users matching an attribute value pair} | ");
       System.out.println("\t\tattribute {get the specified attributes for this user} >");
+      System.out.println("\t\tmember {tests membership in a group for a user} >");
       System.out.println("\t[-p <user password>]");
       System.out.println("\t[-a <attribute id>]");
       System.out.println("\t[-v <value>]");
+      System.out.println("\t[-g <group distinguished name>]");
 
       //TODO add mutate
 
