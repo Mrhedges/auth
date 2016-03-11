@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.directory.api.ldap.codec.api.LdapApiService;
@@ -16,6 +17,7 @@ import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.entry.ModificationOperation;
 import org.apache.directory.api.ldap.model.entry.Value;
 import org.apache.directory.api.ldap.model.message.SearchScope;
+import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
@@ -554,4 +556,64 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          return found.get();
       throw new LdapAuthException(distinguishedName + "not found.");
    }
+
+   @Override
+   public boolean isMemberOf(String groupDn, String userDn) throws LdapException
+   {
+      try (LdapConnection connection = new LdapNetworkConnection(config))
+      {
+         connection.bind();
+         try
+         {
+            return isMemberOfInternal(connection, groupDn, userDn);
+         }
+         finally
+         {
+            connection.unBind();
+         }
+      }
+      catch (IllegalStateException e)
+      {
+         throw new LdapException("Failed " + groupDn + " lookup for user " + userDn, e.getCause());
+      }
+      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed " + groupDn + " lookup for user " + userDn, e);
+      }
+   }
+
+   private boolean isMemberOfInternal(LdapConnection connection, String groupDn, String userDn) throws org.apache.directory.api.ldap.model.exception.LdapException
+   {
+      String ouSearchPrefix = groupDn.substring(groupDn.indexOf(',') + 1);
+      EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=group)", SearchScope.ONELEVEL, "*");
+      AtomicBoolean found = new AtomicBoolean(false);
+      cursor.forEach(entry -> {
+         if (entry.getDn().toString().equals(groupDn))
+         {
+            entry.getAttributes().forEach(a -> {
+               if (found.get())
+                  return;
+               if (a.getId().equals("member"))
+                  a.forEach(v -> {
+                     try
+                     {
+                        if (found.get())
+                           return;
+                        String value = v.getString();
+                        if (value.equals(userDn))
+                           found.set(true);
+                        else if (isMemberOfInternal(connection, value, userDn))
+                           found.set(true);
+                     }
+                     catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+                     {
+                        throw new IllegalStateException(e);
+                     }
+                  });
+            });
+         }
+      });
+      return found.get();
+   }
+   
 }

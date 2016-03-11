@@ -82,4 +82,12 @@ public interface LdapHelperReader
     * 
     * */
    Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException;
+   
+   /**
+    * @param groupDn group to test
+    * @param userDn user to test
+    * @return if the user is a memeber of a specified group following the rules of transitivity.
+    * @throws LdapException if an error occurs
+    */
+   boolean isMemberOf(String groupDn, String userDn) throws LdapException;
 }
