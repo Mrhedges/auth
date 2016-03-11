@@ -98,6 +98,13 @@ public class TestReaderApi
       String name = String.valueOf(helper.getAttributes(GROUP_TEST, "cn"));
       System.out.println(GROUP_TEST + " display name " + name);
    }
+   
+   @Test
+   public void testMember() throws Exception
+   {
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      System.out.println(VALID_USER +" is a member of "+ GROUP_TEST + " " + helper.isMemberOf(GROUP_TEST, VALID_USER));
+   }
 
    public void testValidUserPassword() throws Exception
    {
