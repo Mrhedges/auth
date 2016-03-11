@@ -105,6 +105,14 @@ public class TestReaderApi
       LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
       System.out.println(VALID_USER +" is a member of "+ GROUP_TEST + " " + helper.isMemberOf(GROUP_TEST, VALID_USER));
    }
+   
+   @Test
+   public void testMemberList() throws Exception
+   {
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      for(String member : helper.getMemberNamesOfGroup(GROUP_TEST))
+         System.out.println(member +" is a member of "+ GROUP_TEST);
+   }
 
    public void testValidUserPassword() throws Exception
    {
