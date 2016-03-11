@@ -349,13 +349,12 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          try
          {
             EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
-            getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
+            getEntryFor(userDistinguishedName, cursor).getAttributes().forEach(attribute -> {
                //extract all the groups the user is a memberof
                if (attribute.getId().equalsIgnoreCase(attributeId))
-               {
-                  Value<?> e = attribute.get();
-                  values.add(e.getValue());
-               }
+                  attribute.forEach(v -> {
+                     values.add(v);
+                  });
 //                  System.out.println('['+attribute.getId() +']'+ attribute.get());
             });
          }
