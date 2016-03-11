@@ -585,7 +585,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    private boolean isMemberOfInternal(LdapConnection connection, String groupDn, String userDn) throws org.apache.directory.api.ldap.model.exception.LdapException
    {
       String ouSearchPrefix = computeDefaultOu(groupDn);
-      EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=group)", SearchScope.ONELEVEL, "*");
+      EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.ONELEVEL, "*");
       AtomicBoolean found = new AtomicBoolean(false);
       cursor.forEach(entry -> {
          if (entry.getDn().toString().equals(groupDn))
