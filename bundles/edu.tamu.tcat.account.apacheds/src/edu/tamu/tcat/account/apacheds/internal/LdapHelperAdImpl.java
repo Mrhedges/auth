@@ -560,60 +560,32 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    @Override
    public boolean isMemberOf(String groupDn, String userDn) throws LdapException
    {
-      try (LdapConnection connection = new LdapNetworkConnection(config))
-      {
-         connection.bind();
-         try
-         {
-            return isMemberOfInternal(connection, groupDn, userDn);
-         }
-         finally
-         {
-            connection.unBind();
-         }
-      }
-      catch (IllegalStateException e)
-      {
-         throw new LdapException("Failed " + groupDn + " lookup for user " + userDn, e.getCause());
-      }
-      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
-      {
-         throw new LdapException("Failed " + groupDn + " lookup for user " + userDn, e);
-      }
-   }
-
-   private boolean isMemberOfInternal(LdapConnection connection, String groupDn, String userDn) throws org.apache.directory.api.ldap.model.exception.LdapException
-   {
-      String ouSearchPrefix = computeDefaultOu(groupDn);
-      EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.ONELEVEL, "*");
       AtomicBoolean found = new AtomicBoolean(false);
-      cursor.forEach(entry -> {
-         if (entry.getDn().toString().equals(groupDn))
-         {
-            entry.getAttributes().forEach(a -> {
-               if (found.get())
-                  return;
-               if (a.getId().equals("member"))
-                  a.forEach(v -> {
-                     try
-                     {
-                        if (found.get())
-                           return;
-                        String value = v.getString();
-                        if (value.equals(userDn))
-                           found.set(true);
-                        else if (isMemberOfInternal(connection, value, userDn))
-                           found.set(true);
-                     }
-                     catch (org.apache.directory.api.ldap.model.exception.LdapException e)
-                     {
-                        throw new IllegalStateException(e);
-                     }
-                  });
-            });
-         }
-      });
+      try
+      {
+         getAttributes(groupDn, "member").forEach(member -> {
+            if (found.get())
+               return;
+            if (member.toString().equals(userDn))
+               found.set(true);
+            try
+            {
+               if (isMemberOf(member.toString(), userDn))
+                  found.set(true);
+            }
+            catch (LdapException e)
+            {
+               throw new RuntimeException(e);
+            }
+         });
+      }
+      catch(RuntimeException e)
+      {
+         if(e.getCause() instanceof LdapException)
+            throw (LdapException) e.getCause();
+         else throw e;
+      }
       return found.get();
    }
-   
+
 }
