@@ -263,7 +263,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix);
+            throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
          finally
          {
