@@ -564,27 +564,33 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       AtomicBoolean found = new AtomicBoolean(false);
       try
       {
-         getAttributes(groupDn, "member").forEach(member -> {
-            if (found.get())
-               return;
-            if (member.toString().equals(userDn))
-               found.set(true);
-            try
-            {
-               if (isMemberOf(member.toString(), userDn))
+         try
+         {
+            getAttributes(groupDn, "member").forEach(member -> {
+               if (found.get())
+                  return;
+               if (member.toString().equals(userDn))
                   found.set(true);
-            }
-            catch (LdapException e)
-            {
-               throw new RuntimeException(e);
-            }
-         });
-      }
-      catch(RuntimeException e)
+               try
+               {
+                  if (isMemberOf(member.toString(), userDn))
+                     found.set(true);
+               }
+               catch (LdapException e)
+               {
+                  throw new RuntimeException(e);
+               }
+            });
+         }
+         catch(RuntimeException e)
+         {
+            if(e.getCause() instanceof LdapException)
+               throw (LdapException) e.getCause();
+            else throw e;
+         }
+      }catch(LdapAuthException ae)
       {
-         if(e.getCause() instanceof LdapException)
-            throw (LdapException) e.getCause();
-         else throw e;
+         return false;
       }
       return found.get();
    }
