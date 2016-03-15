@@ -16,6 +16,7 @@ import org.apache.directory.api.ldap.codec.protocol.mina.LdapProtocolCodecFactor
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.entry.ModificationOperation;
+import org.apache.directory.api.ldap.model.entry.Value;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
@@ -350,7 +351,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
                //extract all the groups the user is a memberof
                if (attribute.getId().equalsIgnoreCase(attributeId))
                   attribute.forEach(v -> {
-                     values.add(v);
+                     if(v instanceof Value)
+                        values.add(((Value)v).getValue());
+                     else
+                        values.add(v);
                   });
 //                  System.out.println('['+attribute.getId() +']'+ attribute.get());
             });
