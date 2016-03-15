@@ -81,7 +81,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          if (found.get() != null)
             return found.get();
-         throw new LdapException("No such user " + otherName + " in " + ouSearchPrefix);
+         throw new LdapAuthException("No such user " + otherName + " in " + ouSearchPrefix);
       }
       catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
@@ -113,9 +113,9 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             {
                getEntryFor(userDistinguishedName, cursor);
             }
-            catch (LdapException e)
+            catch (LdapAuthException e)
             {
-               throw new LdapException("No such user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+               throw new LdapAuthException("No such user " + userDistinguishedName + " in " + ouSearchPrefix, e);
             }
          }
          finally
@@ -217,6 +217,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
                   newGroups.add(String.valueOf(attribute.get()));
 //                  System.out.println('['+attribute.getId() +']'+ attribute.get());
             });
+         }
+         catch (LdapAuthException e)
+         {
+            throw new LdapAuthException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
@@ -358,6 +362,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
                   });
 //                  System.out.println('['+attribute.getId() +']'+ attribute.get());
             });
+         }
+         catch (LdapAuthException e)
+         {
+            throw new LdapAuthException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
