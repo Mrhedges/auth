@@ -177,7 +177,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             members.add(member.toString());
             try
             {
-               members.addAll(getMemberNamesOfGroup(member.toString()));
+               getMemberNamesOfGroupInternal(members, member.toString());
             }
             catch (LdapException e)
             {
