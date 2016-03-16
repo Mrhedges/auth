@@ -115,7 +115,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             }
             catch (LdapException e)
             {
-               throw new LdapException("No such user " + userDistinguishedName + " in " + ouSearchPrefix);
+               throw new LdapException("No such user " + userDistinguishedName + " in " + ouSearchPrefix, e);
             }
          }
          finally
@@ -142,7 +142,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapAuthException("Failed validating password for distinguished name " + userDistinguishedName);
+            throw new LdapAuthException("Failed validating password for distinguished name [" + userDistinguishedName+"] "+e.getMessage());
          }
       }
       catch (IOException e)
@@ -220,7 +220,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix);
+            throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
          finally
          {
@@ -310,7 +310,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             }
             catch (org.apache.directory.api.ldap.model.exception.LdapException e)
             {
-               throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix);
+               throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
             }
             finally
             {
@@ -361,7 +361,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix);
+            throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
          finally
          {
@@ -428,7 +428,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapException("Failed " + attributeId + " remove for user " + userDistinguishedName + " in " + ouSearchPrefix);
+            throw new LdapException("Failed " + attributeId + " remove for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
          finally
          {
@@ -458,7 +458,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix);
+            throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
          finally
          {
@@ -494,7 +494,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix);
+            throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix, e);
          }
          finally
          {
@@ -530,7 +530,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          }
          catch (org.apache.directory.api.ldap.model.exception.LdapException e)
          {
-            throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix);
+            throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix, e);
          }
          finally
          {
