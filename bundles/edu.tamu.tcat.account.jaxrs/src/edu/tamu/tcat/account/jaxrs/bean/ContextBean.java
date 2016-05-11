@@ -48,7 +48,7 @@ public class ContextBean
    private final ContextContainingPrincipal ccp;
    /** This is the same value as used for 'default' in the {@link TokenProviding} and {@link TokenSecured} annotations. */
    private static final String DEFAULT_LABEL = "";
-   
+
    /**
     * Constructor used when provided to an HTTP Method method using {@code @BeanParam}
     * @param context
@@ -56,7 +56,8 @@ public class ContextBean
    public ContextBean(@Context SecurityContext context)
    {
       Objects.requireNonNull(context, "SecurityContext not found");
-      Principal principal = Objects.requireNonNull(context.getUserPrincipal(), "SecurityContext bean principal not installed");
+      Principal principal = Objects.requireNonNull(context.getUserPrincipal(), "SecurityContext bean principal not installed; "
+            + "check configuration for TokenDynamicFeature and token annotations");
       if (!(principal instanceof ContextContainingPrincipal))
          throw new IllegalStateException("Context Provider not initialized");
       this.ccp = (ContextContainingPrincipal)principal;
@@ -75,7 +76,7 @@ public class ContextBean
    {
       return get(type, DEFAULT_LABEL);
    }
-   
+
    public <T> T get(Class<T> type, String label) throws AccountException
    {
       Objects.requireNonNull(type);
@@ -97,25 +98,25 @@ public class ContextBean
    {
       set(obj, DEFAULT_LABEL);
    }
-   
+
    public <T> void set(T obj, String label) throws AccountException
    {
       set(obj, (Class)obj.getClass(), label);
    }
-   
+
    public <T> void set(T obj, Class<T> type, String label) throws AccountException
    {
       Objects.requireNonNull(obj);
       Objects.requireNonNull(type);
       Objects.requireNonNull(label);
-      
+
       getWrapper(ccp, type).set(label, obj);
    }
 
    public static class Container<PT>
    {
       private final Map<String, PT> payloads = new HashMap<>();
-      
+
       public PT get(String label)
       {
          return payloads.get(label);
