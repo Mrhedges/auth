@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package edu.tamu.tcat.account.jaxrs.provider.token;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +37,7 @@ public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequest
    private static final Logger debug = Logger.getLogger(TokenProvidingObjectFilter.class.getName());
    private final TokenService<PayloadType> tokenService;
    private final TokenProviding annot;
-   
+
    public TokenProvidingObjectFilter(TokenService<PayloadType> tokenService, TokenProviding annot)
    {
       this.tokenService = tokenService;
@@ -75,7 +76,8 @@ public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequest
          {
             TokenData<PayloadType> data = tokenService.createTokenData(payload);
             String token = data.getToken();
-            responseContext.getHeaders().add("Token", token);
+            String expireStr = DateTimeFormatter.RFC_1123_DATE_TIME.format(data.getExpiration());
+            responseContext.getHeaders().add("Token", token + ";expires=" + expireStr);
          }
          else if (annot.strict())
          {

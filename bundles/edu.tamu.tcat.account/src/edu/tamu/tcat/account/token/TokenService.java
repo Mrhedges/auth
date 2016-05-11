@@ -38,8 +38,10 @@ public interface TokenService<PayloadType>
        */
       PT getPayload();
 
-      /** The (encrypted) token. This typically has the expiration time embedded which is used
-       * in validation when processing.
+      /**
+       * The (encrypted) token. This should have no other data to be parsed, and must be able
+       * to be processed by {@link TokenService#unpackToken(String)} for the service that provided
+       * this instance.
        */
       String getToken();
 
