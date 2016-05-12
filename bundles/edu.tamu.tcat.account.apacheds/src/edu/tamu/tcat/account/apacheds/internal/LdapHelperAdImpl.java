@@ -68,7 +68,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          {
             EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
             cursor.forEach(entry -> {
-               //change this to 
+               //change this to
                if (entry.contains("sAMAccountName", otherName) || entry.contains("userPrincipleName", otherName))
                {
                   found.set(String.valueOf(entry.get("distinguishedName").get()));
@@ -136,7 +136,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       {
          try
          {
-            //bind will fail if the user pwd is not valid
+            //bind will fail if the user pwd is not valid OR account is disabled
             connection.bind(userDistinguishedName, password);
             connection.unBind();
          }
@@ -157,7 +157,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    {
       return getMemberNamesOfGroup(computeDefaultOu(userDistinguishedName), userDistinguishedName);
    }
-   
+
    @Override
    public List<String> getMemberNamesOfGroup(String ouSearchPrefix, String groupDn) throws LdapException
    {
@@ -165,7 +165,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       getMemberNamesOfGroupInternal(members, groupDn);
       return new ArrayList<>(members);
    }
-   
+
    public void getMemberNamesOfGroupInternal(List<String> members, String groupDn) throws LdapException
    {
       // in ou search prefix, list all distinguished names that have the memberof attribute = to the parameter
@@ -192,13 +192,13 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          else throw e;
       }
    }
-   
+
    @Override
    public List<String> getGroupNames(String userDistinguishedName) throws LdapException
    {
       return getGroupNames(computeDefaultOu(userDistinguishedName), userDistinguishedName);
    }
-   
+
    private void getGroupsInternal(String userDistinguishedName, Set<String> groups) throws LdapException
    {
       List<String> newGroups = new ArrayList<>();
@@ -336,7 +336,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    @Override
    public Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException
    {
-      
+
       return getAttributes(computeDefaultOu(userDistinguishedName), userDistinguishedName, attributeId);
    }
 
@@ -550,7 +550,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          throw new LdapException("Failed " + attributeId + " lookup for user " + value + " in " + ouSearchPrefix, e);
       }
    }
-   
+
    private Entry getEntryFor(String distinguishedName, EntryCursor cursor) throws LdapException
    {
 

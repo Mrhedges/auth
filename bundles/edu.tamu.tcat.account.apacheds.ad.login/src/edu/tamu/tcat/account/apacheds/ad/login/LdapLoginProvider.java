@@ -1,6 +1,10 @@
 package edu.tamu.tcat.account.apacheds.ad.login;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import edu.tamu.tcat.account.AccountException;
@@ -12,30 +16,60 @@ import edu.tamu.tcat.account.login.LoginProvider;
 
 public class LdapLoginProvider implements LoginProvider
 {
-   public static final String providerId = "LdapLoginProvider";
-   
+   private static final Logger debug = Logger.getLogger(LdapLoginProvider.class.getName());
+   public static final String PROVIDER_ID = "LdapLoginProvider";
+
    private LdapHelperReader ldapHelper;
+   private String username;
    private String distinguishedName;
-   private String ouDistinguishedName;
    private String password;
    private String instanceId;
 
-   public void init(LdapHelperReader ldapHelper, String distinguishedName, String ouDistinguishedName, String password, String instanceId)
+   private List<String> searchOUs;
+
+   /**
+    * Initialize the login provider so {@link #login()} can execute without arguments per API.
+    *
+    * @param ldapHelper
+    * @param username
+    * @param password
+    * @param instanceId
+    * @param searchOUs LDAP OU identifiers to search in order. If null or empty, the ldapHelper's internally configured
+    *                  default search OU is used.
+    */
+   public void init(LdapHelperReader ldapHelper, String username, String password, String instanceId, List<String> searchOUs)
    {
-      this.ldapHelper = ldapHelper;
-      this.distinguishedName = distinguishedName;
-      this.ouDistinguishedName = ouDistinguishedName;
-      this.password = password;
-      this.instanceId = instanceId;
+      this.searchOUs = new ArrayList<>();
+      if (searchOUs != null)
+         this.searchOUs.addAll(searchOUs);
+      this.ldapHelper = Objects.requireNonNull(ldapHelper);
+      this.username = Objects.requireNonNull(username);
+      this.password = Objects.requireNonNull(password);
+      this.instanceId = Objects.requireNonNull(instanceId);
    }
 
    @Override
    public LoginData login() throws AccountLoginException
    {
+      Objects.requireNonNull(ldapHelper, "LDAP Login Provider not initialized");
       try
       {
-         ldapHelper.checkValidPassword(distinguishedName, password);
-         return new LdapUserData(ldapHelper, ouDistinguishedName, instanceId);
+         for (String ou : searchOUs)
+         {
+            List<String> possibleIds = ldapHelper.getMatches(ou, "sAMAccountName", username);
+            if (possibleIds.size() == 1)
+            {
+               distinguishedName = possibleIds.get(0);
+
+               ldapHelper.checkValidPassword(distinguishedName, password);
+               return new LdapUserData(ldapHelper, distinguishedName, instanceId);
+            }
+
+            if (possibleIds.size() > 1)
+               debug.warning("Found multiple LDAP entries matching account name ["+username+"] in OU ["+ou+"]");
+         }
+
+         throw new AccountLoginException("Failed finding single match for account name ["+username+"]");
       }
       catch (LdapException e)
       {
@@ -67,22 +101,22 @@ public class LdapLoginProvider implements LoginProvider
       private Collection<String> groups;
       private String pid;
 
-      private LdapUserData(LdapHelperReader helper, String ouDistinguishedName, String pid) throws LdapException
+      private LdapUserData(LdapHelperReader helper, String dn, String pid) throws LdapException
       {
          this.pid = pid;
-         distinguishedName = ouDistinguishedName;
+         distinguishedName = dn;
          // display name
-         displayName = String.valueOf(helper.getAttributes(ouDistinguishedName, "displayName").stream().findFirst().orElse(null));
+         displayName = String.valueOf(helper.getAttributes(dn, "displayName").stream().findFirst().orElse(null));
          // first
-         firstName = String.valueOf(helper.getAttributes(ouDistinguishedName, "givenName").stream().findFirst().orElse(null));
+         firstName = String.valueOf(helper.getAttributes(dn, "givenName").stream().findFirst().orElse(null));
          // last
-         lastName = String.valueOf(helper.getAttributes(ouDistinguishedName, "sn").stream().findFirst().orElse(null));
+         lastName = String.valueOf(helper.getAttributes(dn, "sn").stream().findFirst().orElse(null));
          //email?
-         email = String.valueOf(helper.getAttributes(ouDistinguishedName, "userPrincipalName").stream().findFirst().orElse(null));
+         email = String.valueOf(helper.getAttributes(dn, "userPrincipalName").stream().findFirst().orElse(null));
          // strip CN=*, out from distinguished names here
-         groups = helper.getGroupNames(ouDistinguishedName).stream().map(dn -> {
-            return dn.substring(dn.indexOf('=') + 1, dn.indexOf(','));
-         }).collect(Collectors.toList());
+         groups = helper.getGroupNames(dn).stream()
+               .map(name -> name.substring(name.indexOf('=') + 1, name.indexOf(',')))
+               .collect(Collectors.toList());
       }
 
       @Override
