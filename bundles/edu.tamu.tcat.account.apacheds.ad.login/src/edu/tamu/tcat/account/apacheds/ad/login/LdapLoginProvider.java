@@ -26,6 +26,7 @@ public class LdapLoginProvider implements LoginProvider
    private String instanceId;
 
    private List<String> searchOUs;
+   private String requiredGroup;
 
    /**
     * Initialize the login provider so {@link #login()} can execute without arguments per API.
@@ -48,6 +49,11 @@ public class LdapLoginProvider implements LoginProvider
       this.instanceId = Objects.requireNonNull(instanceId);
    }
 
+   public void setRequiredGroup(String groupName)
+   {
+      requiredGroup = Objects.requireNonNull(groupName);
+   }
+
    @Override
    public LoginData login() throws AccountLoginException
    {
@@ -62,7 +68,14 @@ public class LdapLoginProvider implements LoginProvider
                distinguishedName = possibleIds.get(0);
 
                ldapHelper.checkValidPassword(distinguishedName, password);
-               return new LdapUserData(ldapHelper, distinguishedName, instanceId);
+               LdapUserData rv = new LdapUserData(ldapHelper, distinguishedName, instanceId);
+               if (requiredGroup != null)
+               {
+                  if (!rv.groups.contains(requiredGroup))
+                     throw new AccountLoginException("Authenticated account for ["+username+"] but does not have required group ["+requiredGroup+"]");
+               }
+
+               return rv;
             }
 
             if (possibleIds.size() > 1)
