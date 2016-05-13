@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.directory.api.ldap.codec.api.LdapApiService;
 import org.apache.directory.api.ldap.codec.api.LdapApiServiceFactory;
@@ -63,25 +63,20 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
-         AtomicReference<String> found = new AtomicReference<>(null);
          try
          {
             EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
-            cursor.forEach(entry -> {
-               //change this to
-               if (entry.contains("sAMAccountName", otherName) || entry.contains("userPrincipleName", otherName))
-               {
-                  found.set(String.valueOf(entry.get("distinguishedName").get()));
-               }
-            });
+            String found = StreamSupport.stream(cursor.spliterator(), false)
+               .filter(entry -> entry.contains("sAMAccountName", otherName) || entry.contains("userPrincipleName", otherName))
+               .map(entry -> String.valueOf(entry.get("distinguishedName").get()))
+               .findAny()
+               .orElseThrow(() -> new LdapAuthException("No such user " + otherName + " in " + ouSearchPrefix));
+            return found;
          }
          finally
          {
             connection.unBind();
          }
-         if (found.get() != null)
-            return found.get();
-         throw new LdapAuthException("No such user " + otherName + " in " + ouSearchPrefix);
       }
       catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
@@ -169,28 +164,12 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    public void getMemberNamesOfGroupInternal(List<String> members, String groupDn) throws LdapException
    {
       // in ou search prefix, list all distinguished names that have the memberof attribute = to the parameter
-      try
-      {
-         getAttributes(groupDn, "member").forEach(member -> {
-            if (members.contains(member))
-               return;
-            members.add(member.toString());
-            try
-            {
-               getMemberNamesOfGroupInternal(members, member.toString());
-            }
-            catch (LdapException e)
-            {
-               throw new RuntimeException(e);
-            }
-         });
-      }
-      catch(RuntimeException e)
-      {
-         if(e.getCause() instanceof LdapException)
-            throw (LdapException) e.getCause();
-         else throw e;
-      }
+      getAttributes(groupDn, "member").forEach(member -> {
+         if (members.contains(member))
+            return;
+         members.add(member.toString());
+         getMemberNamesOfGroupInternal(members, member.toString());
+      });
    }
 
    @Override
@@ -248,40 +227,13 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    @Override
    public List<String> getGroupNames(String ouSearchPrefix, String userDistinguishedName) throws LdapException
    {
-      List<String> groups = new ArrayList<>();
-      try (LdapConnection connection = new LdapNetworkConnection(config))
-      {
-         connection.bind();
+      List<String> groups = getAttributes(userDistinguishedName, "memberof").stream()
+            .map(String::valueOf)
+            .collect(Collectors.toList());
 
-         try
-         {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
-            getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
-               //extract all the groups the user is a memberof
-               if (attribute.getId().equalsIgnoreCase("memberof"))
-                  groups.add(String.valueOf(attribute.get()));
-//                  System.out.println('['+attribute.getId() +']'+ attribute.get());
-            });
-         }
-         catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
-         {
-            throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
-         }
-         finally
-         {
-            connection.unBind();
-         }
-         Set<String> recursiveGroups = new HashSet<>(groups);
-         for (String g : groups)
-         {
-            getGroupsInternal(g, recursiveGroups);
-         }
-         return new ArrayList<>(recursiveGroups);
-      }
-      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
-      {
-         throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
-      }
+      Set<String> recursiveGroups = new HashSet<>(groups);
+      groups.forEach(g -> getGroupsInternal(g, recursiveGroups));
+      return new ArrayList<>(recursiveGroups);
    }
 
    @Override
@@ -298,7 +250,6 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          List<String> groups = new ArrayList<>();
          try
          {
-
             //bind will fail if the user pwd is not valid
             connection.bind(userDistinguishedName, password);
 
@@ -336,7 +287,6 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    @Override
    public Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException
    {
-
       return getAttributes(computeDefaultOu(userDistinguishedName), userDistinguishedName, attributeId);
    }
 
@@ -360,7 +310,6 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
                      else
                         values.add(v);
                   });
-//                  System.out.println('['+attribute.getId() +']'+ attribute.get());
             });
          }
          catch (LdapAuthException e)
@@ -553,54 +502,24 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 
    private Entry getEntryFor(String distinguishedName, EntryCursor cursor) throws LdapException
    {
-
-      AtomicReference<Entry> found = new AtomicReference<Entry>(null);
-      cursor.forEach(entry -> {
-         if (entry.contains("distinguishedName", distinguishedName))
-         {
-            found.set(entry);
-         }
-      });
-      if (found.get() != null)
-         return found.get();
-      throw new LdapAuthException(distinguishedName + "not found.");
+      return StreamSupport.stream(cursor.spliterator(), false)
+         .filter(entry -> entry.contains("distinguishedName", distinguishedName))
+         .findAny()
+         .orElseThrow(() -> new LdapAuthException(distinguishedName + "not found."));
    }
 
    @Override
    public boolean isMemberOf(String groupDn, String userDn) throws LdapException
    {
-      AtomicBoolean found = new AtomicBoolean(false);
       try
       {
-         try
-         {
-            getAttributes(groupDn, "member").forEach(member -> {
-               if (found.get())
-                  return;
-               if (member.toString().equals(userDn))
-                  found.set(true);
-               try
-               {
-                  if (isMemberOf(member.toString(), userDn))
-                     found.set(true);
-               }
-               catch (LdapException e)
-               {
-                  throw new RuntimeException(e);
-               }
-            });
-         }
-         catch(RuntimeException e)
-         {
-            if(e.getCause() instanceof LdapException)
-               throw (LdapException) e.getCause();
-            else throw e;
-         }
-      }catch(LdapAuthException ae)
+         boolean found = getAttributes(groupDn, "member").stream()
+            .anyMatch(member -> member.toString().equals(userDn) || isMemberOf(member.toString(), userDn));
+         return found;
+      }
+      catch (LdapAuthException ae)
       {
          return false;
       }
-      return found.get();
    }
-
 }
