@@ -104,6 +104,20 @@ public class ContextBean
       set(obj, (Class)obj.getClass(), label);
    }
 
+   /**
+    * Allow setting the instance with the given type. This is useful when the payload type
+    * is not a concrete type or the instance is a sub-type of the declared payload type.
+    *
+    * @param obj
+    * @param type
+    * @throws AccountException
+    * @since 1.1
+    */
+   public <T> void set(T obj, Class<T> type) throws AccountException
+   {
+      set(obj, type, DEFAULT_LABEL);
+   }
+
    public <T> void set(T obj, Class<T> type, String label) throws AccountException
    {
       Objects.requireNonNull(obj);
