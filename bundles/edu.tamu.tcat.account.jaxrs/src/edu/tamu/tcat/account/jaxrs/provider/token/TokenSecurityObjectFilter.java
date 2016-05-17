@@ -65,7 +65,9 @@ public class TokenSecurityObjectFilter<PayloadType> implements ContainerRequestF
          throw new BadRequestException(badRequest.entity("Token not provided to service requiring token").build());
 
       String header = map.getFirst(authKeys.get(0));
-      if (!header.toLowerCase().startsWith(TokenDynamicFeature.TOKEN_TYPE_BEARER.toLowerCase()+" "))
+      if (header == null || header.length() < 8 ||
+          // Get the substring of the token instead of toLowerCase on the whole token for a minor optimization
+          !header.substring(0,7).toLowerCase().equals(TokenDynamicFeature.TOKEN_TYPE_BEARER.toLowerCase()+" "))
          throw new BadRequestException(badRequest.entity("No Bearer token provided").build());
 
       try
@@ -76,7 +78,7 @@ public class TokenSecurityObjectFilter<PayloadType> implements ContainerRequestF
       }
       catch (Exception e)
       {
-         throw new BadRequestException(badRequest.entity("Invalid token provided\n").build());
+         throw new BadRequestException(badRequest.entity("Invalid token provided").build());
       }
    }
 }
