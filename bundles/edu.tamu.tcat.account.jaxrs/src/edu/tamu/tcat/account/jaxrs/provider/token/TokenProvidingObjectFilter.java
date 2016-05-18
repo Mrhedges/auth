@@ -16,7 +16,10 @@
 package edu.tamu.tcat.account.jaxrs.provider.token;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +28,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.MediaType;
 
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.jaxrs.bean.ContextBean;
@@ -32,6 +36,20 @@ import edu.tamu.tcat.account.jaxrs.bean.TokenProviding;
 import edu.tamu.tcat.account.token.TokenService;
 import edu.tamu.tcat.account.token.TokenService.TokenData;
 
+/**
+ * A response filter that implements the Authorization endpoint defined by {@link http://tools.ietf.org/html/rfc6749#section-3.1}
+ * and using the grant mechanism of {@link http://tools.ietf.org/html/rfc6749#section-4.3}.
+ * <p>
+ * For this implementation, the return type of the (java) method must be Map&lt;String,Object&gt; so the annotation processor
+ * can inject the additional keys into the map before its serialization to JSON. This is used to follow the OAuth2 spec
+ * such that a response to the HTTP request contains the auth information and not a header. See
+ * {@link http://tools.ietf.org/html/rfc6749#section-5}
+ * <p>
+ * The HTTP Method should be GET to support the spec requirement in section 3.1.
+ *
+ * @param <PayloadType>
+ * @see TokenProviding
+ */
 public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequestFilter, ContainerResponseFilter
 {
    private static final Logger debug = Logger.getLogger(TokenProvidingObjectFilter.class.getName());
@@ -69,25 +87,49 @@ public class TokenProvidingObjectFilter<PayloadType> implements ContainerRequest
          default:
             break;
       }
+
       try
       {
          PayloadType payload = ContextBean.getValue(requestContext, tokenService.getPayloadType(), annot.label());
-         if (payload != null)
+         if (payload == null)
+            throw new IllegalStateException("TokenProviding has no payload set in context");
+
+         TokenData<PayloadType> data = tokenService.createTokenData(payload);
+         String token = data.getToken();
+         Duration dur = Duration.between(LocalDateTime.now(), data.getExpiration());
+         String expireStr = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(data.getExpiration());
+         // Per the spec, the "expires_in" property is seconds from response generation; see http://tools.ietf.org/html/rfc6749#section-4.2.2
+         String expiresIn = String.valueOf(dur.getSeconds());
+
+         if (!responseContext.getMediaType().toString().equals(MediaType.APPLICATION_JSON))
+            throw new IllegalStateException("TokenProviding must apply to MediaType of " + MediaType.APPLICATION_JSON +" but is " + responseContext.getMediaType());
+
+         Object entity = responseContext.getEntity();
+         if (entity instanceof Map)
          {
-            TokenData<PayloadType> data = tokenService.createTokenData(payload);
-            String token = data.getToken();
-            String expireStr = DateTimeFormatter.RFC_1123_DATE_TIME.format(data.getExpiration());
-            responseContext.getHeaders().add("Token", token + ";expires=" + expireStr);
+            try
+            {
+               // See http://tools.ietf.org/html/rfc6750#section-4
+               // and http://tools.ietf.org/html/rfc6749#section-4.2.2
+               Map<String, Object> entityMap = (Map)entity;
+               entityMap.put("access_token", token);
+               entityMap.put("token_type", TokenDynamicFeature.TOKEN_TYPE_BEARER);
+               entityMap.put("expires_in", expiresIn);
+               entityMap.put("expiration", expireStr);
+               return;
+            }
+            catch (Exception e)
+            {
+               throw new IllegalStateException("Failed mutating returned Map with token data");
+            }
          }
-         else if (annot.strict())
-         {
-            throw new IllegalStateException("TokenProviding in strict mode but no payload set");
-         }
+
+         throw new IllegalStateException("TokenProviding must apply to return value of java.util.Map");
       }
       catch (Exception e)
       {
-         debug.log(Level.WARNING, "Could not create token", e);
-         throw new InternalServerErrorException("Could not create token");
+         debug.log(Level.WARNING, "Could not provide token", e);
+         throw new InternalServerErrorException("Could not provide token", e);
       }
    }
 }

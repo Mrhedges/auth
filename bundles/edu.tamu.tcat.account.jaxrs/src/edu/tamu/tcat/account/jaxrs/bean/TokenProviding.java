@@ -23,17 +23,20 @@ import java.lang.annotation.Target;
 import javax.ws.rs.NameBinding;
 
 /**
- * This annotation is processed by a DynamicFeature which adds an authn token header
- * to an HTTP response. The HTTP Method using this annotation must provide an instance
- * of the payload type to the {@link ContextBean}.
+ * This annotation is processed by a {@link javax.ws.rs.container.ContainerResponseFilter} which adds authorization
+ * data to the JSON literal sent as the HTTP Response. The implementation and configuration of the filter
+ * determines the restrictions on the response type and media type, which affects how the data is provided,
+ * required interaction with the {@link ContextBean}.
  * <p>
- * Used to annotate a method also bearing an HTTP Method annotation such as {@link javax.ws.rs.POST}.
+ * Used to annotate a (Java) method also bearing an HTTP Method annotation such as {@link javax.ws.rs.POST}.
  * <p>
  * <pre>
- *    &#64;POST &#64;TokenProviding(payloadType=UUID.class)
- *    public Object authenticate(&#64;FormParam("username") String username, &#64;FormParam("password") String password, &#64;BeanParam ContextBean bean) {
- *       UUID accountId = // authenticate and locate account ID
- *       bean.set(accountId);
+ * &#64;POST &#64;TokenProviding(payloadType=UUID.class)
+ * public Map<String,Object> authenticate(&#64;FormParam("username") String username, &#64;FormParam("password") String password, &#64;BeanParam ContextBean bean) {
+ *    UUID accountId = // authenticate and locate account ID
+ *    bean.set(accountId);
+ *    // construct and return response
+ * }
  * </pre>
  */
 @NameBinding
@@ -45,20 +48,15 @@ public @interface TokenProviding
     * @return The type of object embedded as payload in the secure token
     */
    Class<?> payloadType();
-   
+
    /**
     * @return An identifier defining a token processing "scope". Useful for when multiple token
     *         services exist in a system and each service can be associated with a scope.
     */
    String scopeId() default "";
-   
+
    /**
     * @return A label used to distinguish this annotation from others of the same type
     */
    String label() default "";
-   
-   /**
-    * @return <code>true</code> if the method must set a token, <code>false</code> if the token is optional.
-    */
-   boolean strict() default true;
 }
