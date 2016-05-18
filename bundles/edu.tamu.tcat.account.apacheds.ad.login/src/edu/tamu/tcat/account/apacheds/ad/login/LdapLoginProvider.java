@@ -14,10 +14,15 @@ import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
 
+/**
+ * This login provider is backed by Apache Directory libraries and uses conventions
+ * that exist in MS Active Directory, so may not be suitable for all LDAP uses.
+ */
 public class LdapLoginProvider implements LoginProvider
 {
    private static final Logger debug = Logger.getLogger(LdapLoginProvider.class.getName());
-   public static final String PROVIDER_ID = "LdapLoginProvider";
+
+   public static final String PROVIDER_ID = "ApacheDirAdLdapLoginProvider";
 
    private LdapHelperReader ldapHelper;
    private String username;
@@ -49,6 +54,12 @@ public class LdapLoginProvider implements LoginProvider
       this.instanceId = Objects.requireNonNull(instanceId);
    }
 
+   /**
+    * Set the name of a group of which membership is required for authentication to be successful. This is useful
+    * when LDAP is configured such that accounts are members of a group for application level access.
+    *
+    * @param groupName
+    */
    public void setRequiredGroup(String groupName)
    {
       requiredGroup = Objects.requireNonNull(groupName);
