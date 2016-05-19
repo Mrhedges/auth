@@ -1,6 +1,6 @@
 package edu.tamu.tcat.account.apacheds;
 
-public class LdapException extends Exception
+public class LdapException extends RuntimeException
 {
    public LdapException(String message)
    {
