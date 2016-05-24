@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Account AuthN AuthZ
 Bundle-SymbolicName: edu.tamu.tcat.account
-Bundle-Version: 1.1.0.qualifier
+Bundle-Version: 1.1.0
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: edu.tamu.tcat.account;version="1.1.0",
  edu.tamu.tcat.account.login;version="1.1.0",
