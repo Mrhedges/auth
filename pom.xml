@@ -48,10 +48,10 @@
     <module>bundles/edu.tamu.tcat.account.jaxrs</module>
     <module>bundles/edu.tamu.tcat.account.apacheds</module>
     <module>bundles/edu.tamu.tcat.account.apacheds.ad.login</module>
-    <module>bundles/edu.tamu.tcat.account.apacheds.test.application</module>
-    <module>bundles/edu.tamu.tcat.account.apacheds.test.application.feature</module>
-    <module>releng/edu.tamu.tcat.account.apacheds.test.application.product</module>
-    <module>tests/edu.tamu.tcat.account.test</module>
+<!--     <module>bundles/edu.tamu.tcat.account.apacheds.test.application</module> -->
+<!--     <module>bundles/edu.tamu.tcat.account.apacheds.test.application.feature</module> -->
+<!--     <module>releng/edu.tamu.tcat.account.apacheds.test.application.product</module> -->
+<!--     <module>tests/edu.tamu.tcat.account.test</module> -->
   </modules>
 
   <repositories>
