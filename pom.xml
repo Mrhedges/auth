@@ -25,13 +25,9 @@
     </license>
   </licenses>
   
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
-  
   <properties>
     <tycho-groupid>org.eclipse.tycho</tycho-groupid>
-    <tycho-version>0.22.0</tycho-version>
+    <tycho-version>0.25.0</tycho-version>
     <tycho-extras-version>${tycho-version}</tycho-extras-version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -43,19 +39,19 @@
   </properties>
   
   <modules>
-    <module>oss.auth/releng/edu.tamu.tcat.account.releng/repo</module>
-    <module>oss.auth/releng/edu.tamu.tcat.account.sdk.feature</module>
+    <module>releng/edu.tamu.tcat.account.releng/repo</module>
+    <module>releng/edu.tamu.tcat.account.sdk.feature</module>
     
-    <module>oss.auth/bundles/edu.tamu.tcat.account</module>
-    <module>oss.auth/bundles/edu.tamu.tcat.account.db</module>
-    <module>oss.auth/bundles/edu.tamu.tcat.account.jaas</module>
-    <module>oss.auth/bundles/edu.tamu.tcat.account.jaxrs</module>
-    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds</module>
-    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds.ad.login</module>
-    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds.test.application</module>
-    <module>oss.auth/bundles/edu.tamu.tcat.account.apacheds.test.application.feature</module>
-    <module>oss.auth/releng/edu.tamu.tcat.account.apacheds.test.application.product</module>
-    <module>oss.auth/tests/edu.tamu.tcat.account.test</module>
+    <module>bundles/edu.tamu.tcat.account</module>
+    <module>bundles/edu.tamu.tcat.account.db</module>
+    <module>bundles/edu.tamu.tcat.account.jaas</module>
+    <module>bundles/edu.tamu.tcat.account.jaxrs</module>
+    <module>bundles/edu.tamu.tcat.account.apacheds</module>
+    <module>bundles/edu.tamu.tcat.account.apacheds.ad.login</module>
+    <module>bundles/edu.tamu.tcat.account.apacheds.test.application</module>
+    <module>bundles/edu.tamu.tcat.account.apacheds.test.application.feature</module>
+    <module>releng/edu.tamu.tcat.account.apacheds.test.application.product</module>
+    <module>tests/edu.tamu.tcat.account.test</module>
   </modules>
 
   <repositories>

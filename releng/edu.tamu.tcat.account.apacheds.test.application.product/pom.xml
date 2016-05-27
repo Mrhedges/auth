@@ -12,9 +12,8 @@
 	</prerequisites>
 
 	<parent>
-		<relativePath>../../../pom.xml</relativePath>
 		<groupId>edu.tamu.tcat</groupId>
-		<artifactId>auth</artifactId>
+		<artifactId>auth.releng</artifactId>
 		<version>1</version>
 	</parent>
 	<build>
