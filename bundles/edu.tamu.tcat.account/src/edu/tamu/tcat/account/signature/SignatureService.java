@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,16 +40,16 @@ public interface SignatureService<PayloadType>
     * @throws SignatureException Thrown if the identifier is not in a valid format.
     * @throws AccountException Thrown if the payload cannot be fetched.
     */
-   PayloadType getPayload(String identifier) throws SignatureException, AccountException;
-   
+   PayloadType getPayload(String identifier);
+
    /**
     * Provide a Class representing {@code <PayloadType>}. This is used to validate this service can handle
     * type of payload available when both are retrieved anonymously.
-    * 
+    *
     * @return The payload type. Does not return {@code null}
     */
    Class<PayloadType> getPayloadType();
-   
+
    /**
     * Indicates if the payload may be self signed, in which case the public key may not be available until after the payload is processed
     * Only really useful is the payload contains an account-like object.
@@ -64,7 +64,7 @@ public interface SignatureService<PayloadType>
     * @return The payload.  May not be <code>null</code>.
     */
    PayloadType getSelfSigningPayload(Object result);
-   
+
    /**
     * The scope used in the Authorization header.
     * The header is of the format:
@@ -72,22 +72,22 @@ public interface SignatureService<PayloadType>
     * @return The authorization scope.  May not be <code>null</code>.
     */
    String getAuthorizationScope();
-   
+
    /**
-    * Get a request verifier from a given security payload object 
+    * Get a request verifier from a given security payload object
     * @param payload The security payload as returned by {@link #getPayload(String)} or {@link #getSelfSigningPayload(Object)}.
     * @param signature The signature in the authorization header.
     * @return A {@link Verifier} used to verify requests.
     */
    Verifier getVerifier(PayloadType account, byte[] signature);
-   
+
    /**
     * Get a request verifier with a security payload to be provided later.
     * @param signature The signature in the authorization header.
     * @return A {@link SelfSignedVerifier} used to verify requests.
     */
    SelfSignedVerifier<PayloadType> getVerifier(byte[] signature);
-   
+
    /**
     * An API for an object that is used to verify signatures.
     */
@@ -99,14 +99,14 @@ public interface SignatureService<PayloadType>
        * @return A {@link Map} of header names to values.  May not be <code>null</code>.
        */
       Map<String, List<String>> getSignedHeaders(Map<String,List<String>> headers);
-      
+
       /**
        * Validate headers for any contraints, such as Date ranges.
        * @param method The HTTP method used, such as GET or PUT, etc..
        * @param headers The headers provided in the request.
        */
       void validateAdditionalHeaders(String method, Map<String,List<String>> headers);
-      
+
       /**
        * Process signature bytes.
        * @param data The data to process
@@ -130,7 +130,7 @@ public interface SignatureService<PayloadType>
        */
       boolean verify() throws SignatureException;
    }
-   
+
    /**
     * A specialization of {@link Verifier} which is not initialized with the means of fetching
     * the public key used to verify signatures.  This is provided later via {@link #usePayload(Object)}.

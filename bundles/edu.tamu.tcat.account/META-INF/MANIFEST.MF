@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Account AuthN AuthZ
 Bundle-SymbolicName: edu.tamu.tcat.account
-Bundle-Version: 1.1.0.dev
+Bundle-Version: 2.0.0.dev
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: edu.tamu.tcat.account;version="1.1.0",
- edu.tamu.tcat.account.login;version="1.1.0",
- edu.tamu.tcat.account.signature;version="1.1.0",
- edu.tamu.tcat.account.store;version="1.1.0",
- edu.tamu.tcat.account.token;version="1.1.0"
+Export-Package: edu.tamu.tcat.account;version="2.0.0",
+ edu.tamu.tcat.account.login;version="2.0.0",
+ edu.tamu.tcat.account.signature;version="2.0.0",
+ edu.tamu.tcat.account.store;version="2.0.0",
+ edu.tamu.tcat.account.token;version="2.0.0"
 Bundle-Vendor: Texas A&M Engineering Experiment Station

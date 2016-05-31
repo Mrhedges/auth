@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,23 +33,23 @@ public interface LoginData
     *         this data.
     */
    String getLoginProviderId();
-   
+
    /**
     * Get an identifier representing the user account authenticated by the {@link LoginProvider}.
     * The identifier must be unique only within the scope of the login provider instance, defined
     * by {@link #getLoginProviderId()}. This identifier is used to match an {@link Account} to
     * this LoginData.
-    * 
+    *
     * @return The identifier for the authenticated account.
     */
    String getLoginUserId();
-   
+
    /**
     * Access data provided by the {@link LoginProvider}. The keys used are defined by
     * the login provider's implementation and configuration. Values may be accessed by
     * type, and this instance is free to attempt type conversion as it is able to provide
     * the requested data as the requested type.
-    * 
+    *
     * @param key The data entry requested. Must not be {@code null}.
     * @param type The requested type of data. May be {@code null} to access unknown data as type Object.
     * @return The data element, or {@code null} if the value is {@code null}. Implementations may choose to return
@@ -57,5 +57,5 @@ public interface LoginData
     *         distinguish an invalid key from a missing value.
     * @throws AccountException If the key is not known or the value cannot be resolved to the requested type.
     */
-   <T> T getData(String key, Class<T> type) throws AccountException;
+   <T> T getData(String key, Class<T> type);
 }

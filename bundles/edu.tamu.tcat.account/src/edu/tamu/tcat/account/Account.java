@@ -84,9 +84,11 @@ public interface Account
    UUID getId();
 
    /**
-    * @return A label for this account suitable for display.
+    * Get a display name for the account, which is often a "user name" but not typically a
+    * person's name.
+    * @since 2.0
     */
-   String getTitle();
+   String getDisplayName();
 
    /**
     * Indicates whether this account is currently active within the system. Note that it is

@@ -46,32 +46,14 @@ public interface TokenService<PayloadType>
       String getToken();
 
       /**
-       * A string representation of the expiration date/time of the associated token. The
-       * returned value must be human-readable, and must contain date, time, and timezone information.
-       * The implementation may decide whether it follows a standard (e.g. ISO-8601 or RFC-1123)
-       * representation or is arbitrarily constructed.
-       *
-       * @deprecated Use {@link #getExpiration()}. This method is deprecated due to allowing too much
-       *             flexibility to the point of being arbitrary.
-       */
-      @Deprecated
-      default String getExpireStr()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      /**
        * The expiration date/time of the associated token. The returned value contains date,
        * time, and timezone information. Callers then have the option to format to a standard
        * (e.g. ISO-8601 or RFC-1123) representation for further consumption.
        *
        * @return
-       * @since 1.1
+       * @since 2.0
        */
-      default ZonedDateTime getExpiration()
-      {
-         throw new UnsupportedOperationException();
-      }
+      ZonedDateTime getExpiration();
    }
 
    /**
@@ -81,9 +63,9 @@ public interface TokenService<PayloadType>
     * @param id The payload to encode in the token.
     * @return A new data instance containing an expiring token's (encrypted) content and
     *         expiration timestamp.
-    * @throws AccountTokenException If the token cannot be created.
+    * @throws RuntimeException If the token cannot be created.
     */
-   TokenData<PayloadType> createTokenData(PayloadType uuid) throws AccountTokenException;
+   TokenData<PayloadType> createTokenData(PayloadType uuid);
 
    /**
     * Process the (encrypted) token string from the client. The string should be one previously
@@ -95,9 +77,9 @@ public interface TokenService<PayloadType>
     *
     * @param token The (encrypted) token to read.
     * @return The payload contained in the token.
-    * @throws AccountTokenException If the token cannot be unpacked.
+    * @throws RuntimeException If the token cannot be unpacked.
     */
-   PayloadType unpackToken(String token) throws AccountTokenException;
+   PayloadType unpackToken(String token);
 
    /**
     * Provide a Class representing {@code <PayloadType>}. This is used to validate this service can handle

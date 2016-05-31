@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import edu.tamu.tcat.account.Account;
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.login.LoginData;
-import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.db.exec.sql.SqlExecutor;
 
@@ -78,7 +77,7 @@ public class DatabaseAccountStore implements AccountStore
       }
 
       @Override
-      public String getTitle()
+      public String getDisplayName()
       {
          return title;
       }
@@ -158,7 +157,7 @@ public class DatabaseAccountStore implements AccountStore
             try (ResultSet rs = ps.executeQuery())
             {
                if (!rs.next())
-                  throw new AccountNotFoundException("No mapping exists for provider ["+pid+"] and user ["+puid+"]");
+                  return null;
 
                String uuidStr = rs.getString("account_id");
                if (uuidStr == null || uuidStr.trim().isEmpty())
@@ -185,10 +184,10 @@ public class DatabaseAccountStore implements AccountStore
             try (ResultSet rs = ps.executeQuery())
             {
                if (!rs.next())
-                  throw new AccountNotFoundException("No account exists for id ["+uuid+"] from provider ["+pid+"] and user ["+puid+"]");
+                  return null;
 
                if (rs.getBoolean("is_deleted"))
-                  throw new AccountNotFoundException("Cannot retrieve deleted account ["+uuid+"] from provider ["+pid+"] and user ["+puid+"]");
+                  return null;
 
                DatabaseAccount rv = new DatabaseAccount();
                rv.id = rs.getLong("id");
