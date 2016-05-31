@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * This interface provides read only access to an LDAP server
- * */
+ */
 public interface LdapHelperReader
 {
    /**
@@ -34,7 +34,7 @@ public interface LdapHelperReader
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     * @return return list of distinguished names for entries that match the attribute value pair*/
    List<String> getMatches(String ouSearchPrefix, String attribute, String value) throws LdapException;
-   
+
    /**
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     * *@return return list of distinguished names for entries that match the attribute value pair*/
@@ -47,13 +47,13 @@ public interface LdapHelperReader
 
    /***@return return list of distinguished names for entries that are members of the group specified by groupDistinguishedName */
    List<String> getMemberNamesOfGroup(String groupDistinguishedName) throws LdapException;
-   
+
    /***This is a recursive search
     * @return return list of distinguished names for the groups for the distinguished name */
    List<String> getGroupNames(String userDistinguishedName) throws LdapException;
 
    /***This is a recursive search
-    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName    
+    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     * @return return list of distinguished names for the groups for the distinguished name starting in specified ou*/
    List<String> getGroupNames(String ouSearchPrefix, String userDistinguishedName) throws LdapException, LdapAuthException;
 
@@ -71,7 +71,7 @@ public interface LdapHelperReader
    /**
     * Expected return types are String and byte[]
     * @return return a collection of Object that correspond to the values stored for the specified attribute or an empty collection if no values for the specified attribute are present
-    * 
+    *
     * */
    Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException;
 
@@ -79,10 +79,10 @@ public interface LdapHelperReader
     * Expected return types are String and byte[]
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     * @return return a collection of Object that correspond to the values stored for the specified attribute or an empty collection if no values for the specified attribute are present
-    * 
+    *
     * */
    Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException;
-   
+
    /**
     * @param groupDn group to test
     * @param userDn user to test

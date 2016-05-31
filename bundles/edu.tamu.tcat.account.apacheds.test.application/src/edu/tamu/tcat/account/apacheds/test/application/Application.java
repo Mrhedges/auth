@@ -19,6 +19,13 @@ import edu.tamu.tcat.account.apacheds.LdapHelperReader;
  */
 public class Application implements IApplication
 {
+   private static final String DEFAULT_SEARCH_OU = "edu.tamu.tcat.ldap.ad.defaultSearchOu";
+   private static final String USE_SSL = "edu.tamu.tcat.ldap.ad.useSsl";
+   private static final String USE_TLS = "edu.tamu.tcat.ldap.ad.useTls";
+   private static final String USER_PASSWORD = "edu.tamu.tcat.ldap.ad.userPassword";
+   private static final String USER_DN = "edu.tamu.tcat.ldap.ad.userDn";
+   private static final String PORT = "edu.tamu.tcat.ldap.ad.port";
+   private static final String IP = "edu.tamu.tcat.ldap.ad.ip";
 
    /*
     * (non-Javadoc)
@@ -93,12 +100,19 @@ public class Application implements IApplication
 
    private LdapHelperReader createLdap(String string) throws IOException
    {
+      Properties props = new Properties();
       try (InputStream is = new FileInputStream(string))
       {
-         Properties p = new Properties();
-         p.load(is);
-         return new LdapHelperAdFactory().buildReader(p);
+         props.load(is);
       }
+
+      return new LdapHelperAdFactory().buildReader(props.getProperty(IP),
+            Integer.parseInt(props.getProperty(PORT)),
+            props.getProperty(USER_DN),
+            props.getProperty(USER_PASSWORD),
+            Boolean.parseBoolean(props.getProperty(USE_SSL)),
+            Boolean.parseBoolean(props.getProperty(USE_TLS)),
+            props.getProperty(DEFAULT_SEARCH_OU));
    }
 
    /*

@@ -25,11 +25,10 @@ import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 
 import edu.tamu.tcat.account.apacheds.LdapAuthException;
 import edu.tamu.tcat.account.apacheds.LdapException;
-import edu.tamu.tcat.account.apacheds.LdapHelperMutator;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 
 /** Turn this into a declarative service that binds to configuration */
-public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
+public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
 {
    private Logger logger = Logger.getLogger(getClass().getName());
    private LdapConnectionConfig config = null;
@@ -358,7 +357,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
    }
 
-   @Override
+//   @Override
    public void addAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId, Object value) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
@@ -390,7 +389,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
    }
 
-   @Override
+//   @Override
    public void removeAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId, Object value) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
@@ -424,7 +423,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
    }
 
-   @Override
+//   @Override
    public void removeAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
