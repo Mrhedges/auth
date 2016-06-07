@@ -21,7 +21,7 @@
          id="edu.tamu.tcat.account.apacheds"
          download-size="0"
          install-size="0"
-         version="1.0.0"
+         version="1.0.0.dev"
          unpack="false"/>
 
    <plugin
@@ -218,6 +218,5 @@
          install-size="0"
          version="1.3.100.v20140115-1647"
          unpack="false"/>
-
 
 </feature>
