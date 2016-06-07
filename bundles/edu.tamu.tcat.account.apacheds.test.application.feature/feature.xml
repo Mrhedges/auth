@@ -28,21 +28,21 @@
          id="org.apache.directory.api.ldap.client.api"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.M33a"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.codec.core"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.M33a"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.net.mina"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.M33a"
          unpack="false"/>
 
    <plugin
@@ -56,7 +56,7 @@
          id="org.apache.mina.core"
          download-size="0"
          install-size="0"
-         version="2.0.10"
+         version="2.0.13"
          unpack="false"/>
 
    <plugin

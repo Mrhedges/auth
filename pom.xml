@@ -81,6 +81,12 @@
       <layout>p2</layout>
       <url>http://directory.apache.org/studio/update/</url>
       <!-- <url>http://directory.apache.org/studio/update/</url> -->
+    </repository>    
+    <repository>
+      <id>apache ds supplimental</id>
+      <!-- TODO need to move this into TCAT OSS Github-->
+      <url>https://build.citd.tamu.edu/hudson/job/mirror.apache.directory.studio/ws/mirror.p2.apache.directory.studio/supplimental/</url>
+      <layout>p2</layout>
     </repository>
   </repositories>
 
