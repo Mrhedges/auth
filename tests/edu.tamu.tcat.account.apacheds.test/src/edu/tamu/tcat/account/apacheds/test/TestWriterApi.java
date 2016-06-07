@@ -22,6 +22,7 @@ public class TestWriterApi
    private String adminUser;
    private String adminPwd;
    private boolean useSsl;
+   private boolean useTls;
    private String defaultSearchOu;
 
    @Before
@@ -33,6 +34,7 @@ public class TestWriterApi
          ConfigurationProperties exec = sh.waitForService(ConfigurationProperties.class, 5_000);
          defaultSearchOu = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.defaultSearchOu", String.class);
          useSsl = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.useSsl", Boolean.class);
+         useTls = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.useTls", Boolean.class);
          adminPwd = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.userPassword", String.class);
          adminUser = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.userDn", String.class);
          port = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.port", Integer.class);
@@ -49,14 +51,14 @@ public class TestWriterApi
    @Test
    public void testInit()
    {
-      new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
    }
 
    @Test
    public void testValidUser() throws Exception
    {
-      LdapHelperMutator helper = new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
-      LdapHelperReader helperReader = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperMutator helper = new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
+      LdapHelperReader helperReader = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
       helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
       Collection<?> values = helperReader.getAttributes(defaultSearchOu, "test attribute");
       Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", values.contains("test value"));

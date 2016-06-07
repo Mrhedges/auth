@@ -46,7 +46,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    }
 
    /** must be called before init */
-   public void configure(String ip, int port, String userDn, String userPassword, boolean useSsl, String defaultSearchOu)
+   public void configure(String ip, int port, String userDn, String userPassword, boolean useSsl, boolean useTls, String defaultSearchOu)
    {
       config = new LdapConnectionConfig();
       config.setLdapHost(ip);
@@ -54,6 +54,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       config.setName(userDn);
       config.setCredentials(userPassword);
       config.setUseSsl(useSsl);
+      config.setUseTls(useTls);
       this.defaultSearchOu = defaultSearchOu;
    }
 

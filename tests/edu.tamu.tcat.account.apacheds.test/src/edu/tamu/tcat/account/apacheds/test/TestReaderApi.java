@@ -24,6 +24,7 @@ public class TestReaderApi
    private String adminUser;
    private String adminPwd;
    private boolean useSsl;
+   private boolean useTls;
    private String defaultSearchOu;
 
    @Before
@@ -35,6 +36,7 @@ public class TestReaderApi
          ConfigurationProperties exec = sh.waitForService(ConfigurationProperties.class, 5_000);
          defaultSearchOu = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.defaultSearchOu", String.class);
          useSsl = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.useSsl", Boolean.class);
+         useTls = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.useTls", Boolean.class);
          adminPwd = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.userPassword", String.class);
          adminUser = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.userDn", String.class);
          port = exec.getPropertyValue("edu.tamu.tcat.ldap.ad.port", Integer.class);
@@ -56,20 +58,20 @@ public class TestReaderApi
    @Test
    public void testInit()
    {
-      new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
    }
 
    @Test
    public void testValidUser() throws Exception
    {
-      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
       helper.checkValidUser(DISABLED_USER);
    }
 
    @Test
    public void testUserGroups() throws Exception
    {
-      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
       List<String> groups = helper.getGroupNames(DISABLED_USER);
       Assert.assertTrue("Expected to be in at least 1 group", !groups.isEmpty());
       for (String g : groups)
@@ -79,7 +81,7 @@ public class TestReaderApi
    @Test
    public void testInvalidUserPassword() throws Exception
    {
-      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
       try
       {
          helper.checkValidPassword(DISABLED_USER, DISABLED_USER_PASSWORD);
@@ -94,7 +96,7 @@ public class TestReaderApi
    @Test
    public void testGroupAttribute() throws Exception
    {
-      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
       String name = String.valueOf(helper.getAttributes(GROUP_TEST, "cn"));
       System.out.println(GROUP_TEST + " display name " + name);
    }
@@ -102,14 +104,14 @@ public class TestReaderApi
    @Test
    public void testMember() throws Exception
    {
-      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
       System.out.println(VALID_USER +" is a member of "+ GROUP_TEST + " " + helper.isMemberOf(GROUP_TEST, VALID_USER));
    }
    
    @Test
    public void testMemberList() throws Exception
    {
-      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
       for(String member : helper.getMemberNamesOfGroup(GROUP_TEST))
          System.out.println(member +" is a member of "+ GROUP_TEST);
    }
@@ -119,7 +121,7 @@ public class TestReaderApi
       String user = VALID_USER;
       String password = VALID_USER_PASSWORD;
 
-      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, defaultSearchOu);
+      LdapHelperReader helper = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
 
       helper.checkValidPassword(user, password);
    }
