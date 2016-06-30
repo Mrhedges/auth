@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -30,6 +31,7 @@ import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 /** Turn this into a declarative service that binds to configuration */
 public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 {
+   private Logger logger = Logger.getLogger(getClass().getName());
    private LdapConnectionConfig config = null;
    private String defaultSearchOu;
 
@@ -93,7 +95,30 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 
    protected String computeDefaultOu(String user)
    {
-      return user == null || user.isEmpty() ? defaultSearchOu : user.substring(user.indexOf(',', user.lastIndexOf("CN")) + 1);
+      if(user == null || user.isEmpty())
+         return defaultSearchOu;
+      
+      // , is valid char in dn if preceeded by slash
+      // TODO clean up with fancy regex
+      int cnIndx = user.lastIndexOf("CN");
+      if(cnIndx <0)
+         return defaultSearchOu;
+      
+      int commaIndx = user.indexOf(',', user.lastIndexOf("CN"));
+      while (commaIndx > -1)
+      {
+         if(user.charAt(commaIndx -1) == '\\')
+               commaIndx = commaIndx + 1;
+         else
+         {
+            logger.info("Searching OU for [" + user + "] is [" + user.substring(commaIndx + 1) + "]");
+            return user.substring(commaIndx + 1);
+         }
+         commaIndx = user.indexOf(',', commaIndx);
+      }
+      
+      
+      return defaultSearchOu;
    }
 
    @Override
@@ -183,14 +208,14 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    {
       List<String> newGroups = new ArrayList<>();
       // remove CN from string to get top level OU
-      String ouSearchPrefix = userDistinguishedName.substring(userDistinguishedName.indexOf(',') +1);
+      String ouSearchPrefix = computeDefaultOu(userDistinguishedName);
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
 
          try
          {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.ONELEVEL, "*");
+            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
             getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
                //extract all the groups the user is a memberof
                if (attribute.getId().equalsIgnoreCase("memberof"))
