@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.tamu.tcat.account;version="[1.0.0,2.0.0)",
+ edu.tamu.tcat.account.db,
  edu.tamu.tcat.account.db.internal;version="[1.0.0,2.0.0)",
  edu.tamu.tcat.account.db.login;version="[1.0.0,2.0.0)",
  edu.tamu.tcat.account.db.store;version="[1.0.0,2.0.0)",

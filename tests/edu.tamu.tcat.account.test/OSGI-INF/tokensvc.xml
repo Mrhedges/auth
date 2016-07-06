@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="edu.tamu.tcat.oss.account.test.tokensvc">
-   <implementation class="edu.tamu.tcat.oss.account.test.mock.MockEncryptingUuidTokenService"/>
+   <implementation class="edu.tamu.tcat.account.test.mock.MockEncryptingUuidTokenService"/>
    <service>
       <provide interface="edu.tamu.tcat.account.token.TokenService"/>
    </service>
