@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>edu.tamu.tcat</groupId>
-  <artifactId>auth</artifactId>
+  <artifactId>oss.auth</artifactId>
   <version>1</version>
   <packaging>pom</packaging>
   
@@ -39,7 +39,7 @@
   </properties>
   
   <modules>
-    <module>releng/edu.tamu.tcat.account.releng/repo</module>
+    <module>releng/edu.tamu.tcat.account.repo.product</module>
     <module>releng/edu.tamu.tcat.account.sdk.feature</module>
     
     <module>bundles/edu.tamu.tcat.account</module>
@@ -116,20 +116,20 @@
             </environment>
           </environments>
           <filters>
-			  <filter>
-				<type>eclipse-plugin</type>
-				<id>org.eclipse.core.runtime</id>
-				<restrictTo>
-				   <version>3.10.0.v20140318-2214</version>
-				</restrictTo>
-			  </filter>
-			  <filter>
-                <type>eclipse-plugin</type>
-                <id>org.eclipse.equinox.common</id>
-                <restrictTo>
-                   <version>3.6.200.v20130402-1505</version>
-                </restrictTo>
-              </filter>
+            <filter>
+              <type>eclipse-plugin</type>
+              <id>org.eclipse.core.runtime</id>
+              <restrictTo>
+                 <version>3.10.0.v20140318-2214</version>
+              </restrictTo>
+            </filter>
+            <filter>
+              <type>eclipse-plugin</type>
+              <id>org.eclipse.equinox.common</id>
+              <restrictTo>
+                 <version>3.6.200.v20130402-1505</version>
+              </restrictTo>
+            </filter>
           </filters>
         </configuration>
       </plugin>

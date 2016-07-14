@@ -5,13 +5,13 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>auth.bundles</artifactId>
+    <artifactId>oss.auth.bundles</artifactId>
  
     <packaging>pom</packaging>
 
     <parent>
         <groupId>edu.tamu.tcat</groupId>
-        <artifactId>auth</artifactId>
+        <artifactId>oss.auth</artifactId>
         <version>1</version>
     </parent>
 </project>
