@@ -39,7 +39,6 @@ import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
 import edu.tamu.tcat.account.db.store.DatabaseAccountStore;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
-import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.account.test.internal.Activator;
 import edu.tamu.tcat.account.test.mock.MockAccountStore;
@@ -228,13 +227,13 @@ public class AccountTest
       {
          AccountStore store = getAccountStore();
          account = store.lookup(data);
-      }
-      catch (AccountNotFoundException nfe)
-      {
-         debug.info("Account does not exist for provider ["+data.getLoginProviderId()+"] user["+data.getLoginUserId()+"]");
-         // here would be a good place to create the account if configured to do so
-         // Would need to somehow examine the LoginProvider to see if it allows account creation?
-         throw new Exception("Account does not exist. Not creating", nfe);
+         if (account == null)
+         {
+            debug.info("Account does not exist for provider ["+data.getLoginProviderId()+"] user["+data.getLoginUserId()+"]");
+            // here would be a good place to create the account if configured to do so
+            // Would need to somehow examine the LoginProvider to see if it allows account creation?
+            throw new Exception("Account does not exist. Not creating");
+         }
       }
       catch (Exception e)
       {
@@ -249,7 +248,7 @@ public class AccountTest
 
       StringBuilder sbCookie = new StringBuilder();
       sbCookie.append("token=").append(tokenData.getToken())
-              .append(";expires=").append(tokenData.getExpireStr());
+              .append(";expires=").append(tokenData.getExpiration().toString());
 
       String cookie = sbCookie.toString();
       debug.info("Auth cookie is ["+cookie+"]");

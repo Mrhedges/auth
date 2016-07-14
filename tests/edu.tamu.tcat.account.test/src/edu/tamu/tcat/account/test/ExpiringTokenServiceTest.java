@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.tamu.tcat.account.db.ExpiringTokenProvider;
-import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
 import edu.tamu.tcat.account.token.TokenService.TokenData;
 import edu.tamu.tcat.crypto.CryptoProvider;
@@ -55,7 +54,7 @@ public class ExpiringTokenServiceTest
    }
 
    @Test
-   public void testLongExpiringTokenService() throws InterruptedException, AccountTokenException
+   public void testLongExpiringTokenService() throws InterruptedException
    {
       TokenService<Long> svc = ExpiringTokenProvider.LongTokenProviderFactory.makeProvider(secureToken, 1, ChronoUnit.SECONDS);
       long id = 42;
@@ -70,13 +69,13 @@ public class ExpiringTokenServiceTest
          value = svc.unpackToken(tokenDataA.getToken());
          assertFalse("Failed to properly expire the token", true);
       }
-      catch (AccountTokenException te)
+      catch (Exception te)
       {
          // expected exception -- TODO provide more specific sub-class
       }
    }
    @Test
-   public void testUuidExpiringTokenService() throws InterruptedException, AccountTokenException
+   public void testUuidExpiringTokenService() throws InterruptedException
    {
       TokenService<UUID> svc = ExpiringTokenProvider.UuidTokenProviderFactory.makeProvider(secureToken, 1, ChronoUnit.SECONDS);
       UUID id = UUID.randomUUID();
@@ -91,14 +90,14 @@ public class ExpiringTokenServiceTest
          value = svc.unpackToken(tokenDataA.getToken());
          assertFalse("Failed to properly expire the token", true);
       }
-      catch (AccountTokenException te)
+      catch (Exception te)
       {
          // expected exception -- TODO provide more specific sub-class
       }
    }
 
    @Test
-   public void testStringExpiringTokenService() throws InterruptedException, AccountTokenException
+   public void testStringExpiringTokenService() throws InterruptedException
    {
       TokenService<String> svc = ExpiringTokenProvider.StringTokenProviderFactory.makeProvider(secureToken, "UTF-8", 1, ChronoUnit.SECONDS);
       String id = "Hello World";
@@ -114,7 +113,7 @@ public class ExpiringTokenServiceTest
          value = svc.unpackToken(tokenDataA.getToken());
          assertFalse("Failed to properly expire the token", true);
       }
-      catch (AccountTokenException te)
+      catch (Exception te)
       {
          // expected exception -- TODO provide more specific sub-class
       }
