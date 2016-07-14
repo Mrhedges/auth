@@ -1,8 +1,8 @@
 package edu.tamu.tcat.account.db;
 
+import java.time.ZonedDateTime;
 import java.util.function.Function;
 
-import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
 
 /**
@@ -50,7 +50,7 @@ public class AdaptingTokenService<PayloadType, KeyType> implements TokenService<
    }
 
    @Override
-   public TokenData<PayloadType> createTokenData(PayloadType item) throws AccountTokenException
+   public TokenData<PayloadType> createTokenData(PayloadType item)
    {
       KeyType key = keyAdapter.apply(item);
       TokenData<KeyType> token = delegate.createTokenData(key);
@@ -58,7 +58,7 @@ public class AdaptingTokenService<PayloadType, KeyType> implements TokenService<
    }
 
    @Override
-   public PayloadType unpackToken(String token) throws AccountTokenException
+   public PayloadType unpackToken(String token)
    {
       KeyType key = delegate.unpackToken(token);
       return itemResolver.apply(key);
@@ -100,9 +100,9 @@ public class AdaptingTokenService<PayloadType, KeyType> implements TokenService<
       }
 
       @Override
-      public String getExpireStr()
+      public ZonedDateTime getExpiration()
       {
-         return delegate.getExpireStr();
+         return delegate.getExpiration();
       }
    }
 }

@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,13 +18,11 @@ package edu.tamu.tcat.account.test.mock;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.UUID;
 
 import edu.tamu.tcat.account.test.CryptoUtil;
-import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
 import edu.tamu.tcat.crypto.CryptoProvider;
 import edu.tamu.tcat.crypto.SecureToken;
@@ -35,13 +33,13 @@ public class MockEncryptingUuidTokenService implements TokenService<UUID>
    final String keyb64_128 = "blahDiddlyBlahSchmacko";
    final String keyb64_256 = "blahDiddlyBlahSchmackety+ABitLongerThanThat+";
    private final SecureToken secureToken;
-   
-   public MockEncryptingUuidTokenService() throws AccountTokenException
+
+   public MockEncryptingUuidTokenService()
    {
       this(CryptoUtil.getProvider());
    }
-   
-   public MockEncryptingUuidTokenService(CryptoProvider cryptoProvider) throws AccountTokenException
+
+   public MockEncryptingUuidTokenService(CryptoProvider cryptoProvider)
    {
       byte[] key;
       try
@@ -50,7 +48,7 @@ public class MockEncryptingUuidTokenService implements TokenService<UUID>
       }
       catch (Exception e)
       {
-         throw new AccountTokenException("Could not decode token key", e);
+         throw new IllegalArgumentException("Could not decode token key", e);
       }
       try
       {
@@ -58,12 +56,12 @@ public class MockEncryptingUuidTokenService implements TokenService<UUID>
       }
       catch (Exception e)
       {
-         throw new AccountTokenException("Could not construct secure token", e);
+         throw new IllegalArgumentException("Could not construct secure token", e);
       }
    }
-   
+
    @Override
-   public TokenService.TokenData<UUID> createTokenData(UUID id) throws AccountTokenException
+   public TokenService.TokenData<UUID> createTokenData(UUID id)
    {
       ByteBuffer buffer = ByteBuffer.allocate(4 + 8 + 16);
       ZonedDateTime now = ZonedDateTime.now();
@@ -76,21 +74,20 @@ public class MockEncryptingUuidTokenService implements TokenService<UUID>
       try
       {
          String stok = secureToken.getToken(buffer);
-         String exp = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(expires);
-         return new MockTokenData(stok, id, exp);
+         return new MockTokenData(stok, id, expires);
       }
       catch (TokenException e)
       {
-         throw new AccountTokenException("Could not create token", e);
+         throw new IllegalArgumentException("Could not create token", e);
       }
    }
-   
+
    @Override
-   public UUID unpackToken(String token) throws AccountTokenException
+   public UUID unpackToken(String token)
    {
       return UUID.fromString(token);
    }
-   
+
    @Override
    public Class<UUID> getPayloadType()
    {

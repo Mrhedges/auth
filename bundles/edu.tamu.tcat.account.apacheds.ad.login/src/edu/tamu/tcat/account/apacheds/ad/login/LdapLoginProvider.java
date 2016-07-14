@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.apacheds.LdapException;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
-import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
 
@@ -66,7 +65,7 @@ public class LdapLoginProvider implements LoginProvider
    }
 
    @Override
-   public LoginData login() throws AccountLoginException
+   public LoginData login()
    {
       Objects.requireNonNull(ldapHelper, "LDAP Login Provider not initialized");
       try
@@ -83,7 +82,8 @@ public class LdapLoginProvider implements LoginProvider
                if (requiredGroup != null)
                {
                   if (!rv.groups.contains(requiredGroup))
-                     throw new AccountLoginException("Authenticated account for ["+username+"] but does not have required group ["+requiredGroup+"]");
+                     return null;
+                     //throw new IllegalStateException("Authenticated account for ["+username+"] but does not have required group ["+requiredGroup+"]");
                }
 
                return rv;
@@ -93,11 +93,12 @@ public class LdapLoginProvider implements LoginProvider
                debug.warning("Found multiple LDAP entries matching account name ["+username+"] in OU ["+ou+"]");
          }
 
-         throw new AccountLoginException("Failed finding single match for account name ["+username+"]");
+         return null;
+         //throw new AccountLoginException("Failed finding single match for account name ["+username+"]");
       }
       catch (LdapException e)
       {
-         throw new AccountLoginException("Failed attempted login.", e);
+         throw new AccountException("Failed attempted login.", e);
       }
    }
 

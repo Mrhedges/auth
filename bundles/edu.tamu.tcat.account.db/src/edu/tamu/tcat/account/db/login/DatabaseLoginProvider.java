@@ -15,8 +15,8 @@
  */
 package edu.tamu.tcat.account.db.login;
 
+import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.db.spi.DatabaseLoginModule;
-import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
 
@@ -41,17 +41,19 @@ public class DatabaseLoginProvider implements LoginProvider
    }
 
    @Override
-   public LoginData login() throws AccountLoginException
+   public LoginData login()
    {
       try
       {
          AccountRecord rec = authnMananger.authenticate(userName, pass);
+         if (rec == null)
+            return null;
          LoginData rv = new DbLoginData(instanceId, rec);
          return rv;
       }
       catch (Exception e)
       {
-         throw new AccountLoginException(e);
+         throw new AccountException(e);
       }
    }
 }

@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.tamu.tcat.account.apacheds.LdapHelperAdFactory;
-import edu.tamu.tcat.account.apacheds.LdapHelperMutator;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 import edu.tamu.tcat.account.apacheds.test.internal.Activator;
 import edu.tamu.tcat.osgi.config.ConfigurationProperties;
@@ -48,28 +47,30 @@ public class TestWriterApi
          throw new IllegalStateException("Failed accessing database executor", e);
       }
    }
-   @Test
-   public void testInit()
-   {
-      new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
-   }
 
-   @Test
-   public void testValidUser() throws Exception
-   {
-      LdapHelperMutator helper = new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
-      LdapHelperReader helperReader = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
-      helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
-      Collection<?> values = helperReader.getAttributes(defaultSearchOu, "test attribute");
-      Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", values.contains("test value"));
-      helper.removeAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
-      values = helperReader.getAttributes(defaultSearchOu, "test attribute");
-      Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", !values.contains("test value"));
-      helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
-      helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value 2");
-      helper.removeAttribute(defaultSearchOu, DISABLED_USER, "test attribute");
-      values = helperReader.getAttributes(defaultSearchOu, "test attribute");
-      Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", !values.contains("test value"));
-   }
+   //FIXME: replace when the writer is implemented
+//   @Test
+//   public void testInit()
+//   {
+//      new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
+//   }
+//
+//   @Test
+//   public void testValidUser() throws Exception
+//   {
+//      LdapHelperMutator helper = new LdapHelperAdFactory().buildWriter(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
+//      LdapHelperReader helperReader = new LdapHelperAdFactory().buildReader(ip, port, adminUser, adminPwd, useSsl, useTls, defaultSearchOu);
+//      helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
+//      Collection<?> values = helperReader.getAttributes(defaultSearchOu, "test attribute");
+//      Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", values.contains("test value"));
+//      helper.removeAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
+//      values = helperReader.getAttributes(defaultSearchOu, "test attribute");
+//      Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", !values.contains("test value"));
+//      helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value");
+//      helper.addAttribute(defaultSearchOu, DISABLED_USER, "test attribute", "test value 2");
+//      helper.removeAttribute(defaultSearchOu, DISABLED_USER, "test attribute");
+//      values = helperReader.getAttributes(defaultSearchOu, "test attribute");
+//      Assert.assertTrue("Attribute not sucessfully added.  Missing from returned collection.", !values.contains("test value"));
+//   }
 
 }

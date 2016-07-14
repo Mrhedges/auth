@@ -3,12 +3,12 @@ package edu.tamu.tcat.account.db;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.function.Function;
 
-import edu.tamu.tcat.account.token.AccountTokenException;
 import edu.tamu.tcat.account.token.TokenService;
 import edu.tamu.tcat.crypto.SecureToken;
 import edu.tamu.tcat.crypto.TokenException;
@@ -26,6 +26,9 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
    private final Function<byte[], Payload> unmarshaller;
    private final long duration;
    private final ChronoUnit unit;
+
+   //TODO: make this configurable
+   private ZoneId ZONE = ZoneId.of("UTC");
 
    /**
     * Constructs a new {@link ExpiringTokenProvider}.
@@ -54,7 +57,7 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
    }
 
    @Override
-   public TokenService.TokenData<Payload> createTokenData(Payload payload) throws AccountTokenException
+   public TokenService.TokenData<Payload> createTokenData(Payload payload)
    {
       return createTokenData(payload, fromNow(duration, unit));
    }
@@ -64,7 +67,7 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
       return Instant.now().plus(duration, unit);
    }
 
-   public TokenService.TokenData<Payload> createTokenData(Payload payload, Instant expires) throws AccountTokenException
+   public TokenService.TokenData<Payload> createTokenData(Payload payload, Instant expires)
    {
       byte[] bytes = marshaller.apply(payload);
       ByteBuffer buffer = ByteBuffer.allocate(4 + 8 + bytes.length);
@@ -76,17 +79,17 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
       try
       {
          String stok = secureToken.getToken(buffer);
-         String exp = DateTimeFormatter.ISO_INSTANT.format(expires);
-         return new AccountTokenData<>(stok, payload, exp);
+         ZonedDateTime zdt = expires.atZone(ZONE);
+         return new AccountTokenData<>(stok, payload, zdt);
       }
       catch (TokenException e)
       {
-         throw new AccountTokenException("Could not create token", e);
+         throw new IllegalArgumentException("Could not create token", e);
       }
    }
 
    @Override
-   public Payload unpackToken(String token) throws AccountTokenException
+   public Payload unpackToken(String token)
    {
       ByteBuffer buffer;
       try
@@ -95,7 +98,7 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
       }
       catch (TokenException ex)
       {
-         throw new AccountTokenException("Failed to parse the supplied token.", ex);
+         throw new IllegalArgumentException("Failed to parse the supplied token.", ex);
       }
 
       @SuppressWarnings("unused")
@@ -104,7 +107,7 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
 //      ZonedDateTime expires = ZonedDateTime.from(Instant.ofEpochMilli(epochMilli));
 //      Instant.now().isAfter(Instant.ofEpochMilli(epochMilli))
       if (Instant.now().isAfter(Instant.ofEpochMilli(epochMilli)))
-         throw new AccountTokenException("The supplied token has expired.");
+         throw new IllegalArgumentException("The supplied token has expired.");
 
       byte[] data = new byte[buffer.remaining()];
       buffer.get(data);
@@ -204,14 +207,14 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
    private static class AccountTokenData<PT> implements TokenService.TokenData<PT>
    {
       private String token;
-      private String expireStr;
+      private ZonedDateTime expiration;
       private PT data;
 
-      public AccountTokenData(String t, PT data, String expStr)
+      public AccountTokenData(String t, PT data, ZonedDateTime expiration)
       {
          this.token = t;
          this.data = data;
-         this.expireStr = expStr;
+         this.expiration = expiration;
       }
 
       @Override
@@ -227,9 +230,9 @@ public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
       }
 
       @Override
-      public String getExpireStr()
+      public ZonedDateTime getExpiration()
       {
-         return expireStr;
+         return expiration;
       }
    }
 }

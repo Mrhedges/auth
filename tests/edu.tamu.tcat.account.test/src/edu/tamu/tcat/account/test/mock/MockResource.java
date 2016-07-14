@@ -34,10 +34,8 @@ import edu.tamu.tcat.account.db.login.DatabaseLoginProvider;
 import edu.tamu.tcat.account.jaxrs.bean.ContextBean;
 import edu.tamu.tcat.account.jaxrs.bean.TokenProviding;
 import edu.tamu.tcat.account.jaxrs.bean.TokenSecured;
-import edu.tamu.tcat.account.login.AccountLoginException;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
-import edu.tamu.tcat.account.store.AccountNotFoundException;
 import edu.tamu.tcat.account.store.AccountStore;
 import edu.tamu.tcat.account.test.internal.Activator;
 import edu.tamu.tcat.crypto.CryptoProvider;
@@ -79,19 +77,16 @@ public class MockResource
 
       LoginProvider loginProvider = getLoginProvider(providerId, username, password, getCryptoProvider(), getDbExecutor());
 
-      try
-      {
-         // provider encapsulates everything, so try to log in (or fail)
-         LoginData data = loginProvider.login();
-         Account account = getAccountStore().lookup(data);
-
-         bean.set(account.getId());
-         return new AccountSDV(account);//, getAccountUri(account));
-      }
-      catch (AccountLoginException | AccountNotFoundException ae)
-      {
+      // provider encapsulates everything, so try to log in (or fail)
+      LoginData data = loginProvider.login();
+      if (data == null)
          throw new ForbiddenException();
-      }
+      Account account = getAccountStore().lookup(data);
+      if (account == null)
+         throw new ForbiddenException();
+
+      bean.set(account.getId());
+      return new AccountSDV(account);//, getAccountUri(account));
 
       //Response resp = Response.status(Response.Status.BAD_REQUEST)
       //   .entity("Unknown login provider ["+providerId+"]")
