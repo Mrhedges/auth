@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="edu.tamu.tcat.account.apacheds.test.application.feature"
+      label="Apache DS application Feature"
+      version="1.0.0.qualifier"
+      provider-name="Texas A&amp;M Engineering Experiment Station">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="edu.tamu.tcat.account.apacheds"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.dev"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.client.api"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33a"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.codec.core"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33a"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.net.mina"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33a"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.util"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.mina.core"
+         download-size="0"
+         install-size="0"
+         version="2.0.13"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.commons.collections"
+         download-size="0"
+         install-size="0"
+         version="3.2.2"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.felix.gogo.command"
+         download-size="0"
+         install-size="0"
+         version="0.10.0.v201209301215"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.felix.gogo.runtime"
+         download-size="0"
+         install-size="0"
+         version="0.10.0.v201209301036"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.felix.gogo.shell"
+         download-size="0"
+         install-size="0"
+         version="0.10.0.v201212101605"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.model"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.extras.aci"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.commons.pool"
+         download-size="0"
+         install-size="0"
+         version="1.6.0.v201204271246"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.extras.codec.api"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.extras.trigger"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.extras.util"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.schema"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.asn1.api"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.i18n"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.slf4j.api"
+         download-size="0"
+         install-size="0"
+         version="1.7.2.v20121108-1250"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.commons.lang"
+         download-size="0"
+         install-size="0"
+         version="2.6.0.v201404270220"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.asn1.ber"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.servicemix.bundles.antlr"
+         download-size="0"
+         install-size="0"
+         version="2.7.7.5"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.directory.api.ldap.extras.codec"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.M33"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.commons.logging"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.v201101211721"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.osgi.services"
+         download-size="0"
+         install-size="0"
+         version="3.4.0.v20140312-2051"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.account.apacheds.test.application"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.qualifier"/>
+
+   <plugin
+         id="org.eclipse.equinox.ds"
+         download-size="0"
+         install-size="0"
+         version="1.4.200.v20131126-2331"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.event"
+         download-size="0"
+         install-size="0"
+         version="1.3.100.v20140115-1647"
+         unpack="false"/>
+
+</feature>

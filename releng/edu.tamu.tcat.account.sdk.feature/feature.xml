@@ -2,7 +2,7 @@
 <feature
       id="edu.tamu.tcat.account.sdk.feature"
       label="TCAT Account SDK Feature"
-      version="1.0.0.qualifier"
+      version="2.0.0.qualifier"
       provider-name="Texas A&amp;M Engineering Experiment Station">
 
    <description>
@@ -37,56 +37,56 @@ limitations under the License.
          id="edu.tamu.tcat.account"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.source"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.db"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.db.source"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.jaas"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.jaas.source"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.jaxrs"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.jaxrs.source"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="2.0.0.qualifier"
          unpack="false"/>
 
 </feature>

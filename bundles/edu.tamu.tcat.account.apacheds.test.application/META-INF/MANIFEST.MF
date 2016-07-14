@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache DS Test Application
+Bundle-SymbolicName: edu.tamu.tcat.account.apacheds.test.application;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Texas A&M Engineering Experiment Station
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: edu.tamu.tcat.account.apacheds;version="[1.0.0,2.0.0)",
+ org.eclipse.core.runtime;version="[3.4.0,4.0.0)",
+ org.eclipse.equinox.app;version="[1.1.0,2.0.0)"
+Export-Package: edu.tamu.tcat.account.apacheds.test.application;version="1.0.0"

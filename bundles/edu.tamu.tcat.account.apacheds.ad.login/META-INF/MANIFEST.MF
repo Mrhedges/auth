@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: LDAP  Providers for Account Framework
+Bundle-SymbolicName: edu.tamu.tcat.account.apacheds.ad.login
+Bundle-Version: 1.0.0.dev
+Bundle-Vendor: Texas A&M Engineering Experiment Station
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: edu.tamu.tcat.account;version="[2.0.0,3.0.0)",
+ edu.tamu.tcat.account.apacheds;version="[1.0.0,2.0.0)",
+ edu.tamu.tcat.account.login;version="[2.0.0,3.0.0)"
+Export-Package: edu.tamu.tcat.account.apacheds.ad.login;version="1.0.0"
