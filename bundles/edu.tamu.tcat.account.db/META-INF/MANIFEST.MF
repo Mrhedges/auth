@@ -9,9 +9,12 @@ Import-Package: edu.tamu.tcat.account;version="[1.0.0,2.0.0)",
  edu.tamu.tcat.account.jaas;version="[1.0.0,2.0.0)";resolution:=optional,
  edu.tamu.tcat.account.login;version="[1.0.0,2.0.0)",
  edu.tamu.tcat.account.store;version="[1.0.0,2.0.0)",
+ edu.tamu.tcat.account.token;version="1.0.0",
  edu.tamu.tcat.crypto;version="[1.1.0,2.0.0)",
- edu.tamu.tcat.db.exec.sql;version="[1.0.0,2.0.0)"
-Export-Package: edu.tamu.tcat.account.db.internal;version="1.0.0";x-friends:="edu.tamu.tcat.oss.account.test",
+ edu.tamu.tcat.db.exec.sql;version="[1.0.0,2.0.0)",
+ edu.tamu.tcat.osgi.config;version="1.1.0"
+Export-Package: edu.tamu.tcat.account.db,
+ edu.tamu.tcat.account.db.internal;version="1.0.0";x-friends:="edu.tamu.tcat.oss.account.test",
  edu.tamu.tcat.account.db.login;version="1.0.0",
  edu.tamu.tcat.account.db.spi;version="1.0.0",
  edu.tamu.tcat.account.db.store;version="1.0.0"
