@@ -18,6 +18,7 @@ import edu.tamu.tcat.account.token.TokenService;
  * @param <PayloadType> The payload type that the underlying token representation will be
  *       adapted into/from.
  * @param <KeyType> The payload type of the underlying token scheme.
+ * @since 2.0
  */
 public class AdaptingTokenService<PayloadType, KeyType> implements TokenService<PayloadType>
 {

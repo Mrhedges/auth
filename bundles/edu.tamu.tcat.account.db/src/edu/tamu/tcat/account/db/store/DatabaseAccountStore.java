@@ -216,8 +216,6 @@ public class DatabaseAccountStore implements AccountStore
     * Table "authn_local": is a "local db" authn provider using "long" for user-id
     *
     * TODO: create groups for "everyone" and "debug"
-    * TODO: create accounts for paul, neal, jesse, matthew
-    *       create "account PUT" in the resource, perhaps?
     * TODO: link accounts to local auth in account_authn
     */
 

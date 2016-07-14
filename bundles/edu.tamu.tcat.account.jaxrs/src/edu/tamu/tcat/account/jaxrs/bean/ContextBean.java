@@ -111,7 +111,7 @@ public class ContextBean
     * @param obj
     * @param type
     * @throws AccountException
-    * @since 1.1
+    * @since 2.0
     */
    public <T> void set(T obj, Class<T> type) throws AccountException
    {
