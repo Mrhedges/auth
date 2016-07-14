@@ -17,6 +17,7 @@ import edu.tamu.tcat.crypto.TokenException;
  * A {@link TokenService} implementation that provides expiring tokens.
  *
  * @param <Payload>
+ * @since 2.0
  */
 public class ExpiringTokenProvider<Payload> implements TokenService<Payload>
 {

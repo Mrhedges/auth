@@ -32,6 +32,9 @@ import edu.tamu.tcat.account.jaxrs.bean.TokenSecured;
 import edu.tamu.tcat.account.jaxrs.internal.ClassAndId;
 import edu.tamu.tcat.account.token.TokenService;
 
+/**
+ * @since 2.0
+ */
 @Provider
 public class TokenDynamicFeature implements DynamicFeature
 {
@@ -48,8 +51,17 @@ public class TokenDynamicFeature implements DynamicFeature
     */
    private static final String PROP_AUTH_REALM = "realm";
 
+   /**
+    * @since 2.0
+    */
    public static final String HEADER_AUTHZ = "Authorization";
+   /**
+    * @since 2.0
+    */
    public static final String HEADER_WWWAUTHN = "WWW-Authenticate";
+   /**
+    * @since 2.0
+    */
    public static final String TOKEN_TYPE_BEARER = "Bearer";
 
    private Map<ClassAndId, TokenService<?>> tokenServices = new HashMap<>();

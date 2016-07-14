@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JAX-RS additions to Account Framework
 Bundle-SymbolicName: edu.tamu.tcat.account.jaxrs
-Bundle-Version: 2.0.0.dev
+Bundle-Version: 2.0.0.qualifier
 Bundle-Vendor: Texas A&M Engineering Experiment Station
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.tamu.tcat.account;version="[2.0.0,3.0.0)",
