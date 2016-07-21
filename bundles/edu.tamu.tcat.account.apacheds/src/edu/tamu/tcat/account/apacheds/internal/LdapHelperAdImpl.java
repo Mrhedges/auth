@@ -30,7 +30,7 @@ import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 /** Turn this into a declarative service that binds to configuration */
 public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
 {
-   private Logger logger = Logger.getLogger(getClass().getName());
+   private static final Logger logger = Logger.getLogger(LdapHelperAdImpl.class.getName());
    private LdapConnectionConfig config = null;
    private String defaultSearchOu;
 
@@ -96,13 +96,13 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    {
       if(user == null || user.isEmpty())
          return defaultSearchOu;
-      
+
       // , is valid char in dn if preceeded by slash
       // TODO clean up with fancy regex
       int cnIndx = user.lastIndexOf("CN");
       if(cnIndx <0)
          return defaultSearchOu;
-      
+
       int commaIndx = user.indexOf(',', user.lastIndexOf("CN"));
       while (commaIndx > -1)
       {
@@ -110,13 +110,13 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
                commaIndx = commaIndx + 1;
          else
          {
-            logger.info("Searching OU for [" + user + "] is [" + user.substring(commaIndx + 1) + "]");
+            logger.fine("Searching OU for [" + user + "] is [" + user.substring(commaIndx + 1) + "]");
             return user.substring(commaIndx + 1);
          }
          commaIndx = user.indexOf(',', commaIndx);
       }
-      
-      
+
+
       return defaultSearchOu;
    }
 
