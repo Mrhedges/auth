@@ -33,7 +33,15 @@ public interface LdapHelperReader
    /***
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     * @return return list of distinguished names for entries that match the attribute value pair*/
-   List<String> getMatches(String ouSearchPrefix, String attribute, String value) throws LdapException;
+   default List<String> getMatches(String ouSearchPrefix, String attribute, String value) throws LdapException
+   {
+      return getMatches(ouSearchPrefix, attribute, value, true);
+   }
+   /***
+    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
+    * @param case sensitive if this should require case sensitive matches 
+    * @return return list of distinguished names for entries that match the attribute value pair*/
+   List<String> getMatches(String ouSearchPrefix, String attribute, String value, boolean caseSensitive) throws LdapException;
 
    /**
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName

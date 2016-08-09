@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
@@ -454,7 +455,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    }
 
    @Override
-   public List<String> getMatches(String ouSearchPrefix, String attributeId, String value) throws LdapException
+   public List<String> getMatches(String ouSearchPrefix, String attributeId, String value, boolean caseSensitive) throws LdapException
    {
       if(ouSearchPrefix ==null || ouSearchPrefix.isEmpty())
          ouSearchPrefix = defaultSearchOu;
@@ -467,10 +468,26 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
             List<String> matches = new ArrayList<>();
             cursor.forEach(entry -> {
-               if (entry.contains(attributeId, value))
-               {
-                  matches .add(String.valueOf(entry.get("distinguishedName").get()));
-               }
+               entry.getAttributes().forEach(attribute -> {
+                  //extract all the groups the user is a memberof
+                  if (attribute.getId().equalsIgnoreCase(attributeId))
+                     attribute.forEach(v -> {
+                        Object val;
+                        if (v instanceof Value)
+                           val = (((Value)v).getValue());
+                        else
+                           val = v;
+                        if(!caseSensitive && val instanceof String)
+                        {
+                           if(((String)val).equalsIgnoreCase(value))
+                              matches .add(String.valueOf(entry.get("distinguishedName").get()));
+                        }else
+                        {
+                           if(Objects.equals(value, val))
+                              matches .add(String.valueOf(entry.get("distinguishedName").get()));
+                        }
+                     });
+               });
             });
             return matches;
          }
