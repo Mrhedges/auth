@@ -93,7 +93,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       checkValidUser(computeDefaultOu(user), user);
    }
 
-   protected String computeDefaultOu(String user)
+   String computeDefaultOu(String user)
    {
       if(user == null || user.isEmpty())
          return defaultSearchOu;
@@ -140,7 +140,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
    }
 
-   private void checkValidUser(String ouSearchPrefix, String userDistinguishedName, LdapConnection boundConnection) throws LdapException
+   void checkValidUser(String ouSearchPrefix, String userDistinguishedName, LdapConnection boundConnection) throws LdapException
    {
       try
       {
@@ -212,7 +212,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
    }
 
-   private void getMemberNamesOfGroupInternal(List<String> members, String groupDn, LdapConnection boundConnection) throws LdapException
+   void getMemberNamesOfGroupInternal(List<String> members, String groupDn, LdapConnection boundConnection) throws LdapException
    {
       // in ou search prefix, list all distinguished names that have the memberof attribute = to the parameter
       getAttributes(computeDefaultOu(groupDn), groupDn, "member", boundConnection).forEach(member -> {
@@ -229,7 +229,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       return getGroupNames(computeDefaultOu(userDistinguishedName), userDistinguishedName);
    }
 
-   private void getGroupsInternal(String userDistinguishedName, Set<String> groups, LdapConnection boundConnection) throws LdapException
+   void getGroupsInternal(String userDistinguishedName, Set<String> groups, LdapConnection boundConnection) throws LdapException
    {
       List<String> newGroups = new ArrayList<>();
       // remove CN from string to get top level OU
@@ -264,14 +264,14 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    @Override
    public List<String> getGroupNames(String ouSearchPrefix, String userDistinguishedName) throws LdapException
    {
-      List<String> groups = getAttributes(userDistinguishedName, "memberof").stream()
-            .map(String::valueOf)
-            .collect(Collectors.toList());
 
-      Set<String> recursiveGroups = new HashSet<>(groups);
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
+         List<String> groups = getAttributes(computeDefaultOu(userDistinguishedName), userDistinguishedName, "memberof", connection).stream()
+               .map(String::valueOf)
+               .collect(Collectors.toList());
+         Set<String> recursiveGroups = new HashSet<>(groups);
          try
          {
             groups.forEach(g -> getGroupsInternal(g, recursiveGroups, connection));
@@ -363,7 +363,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
    }
    
-   private Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId, LdapConnection boundConnection) throws LdapException
+   Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId, LdapConnection boundConnection) throws LdapException
    {
       List<Object> values = new ArrayList<>();
       LdapConnection connection = boundConnection;
@@ -492,43 +492,13 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    @Override
    public List<String> getMatches(String ouSearchPrefix, String attributeId, String value, boolean caseSensitive) throws LdapException
    {
-      if(ouSearchPrefix ==null || ouSearchPrefix.isEmpty())
-         ouSearchPrefix = defaultSearchOu;
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
 
          try
          {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
-            List<String> matches = new ArrayList<>();
-            cursor.forEach(entry -> {
-               entry.getAttributes().forEach(attribute -> {
-                  //extract all the groups the user is a memberof
-                  if (attribute.getId().equalsIgnoreCase(attributeId))
-                     attribute.forEach(v -> {
-                        Object val;
-                        if (v instanceof Value)
-                           val = (((Value)v).getValue());
-                        else
-                           val = v;
-                        if(!caseSensitive && val instanceof String)
-                        {
-                           if(((String)val).equalsIgnoreCase(value))
-                              matches .add(String.valueOf(entry.get("distinguishedName").get()));
-                        }else
-                        {
-                           if(Objects.equals(value, val))
-                              matches .add(String.valueOf(entry.get("distinguishedName").get()));
-                        }
-                     });
-               });
-            });
-            return matches;
-         }
-         catch (org.apache.directory.api.ldap.model.exception.LdapException e)
-         {
-            throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix, e);
+            return getMatchesInternal(ouSearchPrefix, attributeId, value, caseSensitive, connection);
          }
          finally
          {
@@ -541,30 +511,54 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
    }
 
-   @Override
-   public List<String> getMatches(String ouSearchPrefix, String attributeId, byte[] value) throws LdapException
+   List<String> getMatchesInternal(String ouSearchPrefix, String attributeId, String value, boolean caseSensitive, LdapConnection connection) throws LdapException
    {
       if(ouSearchPrefix ==null || ouSearchPrefix.isEmpty())
          ouSearchPrefix = defaultSearchOu;
+      try
+      {
+         EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+         List<String> matches = new ArrayList<>();
+         cursor.forEach(entry -> {
+            entry.getAttributes().forEach(attribute -> {
+               //extract all the groups the user is a memberof
+               if (attribute.getId().equalsIgnoreCase(attributeId))
+                  attribute.forEach(v -> {
+                     Object val;
+                     if (v instanceof Value)
+                        val = (((Value)v).getValue());
+                     else
+                        val = v;
+                     if(!caseSensitive && val instanceof String)
+                     {
+                        if(((String)val).equalsIgnoreCase(value))
+                           matches .add(String.valueOf(entry.get("distinguishedName").get()));
+                     }else
+                     {
+                        if(Objects.equals(value, val))
+                           matches .add(String.valueOf(entry.get("distinguishedName").get()));
+                     }
+                  });
+            });
+         });
+         return matches;
+      }
+      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix, e);
+      }
+   }
+
+   @Override
+   public List<String> getMatches(String ouSearchPrefix, String attributeId, byte[] value) throws LdapException
+   {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
 
          try
          {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
-            List<String> matches = new ArrayList<>();
-            cursor.forEach(entry -> {
-               if (entry.contains(attributeId, value))
-               {
-                  matches .add(String.valueOf(entry.get("distinguishedName").get()));
-               }
-            });
-            return matches;
-         }
-         catch (org.apache.directory.api.ldap.model.exception.LdapException e)
-         {
-            throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix, e);
+            return getMatchesInternal(ouSearchPrefix, attributeId, value, connection);
          }
          finally
          {
@@ -574,6 +568,28 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
          throw new LdapException("Failed " + attributeId + " lookup for user " + value + " in " + ouSearchPrefix, e);
+      }
+   }
+   
+   List<String> getMatchesInternal (String ouSearchPrefix, String attributeId, byte[] value, LdapConnection boundConnection) throws LdapException
+   {
+      if(ouSearchPrefix ==null || ouSearchPrefix.isEmpty())
+         ouSearchPrefix = defaultSearchOu;
+      try
+      {
+         EntryCursor cursor = boundConnection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+         List<String> matches = new ArrayList<>();
+         cursor.forEach(entry -> {
+            if (entry.contains(attributeId, value))
+            {
+               matches.add(String.valueOf(entry.get("distinguishedName").get()));
+            }
+         });
+         return matches;
+      }
+      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed " + attributeId + " lookup for value " + value + " in " + ouSearchPrefix, e);
       }
    }
 
@@ -606,7 +622,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
    }
 
-   private boolean isMemberOf(String groupDn, String userDn, LdapConnection boundConnection) throws LdapException
+   boolean isMemberOf(String groupDn, String userDn, LdapConnection boundConnection) throws LdapException
    {
       try
       {
