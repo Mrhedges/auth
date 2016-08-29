@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,19 @@ public class LdapSessionAdImpl implements LdapSession
    private synchronized void init() throws LdapException
    {
       if(boundConnection != null)
-         return;
+      {
+         // need to verify connection is still valid and has not timed out or otherwise failed
+         if(boundConnection.isConnected())
+            return;
+         try
+         {
+            boundConnection.close();
+         }
+         catch (IOException e)
+         {
+            logger.log(Level.WARNING, "Abandoning connection", e);
+         }
+      }
       helper.init();
       try
       {
