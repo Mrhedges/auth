@@ -66,9 +66,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
-         try
+         try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
          {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+            EntryCursor cursor = c.cursor;
             String found = StreamSupport.stream(cursor.spliterator(), false)
                .filter(entry -> entry.contains("sAMAccountName", otherName) || entry.contains("userPrincipleName", otherName))
                .map(entry -> String.valueOf(entry.get("distinguishedName").get()))
@@ -81,7 +81,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             connection.unBind();
          }
       }
-      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed finding distinguished name " + otherName + " in " + ouSearchPrefix, e);
       }
@@ -142,9 +146,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
 
    void checkValidUser(String ouSearchPrefix, String userDistinguishedName, LdapConnection boundConnection) throws LdapException
    {
-      try
+      try(ClosableCursor c = new ClosableCursor(boundConnection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = boundConnection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+         EntryCursor cursor = c.cursor;
          try
          {
             getEntryFor(userDistinguishedName, cursor);
@@ -154,7 +158,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             throw new LdapAuthException("No such user " + userDistinguishedName + " in " + ouSearchPrefix, e);
          }
       }
-      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed  validating distinguished name " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
@@ -235,9 +243,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       // remove CN from string to get top level OU
       String ouSearchPrefix = computeDefaultOu(userDistinguishedName);
       LdapConnection connection = boundConnection;
-      try
+      try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+         EntryCursor cursor = c.cursor;
          getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
                //extract all the groups the user is a memberof
                if (attribute.getId().equalsIgnoreCase("memberof"))
@@ -247,9 +255,13 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
       catch (LdapAuthException e)
       {
-         throw new LdapAuthException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+         throw new LdapAuthException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);      
       }
-      catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
@@ -305,9 +317,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             //bind will fail if the user pwd is not valid
             connection.bind(userDistinguishedName, password);
 
-            try
+            try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
             {
-               EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+               EntryCursor cursor = c.cursor;
                getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
                   //extract all the groups the user is a memberof
                   if (attribute.getId().equalsIgnoreCase("memberof"))
@@ -330,7 +342,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             throw new LdapAuthException("Failed validating password for distinguished name " + userDistinguishedName);
          }
       }
-      catch (IOException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
@@ -368,9 +384,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       List<Object> values = new ArrayList<>();
       LdapConnection connection = boundConnection;
 
-      try
+      try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+         EntryCursor cursor = c.cursor;
          getEntryFor(userDistinguishedName, cursor).getAttributes().forEach(attribute -> {
             //extract all the groups the user is a memberof
             if (attribute.getId().equalsIgnoreCase(attributeId))
@@ -386,7 +402,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       {
          throw new LdapAuthException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
-      catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
@@ -400,9 +420,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       {
          connection.bind();
 
-         try
+         try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
          {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+            EntryCursor cursor = c.cursor;
             Entry entry;
             if (value.getClass().equals(byte[].class))
                entry = getEntryFor(userDistinguishedName, cursor).add(attributeId, (byte[])value);
@@ -419,7 +439,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             connection.unBind();
          }
       }
-      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
@@ -432,9 +456,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       {
          connection.bind();
 
-         try
+         try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
          {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+            EntryCursor cursor = c.cursor;
             Entry entry = getEntryFor(userDistinguishedName, cursor);
             if (value.getClass().equals(byte[].class))
                if (!entry.remove(attributeId, (byte[])value))
@@ -453,7 +477,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             connection.unBind();
          }
       }
-      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
@@ -465,10 +493,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
-
-         try
+         try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
          {
-            EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+            EntryCursor cursor = c.cursor;
 
             Entry entry = getEntryFor(userDistinguishedName, cursor);
             entry.removeAttributes(attributeId);
@@ -483,7 +510,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             connection.unBind();
          }
       }
-      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
       {
          throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
@@ -515,9 +546,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    {
       if(ouSearchPrefix ==null || ouSearchPrefix.isEmpty())
          ouSearchPrefix = defaultSearchOu;
-      try
+      try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+         EntryCursor cursor = c.cursor;
          List<String> matches = new ArrayList<>();
          cursor.forEach(entry -> {
             entry.getAttributes().forEach(attribute -> {
@@ -543,16 +574,20 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
          });
          return matches;
       }
-      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (LdapException e)
       {
-         throw new LdapException("Failed " + attributeId +" lookup for value " + value + " in " + ouSearchPrefix, e);
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new LdapException("Failed " + attributeId + " lookup for value " + value + " in " + ouSearchPrefix, e);
       }
    }
 
    @Override
    public List<String> getMatches(String ouSearchPrefix, String attributeId, byte[] value) throws LdapException
    {
-      try (LdapConnection connection = new LdapNetworkConnection(config))
+      try (LdapNetworkConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
 
@@ -575,9 +610,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    {
       if(ouSearchPrefix ==null || ouSearchPrefix.isEmpty())
          ouSearchPrefix = defaultSearchOu;
-      try
+      try(ClosableCursor c = new ClosableCursor(boundConnection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = boundConnection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*");
+         EntryCursor cursor = c.cursor;
          List<String> matches = new ArrayList<>();
          cursor.forEach(entry -> {
             if (entry.contains(attributeId, value))
@@ -586,8 +621,11 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
             }
          });
          return matches;
+      }catch(LdapException e)
+      {
+         throw e;
       }
-      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+      catch (Exception e)
       {
          throw new LdapException("Failed " + attributeId + " lookup for value " + value + " in " + ouSearchPrefix, e);
       }
@@ -633,6 +671,22 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       catch (LdapAuthException ae)
       {
          return false;
+      }
+   }
+   
+   static class ClosableCursor implements AutoCloseable
+   {
+      final EntryCursor cursor;
+
+      public ClosableCursor(EntryCursor cursor)
+      {
+         this.cursor = cursor;
+      }
+
+      @Override
+      public void close() throws Exception
+      {
+         cursor.close();
       }
    }
 }
