@@ -28,29 +28,60 @@ public class LdapSessionAdImpl implements LdapSession
    private Logger logger = Logger.getLogger(getClass().getName());
    private LdapConnectionConfig config = null;
    private LdapConnection boundConnection = null;
+   private LdapConnection unboundConnection = null;
    private LdapHelperAdImpl helper = new LdapHelperAdImpl(); 
    
    private synchronized void init() throws LdapException
    {
+      if(unboundConnection != null)
+      {
+         // need to verify connection is still valid and has not timed out or otherwise failed
+         if(!unboundConnection.isConnected())
+            try
+            {
+               unboundConnection.close();
+            }
+            catch (IOException e)
+            {
+               logger.log(Level.WARNING, "Abandoning connection", e);
+            }
+            finally
+            {
+               unboundConnection = null;
+            }
+      }
       if(boundConnection != null)
       {
          // need to verify connection is still valid and has not timed out or otherwise failed
-         if(boundConnection.isConnected())
-            return;
-         try
-         {
-            boundConnection.close();
-         }
-         catch (IOException e)
-         {
-            logger.log(Level.WARNING, "Abandoning connection", e);
-         }
+         if (!boundConnection.isConnected())
+            try
+            {
+               boundConnection.close();
+            }
+            catch (IOException e)
+            {
+               logger.log(Level.WARNING, "Abandoning connection", e);
+            }
+            finally
+            {
+               boundConnection = null;
+            }
       }
+      if(boundConnection !=null && unboundConnection != null)
+         return;
       helper.init();
+      if (unboundConnection == null)
+      {
+         unboundConnection = new LdapNetworkConnection(config);
+      }
+
       try
       {
-         boundConnection = new LdapNetworkConnection(config);
-         boundConnection.bind();
+         if (boundConnection == null)
+         {
+            boundConnection = new LdapNetworkConnection(config);
+            boundConnection.bind();
+         }
       }
       catch (org.apache.directory.api.ldap.model.exception.LdapException e)
       {
@@ -87,6 +118,10 @@ public class LdapSessionAdImpl implements LdapSession
          boundConnection.unBind();
          boundConnection.close();
       }
+      if(unboundConnection !=null)
+      {
+         unboundConnection.close();
+      }
       boundConnection = null;
    }
 
@@ -94,7 +129,7 @@ public class LdapSessionAdImpl implements LdapSession
    public void checkValidPassword(String userDistinguishedName, String password) throws LdapException, LdapAuthException
    {
       init();
-      helper.checkValidPassword(userDistinguishedName, password);
+      helper.checkValidPassword(userDistinguishedName, password, unboundConnection);
    }
 
    @Override

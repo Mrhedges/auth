@@ -173,22 +173,29 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
-         try
-         {
-            //bind will fail if the user pwd is not valid OR account is disabled
-            connection.bind(userDistinguishedName, password);
-            connection.unBind();
-         }
-         catch (org.apache.directory.api.ldap.model.exception.LdapException e)
-         {
-            throw new LdapAuthException("Failed validating password for distinguished name [" + userDistinguishedName+"] "+e.getMessage());
-         }
+         checkValidPassword(userDistinguishedName, password, connection);
       }
       catch (IOException e)
       {
          throw new LdapException("Failed validating password for distinguished name " + userDistinguishedName, e);
       }
-
+   }
+   
+   void checkValidPassword(String userDistinguishedName, String password, LdapConnection unboundConnection) throws LdapException
+   {
+      synchronized (unboundConnection)
+      {
+         try
+         {
+            //bind will fail if the user pwd is not valid OR account is disabled
+            unboundConnection.bind(userDistinguishedName, password);
+            unboundConnection.unBind();
+         }
+         catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+         {
+            throw new LdapAuthException("Failed validating password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
+         }
+      }
    }
 
    @Override
