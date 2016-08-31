@@ -1,7 +1,9 @@
 package edu.tamu.tcat.account.apacheds;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This interface provides read only access to an LDAP server
@@ -81,7 +83,10 @@ public interface LdapHelperReader
     * @return return a collection of Object that correspond to the values stored for the specified attribute or an empty collection if no values for the specified attribute are present
     *
     * */
-   Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException;
+   default Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException
+   {
+      return getAttributes(userDistinguishedName, Collections.singleton(attributeId)).get(attributeId);
+   }
 
    /**
     * Expected return types are String and byte[]
@@ -89,8 +94,26 @@ public interface LdapHelperReader
     * @return return a collection of Object that correspond to the values stored for the specified attribute or an empty collection if no values for the specified attribute are present
     *
     * */
-   Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException;
+   default Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException
+   {
+      return getAttributes(ouSearchPrefix, userDistinguishedName, Collections.singleton(attributeId)).get(attributeId);
+   }
 
+   /**
+    * Expected return types are String and byte[]
+    * @return return a map of attribute id to collection of Object that correspond to the values stored for the specified attribute or an empty collection if no values for the specified attribute are present
+    *
+    * */
+   Map<String, Collection<Object>> getAttributes(String userDistinguishedName, Collection<String> attributeIds) throws LdapException;
+
+   /**
+    * Expected return types are String and byte[]
+    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
+    * @return return a map of attribute id to collection of Object that correspond to the values stored for the specified attribute or an empty collection if no values for the specified attribute are present
+    *
+    * */
+   Map<String, Collection<Object>> getAttributes(String ouSearchPrefix, String userDistinguishedName, Collection<String> attributeIds) throws LdapException;
+   
    /**
     * @param groupDn group to test
     * @param userDn user to test

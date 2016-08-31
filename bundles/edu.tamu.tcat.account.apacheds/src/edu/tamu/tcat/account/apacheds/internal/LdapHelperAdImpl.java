@@ -3,8 +3,11 @@ package edu.tamu.tcat.account.apacheds.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -230,7 +233,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    void getMemberNamesOfGroupInternal(List<String> members, String groupDn, LdapConnection boundConnection) throws LdapException
    {
       // in ou search prefix, list all distinguished names that have the memberof attribute = to the parameter
-      getAttributes(computeDefaultOu(groupDn), groupDn, "member", boundConnection).forEach(member -> {
+      getAttributes(computeDefaultOu(groupDn), groupDn, Collections.singleton("member"), boundConnection).get("member").forEach(member -> {
          if (members.contains(member))
             return;
          members.add(member.toString());
@@ -287,7 +290,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
-         List<String> groups = getAttributes(computeDefaultOu(userDistinguishedName), userDistinguishedName, "memberof", connection).stream()
+         List<String> groups = getAttributes(computeDefaultOu(userDistinguishedName), userDistinguishedName, Collections.singleton("memberof"), connection).get("memberof").stream()
                .map(String::valueOf)
                .collect(Collectors.toList());
          Set<String> recursiveGroups = new HashSet<>(groups);
@@ -360,13 +363,13 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    }
 
    @Override
-   public Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException
+   public Map<String, Collection<Object>> getAttributes(String userDistinguishedName, Collection<String> attributeId) throws LdapException
    {
       return getAttributes(computeDefaultOu(userDistinguishedName), userDistinguishedName, attributeId);
    }
 
    @Override
-   public Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException
+   public Map<String, Collection<Object>> getAttributes(String ouSearchPrefix, String userDistinguishedName, Collection<String> attributeId) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
@@ -386,9 +389,9 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
    }
    
-   Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId, LdapConnection boundConnection) throws LdapException
+   Map<String, Collection<Object>> getAttributes(String ouSearchPrefix, String userDistinguishedName, Collection<String> attributeIds, LdapConnection boundConnection) throws LdapException
    {
-      List<Object> values = new ArrayList<>();
+      Map<String, Collection<Object>> values = new HashMap<>();
       LdapConnection connection = boundConnection;
 
       try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
@@ -396,18 +399,26 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
          EntryCursor cursor = c.cursor;
          getEntryFor(userDistinguishedName, cursor).getAttributes().forEach(attribute -> {
             //extract all the groups the user is a memberof
-            if (attribute.getId().equalsIgnoreCase(attributeId))
-               attribute.forEach(v -> {
-                  if (v instanceof Value)
-                     values.add(((Value)v).getValue());
-                  else
-                     values.add(v);
-               });
+            attributeIds.stream().forEach(attributeId -> {
+               values.putIfAbsent(attributeId, new ArrayList<>());
+               if (attribute.getId().equalsIgnoreCase(attributeId))
+               {
+                  Collection<Object> valueList = values.get(attributeId);
+
+                  attribute.forEach(v -> {
+                     if (v instanceof Value)
+                        valueList.add(((Value)v).getValue());
+                     else
+                        valueList.add(v);
+                  });
+               }
+            }
+            );
          });
       }
       catch (LdapAuthException e)
       {
-         throw new LdapAuthException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+         throw new LdapAuthException("Failed attribute lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
       catch (LdapException e)
       {
@@ -415,7 +426,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
       }
       catch (Exception e)
       {
-         throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+         throw new LdapException("Failed attribute lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
       }
       return values;
    }
@@ -671,7 +682,7 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
    {
       try
       {
-         boolean found = getAttributes(computeDefaultOu(groupDn), groupDn, "member", boundConnection).stream()
+         boolean found = getAttributes(computeDefaultOu(groupDn), groupDn, Collections.singleton("member"), boundConnection).get("member").stream()
             .anyMatch(member -> member.toString().equals(userDn) || isMemberOf(member.toString(), userDn));
          return found;
       }

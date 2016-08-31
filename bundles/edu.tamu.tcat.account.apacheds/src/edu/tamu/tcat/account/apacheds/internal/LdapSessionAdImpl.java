@@ -3,8 +3,10 @@ package edu.tamu.tcat.account.apacheds.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -16,8 +18,8 @@ import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 
 import edu.tamu.tcat.account.apacheds.LdapAuthException;
-import edu.tamu.tcat.account.apacheds.LdapSession;
 import edu.tamu.tcat.account.apacheds.LdapException;
+import edu.tamu.tcat.account.apacheds.LdapSession;
 
 /**
  * This wrapper on {@link LdapHelperAdImpl} that maintains a consistent anonymously bound connection.<br>
@@ -39,6 +41,7 @@ public class LdapSessionAdImpl implements LdapSession
          if(!unboundConnection.isConnected())
             try
             {
+               logger.info("Replacing Unbounded connection.");
                unboundConnection.close();
             }
             catch (IOException e)
@@ -56,6 +59,7 @@ public class LdapSessionAdImpl implements LdapSession
          if (!boundConnection.isConnected())
             try
             {
+               logger.info("Replacing Bounded connection.");
                boundConnection.close();
             }
             catch (IOException e)
@@ -161,13 +165,13 @@ public class LdapSessionAdImpl implements LdapSession
    }
 
    @Override
-   public Collection<Object> getAttributes(String userDistinguishedName, String attributeId) throws LdapException
+   public Map<String, Collection<Object>> getAttributes(String userDistinguishedName, Collection<String> attributeId) throws LdapException
    {
       return getAttributes(helper.computeDefaultOu(userDistinguishedName), userDistinguishedName, attributeId);
    }
 
    @Override
-   public Collection<Object> getAttributes(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException
+   public Map<String, Collection<Object>> getAttributes(String ouSearchPrefix, String userDistinguishedName, Collection<String> attributeId) throws LdapException
    {
       init();
       return helper.getAttributes(ouSearchPrefix, userDistinguishedName, attributeId, boundConnection);
@@ -205,7 +209,7 @@ public class LdapSessionAdImpl implements LdapSession
    public List<String> getGroupNames(String ouSearchPrefix, String userDistinguishedName) throws LdapException, LdapAuthException
    {
       init();
-      List<String> groups = helper.getAttributes(ouSearchPrefix, userDistinguishedName, "memberof", boundConnection).stream()
+      List<String> groups = helper.getAttributes(ouSearchPrefix, userDistinguishedName, Collections.singleton("memberof"), boundConnection).get("memberof").stream()
             .map(String::valueOf)
             .collect(Collectors.toList());
       Set<String> recursiveGroups = new HashSet<>(groups);
