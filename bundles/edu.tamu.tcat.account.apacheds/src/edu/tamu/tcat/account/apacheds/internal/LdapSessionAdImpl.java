@@ -30,29 +30,10 @@ public class LdapSessionAdImpl implements LdapSession
    private Logger logger = Logger.getLogger(getClass().getName());
    private LdapConnectionConfig config = null;
    private LdapConnection boundConnection = null;
-   private LdapConnection unboundConnection = null;
    private LdapHelperAdImpl helper = new LdapHelperAdImpl(); 
    
    private synchronized void init() throws LdapException
    {
-      if(unboundConnection != null)
-      {
-         // need to verify connection is still valid and has not timed out or otherwise failed
-         if(!unboundConnection.isConnected())
-            try
-            {
-               logger.info("Replacing Unbounded connection.");
-               unboundConnection.close();
-            }
-            catch (IOException e)
-            {
-               logger.log(Level.WARNING, "Abandoning connection", e);
-            }
-            finally
-            {
-               unboundConnection = null;
-            }
-      }
       if(boundConnection != null)
       {
          // need to verify connection is still valid and has not timed out or otherwise failed
@@ -71,13 +52,9 @@ public class LdapSessionAdImpl implements LdapSession
                boundConnection = null;
             }
       }
-      if(boundConnection !=null && unboundConnection != null)
+      if(boundConnection !=null)
          return;
       helper.init();
-      if (unboundConnection == null)
-      {
-         unboundConnection = new LdapNetworkConnection(config);
-      }
 
       try
       {
@@ -122,10 +99,6 @@ public class LdapSessionAdImpl implements LdapSession
          boundConnection.unBind();
          boundConnection.close();
       }
-      if(unboundConnection !=null)
-      {
-         unboundConnection.close();
-      }
       boundConnection = null;
    }
 
@@ -133,7 +106,7 @@ public class LdapSessionAdImpl implements LdapSession
    public void checkValidPassword(String userDistinguishedName, String password) throws LdapException, LdapAuthException
    {
       init();
-      helper.checkValidPassword(userDistinguishedName, password, unboundConnection);
+      helper.checkValidPassword(userDistinguishedName, password);
    }
 
    @Override
@@ -154,14 +127,20 @@ public class LdapSessionAdImpl implements LdapSession
    public void checkValidUser(String user) throws LdapException, LdapAuthException
    {
       init();
-      helper.checkValidUser(helper.computeDefaultOu(user), user, boundConnection);
+      synchronized (boundConnection)
+      {
+         helper.checkValidUser(helper.computeDefaultOu(user), user, boundConnection);
+      }
    }
 
    @Override
    public void checkValidUser(String ouSearchPrefix, String userDistinguishedName) throws LdapException, LdapAuthException
    {
       init();
-      helper.checkValidUser(ouSearchPrefix, userDistinguishedName, boundConnection);
+      synchronized (boundConnection)
+      {
+         helper.checkValidUser(ouSearchPrefix, userDistinguishedName, boundConnection);
+      }
    }
 
    @Override
@@ -174,14 +153,21 @@ public class LdapSessionAdImpl implements LdapSession
    public Map<String, Collection<Object>> getAttributes(String ouSearchPrefix, String userDistinguishedName, Collection<String> attributeId) throws LdapException
    {
       init();
-      return helper.getAttributes(ouSearchPrefix, userDistinguishedName, attributeId, boundConnection);
+      synchronized (boundConnection)
+      {
+         return helper.getAttributes(ouSearchPrefix, userDistinguishedName, attributeId, boundConnection);
+      }
    }
 
    @Override
    public boolean isMemberOf(String groupDn, String userDn) throws LdapException
    {
       init();
-      return helper.isMemberOf(groupDn, userDn, boundConnection);
+
+      synchronized (boundConnection)
+      {
+         return helper.isMemberOf(groupDn, userDn, boundConnection);
+      }
    }
 
    @Override
@@ -189,7 +175,11 @@ public class LdapSessionAdImpl implements LdapSession
    {
       init();
       List<String> members = new CopyOnWriteArrayList<>();
-      helper.getMemberNamesOfGroupInternal(members, groupDistinguishedName, boundConnection);
+
+      synchronized (boundConnection)
+      {
+         helper.getMemberNamesOfGroupInternal(members, groupDistinguishedName, boundConnection);
+      }
       return new ArrayList<>(members);
    }
 
@@ -209,25 +199,35 @@ public class LdapSessionAdImpl implements LdapSession
    public List<String> getGroupNames(String ouSearchPrefix, String userDistinguishedName) throws LdapException, LdapAuthException
    {
       init();
-      List<String> groups = helper.getAttributes(ouSearchPrefix, userDistinguishedName, Collections.singleton("memberof"), boundConnection).get("memberof").stream()
-            .map(String::valueOf)
-            .collect(Collectors.toList());
-      Set<String> recursiveGroups = new HashSet<>(groups);
-      groups.forEach(g -> helper.getGroupsInternal(g, recursiveGroups, boundConnection));
-      return new ArrayList<>(recursiveGroups);
+      synchronized (boundConnection)
+      {
+         List<String> groups = helper.getAttributes(ouSearchPrefix, userDistinguishedName, Collections.singleton("memberof"), boundConnection).get("memberof").stream()
+               .map(String::valueOf)
+               .collect(Collectors.toList());
+         Set<String> recursiveGroups = new HashSet<>(groups);
+
+         groups.forEach(g -> helper.getGroupsInternal(g, recursiveGroups, boundConnection));
+         return new ArrayList<>(recursiveGroups);
+      }
    }
 
    @Override
    public List<String> getMatches(String ouSearchPrefix, String attribute, String value, boolean caseSensitive) throws LdapException
    {
       init();
-      return helper.getMatchesInternal(ouSearchPrefix, attribute, value, caseSensitive, boundConnection);
+      synchronized (boundConnection)
+      {
+         return helper.getMatchesInternal(ouSearchPrefix, attribute, value, caseSensitive, boundConnection);
+      }
    }
 
    @Override
    public List<String> getMatches(String ouSearchPrefix, String attribute, byte[] value) throws LdapException
    {
       init();
-      return helper.getMatchesInternal(ouSearchPrefix, attribute, value, boundConnection);
+      synchronized (boundConnection)
+      {
+         return helper.getMatchesInternal(ouSearchPrefix, attribute, value, boundConnection);
+      }
    }
 }
