@@ -22,17 +22,21 @@ import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.entry.ModificationOperation;
 import org.apache.directory.api.ldap.model.entry.Value;
+import org.apache.directory.api.ldap.model.message.ModifyRequest;
+import org.apache.directory.api.ldap.model.message.ModifyRequestImpl;
 import org.apache.directory.api.ldap.model.message.SearchScope;
+import org.apache.directory.api.ldap.model.name.Dn;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 
 import edu.tamu.tcat.account.apacheds.LdapAuthException;
 import edu.tamu.tcat.account.apacheds.LdapException;
+import edu.tamu.tcat.account.apacheds.LdapHelperMutator;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 
 /** Turn this into a declarative service that binds to configuration */
-public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
+public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 {
    private static final Logger logger = Logger.getLogger(LdapHelperAdImpl.class.getName());
    private LdapConnectionConfig config = null;
@@ -198,6 +202,103 @@ public class LdapHelperAdImpl implements LdapHelperReader //, LdapHelperMutator
          {
             throw new LdapAuthException("Failed validating password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
          }
+      }
+   }
+
+   // LDS
+   void changePasswordUserPassword(String userDistinguishedName, String password, LdapConnection boundConnection) throws LdapException
+   {
+      try (ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      {
+         EntryCursor cursor = c.cursor;
+         Entry entry = getEntryFor(userDistinguishedName, cursor);
+         ModifyRequest req = new ModifyRequestImpl();
+         req.replace("userpassword", password);
+         Dn dn = entry.getDn();
+         req.setName(dn);
+         boundConnection.modify(req);
+      }
+      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
+      }
+      catch (Exception e)
+      {
+         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
+      }
+   }
+   
+   @Override
+   public void changePasswordUserPassword(String userDistinguishedName, String password) throws LdapException
+   {
+      try (LdapConnection connection = new LdapNetworkConnection(config))
+      {
+         connection.bind();
+         try
+         {
+            changePasswordUserPassword(userDistinguishedName, password, connection);
+         }
+         finally
+         {
+            connection.unBind();
+         }
+      }
+      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed  distinguished name " + userDistinguishedName + " change password.", e);
+      }
+   }
+
+   @Override
+   public void changePasswordUincodePassword(String userDistinguishedName, String password) throws LdapException
+   {
+      try (LdapConnection connection = new LdapNetworkConnection(config))
+      {
+         connection.bind();
+         try
+         {
+            changePasswordUincodePassword(userDistinguishedName, password, connection);
+         }
+         finally
+         {
+            connection.unBind();
+         }
+      }
+      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed  distinguished name " + userDistinguishedName + " change password.", e);
+      }
+   }
+
+   // AD direct
+   void changePasswordUincodePassword(String userDistinguishedName, String password, LdapConnection boundConnection) throws LdapException
+   {
+      try (ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      {
+         EntryCursor cursor = c.cursor;
+         Entry entry = getEntryFor(userDistinguishedName, cursor);
+         String quotedPassword = "\"" + password + "\"";
+         char unicodePwd[] = quotedPassword.toCharArray();
+         byte pwdArray[] = new byte[unicodePwd.length * 2];
+         for (int i = 0; i < unicodePwd.length; i++)
+         {
+            pwdArray[i * 2 + 1] = (byte)(unicodePwd[i] >>> 8);
+            pwdArray[i * 2 + 0] = (byte)(unicodePwd[i] & 0xff);
+         }
+         ModifyRequest req = new ModifyRequestImpl();
+         req.replace("UnicodePwd", pwdArray);
+         Dn dn = entry.getDn();
+         req.setName(dn);
+         boundConnection.modify(req);
+//         boundConnection.modify(entry, ModificationOperation.REPLACE_ATTRIBUTE);
+      }
+      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
+      }
+      catch (Exception e)
+      {
+         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
       }
    }
 
