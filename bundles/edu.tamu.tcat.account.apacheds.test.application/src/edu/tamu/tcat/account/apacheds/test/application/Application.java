@@ -84,7 +84,7 @@ public class Application implements IApplication
             String user = args.get(index + 1);
             index = args.indexOf("-p");
             String password = args.get(index + 1);
-            helper.changePasswordUincodePassword(user, password);
+            helper.changePasswordUnicodePassword(user, password);
             System.out.println("Password changed to ["+password+"]");
          }
       }

@@ -7,7 +7,7 @@ package edu.tamu.tcat.account.apacheds;
 public interface LdapHelperMutator
 {
    void changePasswordUserPassword(String userDistinguishedName, String password) throws LdapException;
-   void changePasswordUincodePassword(String userDistinguishedName, String password) throws LdapException;
+   void changePasswordUnicodePassword(String userDistinguishedName, String password) throws LdapException;
    
    //   /**
 //    * Attempt to add the specified attribute value to the userDistinguishedName in ouSearchPrefix

@@ -250,7 +250,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    }
 
    @Override
-   public void changePasswordUincodePassword(String userDistinguishedName, String password) throws LdapException
+   public void changePasswordUnicodePassword(String userDistinguishedName, String password) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {

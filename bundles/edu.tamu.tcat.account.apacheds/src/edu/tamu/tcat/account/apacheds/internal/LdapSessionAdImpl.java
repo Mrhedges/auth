@@ -241,7 +241,7 @@ public class LdapSessionAdImpl implements LdapSession
    }
 
    @Override
-   public void changePasswordUincodePassword(String userDistinguishedName, String password) throws LdapException
+   public void changePasswordUnicodePassword(String userDistinguishedName, String password) throws LdapException
    {
       init();
       synchronized (boundConnection)
