@@ -153,17 +153,11 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 
    void checkValidUser(String ouSearchPrefix, String userDistinguishedName, LdapConnection boundConnection) throws LdapException
    {
-      try(ClosableCursor c = new ClosableCursor(boundConnection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      try//(ClosableCursor c = new ClosableCursor(boundConnection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = c.cursor;
-         try
-         {
-            getEntryFor(userDistinguishedName, cursor);
-         }
-         catch (LdapAuthException e)
-         {
-            throw new LdapAuthException("No such user " + userDistinguishedName + " in " + ouSearchPrefix, e);
-         }
+         Entry e = boundConnection.lookup(userDistinguishedName);
+         if (e == null)
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
       }
       catch (LdapException e)
       {
@@ -208,10 +202,11 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    // LDS
    void changePasswordUserPassword(String userDistinguishedName, String password, LdapConnection boundConnection) throws LdapException
    {
-      try (ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      try //(ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = c.cursor;
-         Entry entry = getEntryFor(userDistinguishedName, cursor);
+         Entry entry = boundConnection.lookup(userDistinguishedName);
+         if(entry == null)
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
          ModifyRequest req = new ModifyRequestImpl();
          req.replace("userpassword", password);
          Dn dn = entry.getDn();
@@ -273,10 +268,12 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    // AD direct
    void changePasswordUincodePassword(String userDistinguishedName, String password, LdapConnection boundConnection) throws LdapException
    {
-      try (ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      try// (ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = c.cursor;
-         Entry entry = getEntryFor(userDistinguishedName, cursor);
+//         EntryCursor cursor = c.cursor;
+         Entry entry = boundConnection.lookup(userDistinguishedName);
+         if(entry == null)
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
          String quotedPassword = "\"" + password + "\"";
          char unicodePwd[] = quotedPassword.toCharArray();
          byte pwdArray[] = new byte[unicodePwd.length * 2];
@@ -353,16 +350,19 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       List<String> newGroups = new ArrayList<>();
       // remove CN from string to get top level OU
       String ouSearchPrefix = computeDefaultOu(userDistinguishedName);
-      LdapConnection connection = boundConnection;
-      try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+//      LdapConnection connection = boundConnection;
+      try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = c.cursor;
-         getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
+         boundConnection.lookup(userDistinguishedName).forEach(attribute -> {
                //extract all the groups the user is a memberof
                if (attribute.getId().equalsIgnoreCase("memberof"))
                   newGroups.add(String.valueOf(attribute.get()));
 //                  System.out.println('['+attribute.getId() +']'+ attribute.get());
             });
+      }
+      catch(NullPointerException npe)
+      {
+         throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
       }
       catch (LdapAuthException e)
       {
@@ -428,10 +428,9 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             //bind will fail if the user pwd is not valid
             connection.bind(userDistinguishedName, password);
 
-            try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+            try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
             {
-               EntryCursor cursor = c.cursor;
-               getEntryFor(userDistinguishedName, cursor).forEach(attribute -> {
+               connection.lookup(userDistinguishedName).forEach(attribute -> {
                   //extract all the groups the user is a memberof
                   if (attribute.getId().equalsIgnoreCase("memberof"))
                      groups.add(String.valueOf(attribute.get()));
@@ -441,6 +440,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             catch (org.apache.directory.api.ldap.model.exception.LdapException e)
             {
                throw new LdapException("Failed group list lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+            }
+            catch(NullPointerException npe)
+            {
+               throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
             }
             finally
             {
@@ -493,12 +496,11 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    Map<String, Collection<Object>> getAttributes(String ouSearchPrefix, String userDistinguishedName, Collection<String> attributeIds, LdapConnection boundConnection) throws LdapException
    {
       Map<String, Collection<Object>> values = new HashMap<>();
-      LdapConnection connection = boundConnection;
+//      LdapConnection connection = boundConnection;
 
-      try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
       {
-         EntryCursor cursor = c.cursor;
-         getEntryFor(userDistinguishedName, cursor).getAttributes().forEach(attribute -> {
+         boundConnection.lookup(userDistinguishedName).getAttributes().forEach(attribute -> {
             //extract all the groups the user is a memberof
             attributeIds.stream().forEach(attributeId -> {
                values.putIfAbsent(attributeId, new ArrayList<>());
@@ -516,6 +518,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             }
             );
          });
+      }
+      catch(NullPointerException npe)
+      {
+         throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
       }
       catch (LdapAuthException e)
       {
@@ -539,19 +545,22 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       {
          connection.bind();
 
-         try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+         try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
          {
-            EntryCursor cursor = c.cursor;
             Entry entry;
             if (value.getClass().equals(byte[].class))
-               entry = getEntryFor(userDistinguishedName, cursor).add(attributeId, (byte[])value);
+               entry = connection.lookup(userDistinguishedName).add(attributeId, (byte[])value);
             else
-               entry = getEntryFor(userDistinguishedName, cursor).add(attributeId, String.valueOf(value));
+               entry = connection.lookup(userDistinguishedName).add(attributeId, String.valueOf(value));
             connection.modify(entry, ModificationOperation.ADD_ATTRIBUTE);
          }
          catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
          {
             throw new LdapException("Failed " + attributeId + " add for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+         }
+         catch(NullPointerException npe)
+         {
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
          }
          finally
          {
@@ -575,10 +584,11 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       {
          connection.bind();
 
-         try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+         try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
          {
-            EntryCursor cursor = c.cursor;
-            Entry entry = getEntryFor(userDistinguishedName, cursor);
+            Entry entry = connection.lookup(userDistinguishedName);
+            if(entry == null)
+               throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
             if (value.getClass().equals(byte[].class))
                if (!entry.remove(attributeId, (byte[])value))
                   return;
@@ -612,11 +622,13 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
-         try(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+         try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
          {
-            EntryCursor cursor = c.cursor;
+//            EntryCursor cursor = c.cursor;
 
-            Entry entry = getEntryFor(userDistinguishedName, cursor);
+            Entry entry = connection.lookup(userDistinguishedName);
+            if(entry == null)
+               throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
             entry.removeAttributes(attributeId);
             connection.modify(entry, ModificationOperation.REMOVE_ATTRIBUTE);
          }
@@ -749,14 +761,14 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          throw new LdapException("Failed " + attributeId + " lookup for value " + value + " in " + ouSearchPrefix, e);
       }
    }
-
-   private Entry getEntryFor(String distinguishedName, EntryCursor cursor) throws LdapException
-   {
-      return StreamSupport.stream(cursor.spliterator(), false)
-         .filter(entry -> entry.contains("distinguishedName", distinguishedName))
-         .findAny()
-         .orElseThrow(() -> new LdapAuthException(distinguishedName + "not found."));
-   }
+//
+//   private Entry getEntryFor(String distinguishedName, EntryCursor cursor) throws LdapException
+//   {
+//      return StreamSupport.stream(cursor.spliterator(), false)
+//         .filter(entry -> entry.contains("distinguishedName", distinguishedName))
+//         .findAny()
+//         .orElseThrow(() -> new LdapAuthException(distinguishedName + "not found."));
+//   }
 
    @Override
    public boolean isMemberOf(String groupDn, String userDn) throws LdapException
