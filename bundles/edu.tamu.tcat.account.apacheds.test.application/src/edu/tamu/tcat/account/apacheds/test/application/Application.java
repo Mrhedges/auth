@@ -54,7 +54,7 @@ public class Application implements IApplication
             String att = args.get(index + 1);
             index = args.indexOf("-v");
             String val = args.get(index + 1);
-            for (int i = 0; i < 10000; i++)
+//            for (int i = 0; i < 10000; i++)
             {
                for (Object a : helper.getMatches(null, att, val))
                   System.out.println("User [" + a + "] has attribute [" + att + "] value [" + val + "]");

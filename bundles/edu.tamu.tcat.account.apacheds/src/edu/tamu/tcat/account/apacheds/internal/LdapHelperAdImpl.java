@@ -15,7 +15,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.apache.directory.api.ldap.codec.api.LdapApiService;
 import org.apache.directory.api.ldap.codec.api.LdapApiServiceFactory;
 import org.apache.directory.api.ldap.codec.protocol.mina.LdapProtocolCodecFactory;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
@@ -49,9 +48,20 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    {
       if(config == null)
          throw new IllegalStateException("Configure must be called before init");
-      LdapApiService s = LdapApiServiceFactory.getSingleton();
-      if (s.getProtocolCodecFactory() == null)
-         s.registerProtocolCodecFactory(new LdapProtocolCodecFactory());
+      // as of 1.0.0.RC2  default factory does not properly instantiate due to dependency issues 
+      if (!LdapApiServiceFactory.isInitialized())
+         try
+         {
+            StandaloneLdapApiService svc = new StandaloneLdapApiService();
+            if (svc.getProtocolCodecFactory() == null)
+               svc.registerProtocolCodecFactory(new LdapProtocolCodecFactory());
+            LdapApiServiceFactory.initialize(svc);
+            LdapApiServiceFactory.getSingleton();
+         }
+         catch (Exception e)
+         {
+            throw new IllegalStateException("Unable to instantiate Ldap API Service.", e);
+         }
    }
 
    /** must be called before init */
