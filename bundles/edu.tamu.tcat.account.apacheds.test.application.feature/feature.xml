@@ -28,35 +28,35 @@
          id="org.apache.directory.api.ldap.client.api"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33a"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.codec.core"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33a"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.net.mina"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33a"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.util"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.mina.core"
          download-size="0"
          install-size="0"
-         version="2.0.13"
+         version="2.0.16"
          unpack="false"/>
 
    <plugin
@@ -91,14 +91,14 @@
          id="org.apache.directory.api.ldap.model"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.extras.aci"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
@@ -112,42 +112,42 @@
          id="org.apache.directory.api.ldap.extras.codec.api"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.extras.trigger"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.extras.util"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.ldap.schema"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.asn1.api"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
          id="org.apache.directory.api.i18n"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
@@ -168,7 +168,7 @@
          id="org.apache.directory.api.asn1.ber"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
@@ -182,7 +182,7 @@
          id="org.apache.directory.api.ldap.extras.codec"
          download-size="0"
          install-size="0"
-         version="1.0.0.M33"
+         version="1.0.0.RC2"
          unpack="false"/>
 
    <plugin
