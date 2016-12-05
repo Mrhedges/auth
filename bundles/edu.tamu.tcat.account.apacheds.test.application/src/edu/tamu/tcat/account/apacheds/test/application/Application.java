@@ -12,7 +12,9 @@ import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
 import edu.tamu.tcat.account.apacheds.LdapHelperAdFactory;
+import edu.tamu.tcat.account.apacheds.LdapHelperMutator;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
+import edu.tamu.tcat.account.apacheds.LdapSession;
 
 /**
  * This class controls all aspects of the application's execution
@@ -46,13 +48,45 @@ public class Application implements IApplication
       else if (args.contains("matches"))
       {
          int index = args.indexOf("-f");
-         LdapHelperReader helper = createLdap(args.get(index + 1));
-         index = args.indexOf("-a");
-         String att = args.get(index + 1);
-         index = args.indexOf("-v");
-         String val = args.get(index + 1);
-         for (Object a : helper.getMatches(null, att, val))
-            System.out.println("User [" + a + "] has attribute ["+att+"] value [" + val + "]");
+         try (LdapSession helper = createLdapSession(args.get(index + 1)))
+         {
+            index = args.indexOf("-a");
+            String att = args.get(index + 1);
+            index = args.indexOf("-v");
+            String val = args.get(index + 1);
+//            for (int i = 0; i < 10000; i++)
+            {
+               for (Object a : helper.getMatches(null, att, val))
+                  System.out.println("User [" + a + "] has attribute [" + att + "] value [" + val + "]");
+            }
+            System.out.println("thread check");
+         }
+      }
+      else if (args.contains("ldsPwdChange"))
+      {
+         int index = args.indexOf("-f");
+         try (LdapSession helper = createLdapSession(args.get(index + 1)))
+         {
+            index = args.indexOf("-u");
+            String user = args.get(index + 1);
+            index = args.indexOf("-p");
+            String password = args.get(index + 1);
+            helper.changePasswordUserPassword(user, password);
+            System.out.println("Password changed to ["+password+"]");
+         }
+      }
+      else if (args.contains("adPwdChange"))
+      {
+         int index = args.indexOf("-f");
+         try (LdapSession helper = createLdapSession(args.get(index + 1)))
+         {
+            index = args.indexOf("-u");
+            String user = args.get(index + 1);
+            index = args.indexOf("-p");
+            String password = args.get(index + 1);
+            helper.changePasswordUnicodePassword(user, password);
+            System.out.println("Password changed to ["+password+"]");
+         }
       }
       else if (!args.contains("-u"))
       {
@@ -107,6 +141,40 @@ public class Application implements IApplication
       }
 
       return new LdapHelperAdFactory().buildReader(props.getProperty(IP),
+            Integer.parseInt(props.getProperty(PORT)),
+            props.getProperty(USER_DN),
+            props.getProperty(USER_PASSWORD),
+            Boolean.parseBoolean(props.getProperty(USE_SSL)),
+            Boolean.parseBoolean(props.getProperty(USE_TLS)),
+            props.getProperty(DEFAULT_SEARCH_OU));
+   }
+   
+   private LdapHelperMutator createLdapMutator(String string) throws IOException
+   {
+      Properties props = new Properties();
+      try (InputStream is = new FileInputStream(string))
+      {
+         props.load(is);
+      }
+
+      return new LdapHelperAdFactory().buildWriter(props.getProperty(IP),
+            Integer.parseInt(props.getProperty(PORT)),
+            props.getProperty(USER_DN),
+            props.getProperty(USER_PASSWORD),
+            Boolean.parseBoolean(props.getProperty(USE_SSL)),
+            Boolean.parseBoolean(props.getProperty(USE_TLS)),
+            props.getProperty(DEFAULT_SEARCH_OU));
+   }
+   
+   private LdapSession createLdapSession(String string) throws IOException
+   {
+      Properties props = new Properties();
+      try (InputStream is = new FileInputStream(string))
+      {
+         props.load(is);
+      }
+
+      return new LdapHelperAdFactory().buildSession(props.getProperty(IP),
             Integer.parseInt(props.getProperty(PORT)),
             props.getProperty(USER_DN),
             props.getProperty(USER_PASSWORD),

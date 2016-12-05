@@ -230,4 +230,23 @@ public class LdapSessionAdImpl implements LdapSession
          return helper.getMatchesInternal(ouSearchPrefix, attribute, value, boundConnection);
       }
    }
+   @Override
+   public void changePasswordUserPassword(String userDistinguishedName, String password) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.changePasswordUserPassword(userDistinguishedName, password, boundConnection);
+      }
+   }
+
+   @Override
+   public void changePasswordUnicodePassword(String userDistinguishedName, String password) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.changePasswordUincodePassword(userDistinguishedName, password, boundConnection);
+      }
+   }
 }
