@@ -18,13 +18,19 @@ import java.util.stream.StreamSupport;
 import org.apache.directory.api.ldap.codec.api.LdapApiServiceFactory;
 import org.apache.directory.api.ldap.codec.protocol.mina.LdapProtocolCodecFactory;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.entry.ModificationOperation;
 import org.apache.directory.api.ldap.model.entry.Value;
+import org.apache.directory.api.ldap.model.message.AddRequest;
+import org.apache.directory.api.ldap.model.message.AddRequestImpl;
+import org.apache.directory.api.ldap.model.message.AddResponse;
 import org.apache.directory.api.ldap.model.message.ModifyRequest;
 import org.apache.directory.api.ldap.model.message.ModifyRequestImpl;
+import org.apache.directory.api.ldap.model.message.ResultCodeEnum;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.api.ldap.model.name.Dn;
+import org.apache.directory.api.ldap.model.schema.AttributeType;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
@@ -813,6 +819,52 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       {
          return false;
       }
+   }
+   
+   public void createUser(String cn, String ou, String displayName, String userName) throws LdapException
+   {
+      String dn = cn+','+ou;
+      try (LdapConnection connection = new LdapNetworkConnection(config))
+      {
+         try
+         {
+            connection.bind();
+            Entry entry = new DefaultEntry();
+            entry.add("cn",cn);
+            entry.add("object.class", "organizationalPerson|person|top|user");
+            entry.add("instanceType", "4");
+            entry.add("objectCategory", "CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}");
+            entry.add("distinguishedName",dn);
+            entry.add("msDS-UserAccountDisabled", "FALSE");
+            entry.add("msDS-UserDontExpirePassword", "TRUE");
+            entry.add("name", displayName);
+            entry.add("sAMAccountName", userName);
+            
+//            AttributeType type = connection.getSchemaManager().getAttributeType("msDS-UserAccountDisabled");
+//            Value<Boolean> v;
+            
+            entry.setDn(dn);
+            
+            AddRequest addRequest = new AddRequestImpl();
+            addRequest.setEntry( entry );
+            
+            AddResponse response = connection.add(addRequest);
+
+            if (null == response)
+               throw new LdapException("Null response for ldap entry add of [" + dn + "]");
+            if (!ResultCodeEnum.SUCCESS.equals(response.getLdapResult().getResultCode()))
+               throw new LdapException("Response " + response.getLdapResult().getResultCode() + " for ldap entry add of [" + dn + "]");
+         }
+         finally
+         {
+            connection.unBind();
+         }
+      }
+      catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed add entry [" + dn + "]", e);
+      }
+      
    }
    
    static class ClosableCursor implements AutoCloseable

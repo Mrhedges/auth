@@ -18,6 +18,7 @@ Import-Package: org.apache.directory.api.asn1;version="[1.0.0.RC2,2.0.0)",
  org.apache.directory.api.ldap.model.exception;version="[1.0.0.M33,2.0.0)",
  org.apache.directory.api.ldap.model.message;version="[1.0.0.M33,2.0.0)",
  org.apache.directory.api.ldap.model.name;version="[1.0.0.M33,2.0.0)",
+ org.apache.directory.api.ldap.model.schema;version="[1.0.0.RC2,2.0.0)",
  org.apache.directory.ldap.client.api;version="[1.0.0.M33,2.0.0)",
  org.apache.mina.filter.codec;version="[2.0.0,3.0.0)"
 Export-Package: edu.tamu.tcat.account.apacheds;version="1.0.0",
