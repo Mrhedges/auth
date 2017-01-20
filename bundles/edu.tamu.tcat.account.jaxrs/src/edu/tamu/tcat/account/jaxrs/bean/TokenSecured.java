@@ -59,4 +59,19 @@ public @interface TokenSecured
     * @return A label used to distinguish this annotation from others of the same type
     */
    String label() default "";
+
+   /**
+    * @return {@code true} if the annotated resource must be authenticated or
+    *         {@code false} if authentication is optional and will be handled by the application
+    *         (default = {@code true})
+    *         <p>
+    *         When {@code true}, failure to provide auth credentials (or providing invalid credentials)
+    *         will result in an "access denied" error that prevents the resource code from executing.
+    *         <p>
+    *         When {@code false}, the resource code will always be allowed to execute, but the resulting
+    *         {@link ContextBean} may or may not have security context info attached.
+    *
+    * @see edu.tamu.tcat.account.jaxrs.bean.ContextBean#getOptionally
+    */
+   boolean required() default true;
 }

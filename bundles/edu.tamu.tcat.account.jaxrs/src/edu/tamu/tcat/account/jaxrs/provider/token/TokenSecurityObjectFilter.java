@@ -61,24 +61,32 @@ public class TokenSecurityObjectFilter<PayloadType> implements ContainerRequestF
          .header(TokenDynamicFeature.HEADER_WWWAUTHN, "Bearer")
          .type(MediaType.TEXT_PLAIN);
 
-      if (authKeys.isEmpty())
+      if (authKeys.isEmpty() && annot.required())
          throw new BadRequestException(badRequest.entity("Token not provided to service requiring token").build());
 
-      String header = map.getFirst(authKeys.get(0));
-      if (header == null || header.length() < 8 ||
-          // Get the substring of the token instead of toLowerCase on the whole token for a minor optimization
-          !header.substring(0,7).toLowerCase().equals(TokenDynamicFeature.TOKEN_TYPE_BEARER.toLowerCase()+" "))
-         throw new BadRequestException(badRequest.entity("No Bearer token provided").build());
+      // request context container is required regardless of whether the token payload is present or not:
+      // we set up this container here and populate it later if we have a token.
+      ContextBean.Installer installer = ContextBean.from(requestContext);
+      ContextBean.Container<PayloadType> container = installer.install(tokenService.getPayloadType());
 
-      try
+      if (!authKeys.isEmpty())
       {
-         String token = header.substring(7);
-         PayloadType tokenPayload = tokenService.unpackToken(token);
-         ContextBean.from(requestContext).install(tokenService.getPayloadType()).set(annot.label(), tokenPayload);
-      }
-      catch (Exception e)
-      {
-         throw new BadRequestException(badRequest.entity("Invalid token provided").build());
+         String header = map.getFirst(authKeys.get(0));
+         if (header == null || header.length() < 8 ||
+             // Get the substring of the token instead of toLowerCase on the whole token for a minor optimization
+             !header.substring(0,7).toLowerCase().equals(TokenDynamicFeature.TOKEN_TYPE_BEARER.toLowerCase()+" "))
+            throw new BadRequestException(badRequest.entity("No Bearer token provided").build());
+
+         try
+         {
+            String token = header.substring(7);
+            PayloadType tokenPayload = tokenService.unpackToken(token);
+            container.set(annot.label(), tokenPayload);
+         }
+         catch (Exception e)
+         {
+            throw new BadRequestException(badRequest.entity("Invalid token provided").build());
+         }
       }
    }
 }
