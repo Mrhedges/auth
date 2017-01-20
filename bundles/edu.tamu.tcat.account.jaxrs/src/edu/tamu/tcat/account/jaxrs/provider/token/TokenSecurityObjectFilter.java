@@ -77,6 +77,8 @@ public class TokenSecurityObjectFilter<PayloadType> implements ContainerRequestF
              !header.substring(0,7).toLowerCase().equals(TokenDynamicFeature.TOKEN_TYPE_BEARER.toLowerCase()+" "))
             throw new BadRequestException(badRequest.entity("No Bearer token provided").build());
 
+         // if the client provides a token, it should be valid
+         // see documentation on {@link TokenSecured} for more details.
          try
          {
             String token = header.substring(7);
