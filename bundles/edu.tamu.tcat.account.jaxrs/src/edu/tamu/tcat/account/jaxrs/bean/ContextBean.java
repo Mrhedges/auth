@@ -85,11 +85,22 @@ public class ContextBean
       return getWrapper(ccp, type).get(label);
    }
 
+   /**
+    * @param type
+    * @return
+    * @since 2.1.0
+    */
    public <T> Optional<T> getOptionally(Class<T> type)
    {
       return Optional.ofNullable(get(type));
    }
 
+   /**
+    * @param type
+    * @param label
+    * @return
+    * @since 2.1.0
+    */
    public <T> Optional<T> getOptionally(Class<T> type, String label)
    {
       return Optional.ofNullable(get(type, label));

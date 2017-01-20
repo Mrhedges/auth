@@ -81,7 +81,7 @@ public @interface TokenSecured
     *
     * @return Whether the current resource requires authentication ({@code true}) or
     *         may permit anonymous access ({@code false})
-    *
+    * @since 2.1.0
     * @see edu.tamu.tcat.account.jaxrs.bean.ContextBean#getOptionally
     */
    boolean required() default true;
