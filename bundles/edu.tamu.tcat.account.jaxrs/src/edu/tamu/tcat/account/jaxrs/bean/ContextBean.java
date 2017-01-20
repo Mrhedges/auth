@@ -19,6 +19,7 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -82,6 +83,16 @@ public class ContextBean
       Objects.requireNonNull(type);
       Objects.requireNonNull(label);
       return getWrapper(ccp, type).get(label);
+   }
+
+   public <T> Optional<T> getOptionally(Class<T> type)
+   {
+      return Optional.ofNullable(get(type));
+   }
+
+   public <T> Optional<T> getOptionally(Class<T> type, String label)
+   {
+      return Optional.ofNullable(get(type, label));
    }
 
    /**
