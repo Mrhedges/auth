@@ -14,6 +14,6 @@ Import-Package: edu.tamu.tcat.account;version="[2.0.0,3.0.0)",
  javax.ws.rs.core;version="[2.0.0,2.0.0]",
  javax.ws.rs.ext;version="[2.0.0,2.0.0]"
 Export-Package: edu.tamu.tcat.account.jaxrs.bean;version="2.1.0",
- edu.tamu.tcat.account.jaxrs.internal;version="2.0.0";x-internal:=true,
- edu.tamu.tcat.account.jaxrs.provider.signature;version="2.0.0",
+ edu.tamu.tcat.account.jaxrs.internal;version="2.1.0";x-internal:=true,
+ edu.tamu.tcat.account.jaxrs.provider.signature;version="2.1.0",
  edu.tamu.tcat.account.jaxrs.provider.token;version="2.1.0"
