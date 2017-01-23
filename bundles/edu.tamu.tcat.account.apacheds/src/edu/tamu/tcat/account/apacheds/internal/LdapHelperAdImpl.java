@@ -821,13 +821,16 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
    }
 
-   public void createUser(String cn, String ou, String displayName, String userName, LdapConnection boundConnection) throws LdapException
+   public void createUser(String cn, String ou, String displayName, String userName, String password, LdapConnection boundConnection) throws LdapException
    {
 		String dn = "CN=" + cn + ",OU=" + ou;
 		try {
 			Entry entry = new DefaultEntry();
 			entry.add("cn", cn);
-			entry.add("object.class", "organizationalPerson|person|top|user");
+			entry.add("objectClass", "organizationalPerson");
+			entry.add("objectClass", "person");
+			entry.add("objectClass", "top");
+			entry.add("objectClass", "user");
 			entry.add("instanceType", "4");
 			entry.add("objectCategory",
 					"CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}");
@@ -837,13 +840,23 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 			entry.add("name", displayName);
 			entry.add("sAMAccountName", userName);
 
+			boundConnection.getRootDse("OU="+ ou);
 			// AttributeType type =
-			// connection.getSchemaManager().getAttributeType("msDS-UserAccountDisabled");
+//			boundConnection.getSchemaManager().getAttributeType("msDS-UserAccountDisabled");
 			// Value<Boolean> v;
 
 			entry.setDn(new Dn(dn));
 //			entry.setDn(dn);
-
+	        String quotedPassword = "\"" + password + "\"";
+	        char unicodePwd[] = quotedPassword.toCharArray();
+	        byte pwdArray[] = new byte[unicodePwd.length * 2];
+	        for (int i = 0; i < unicodePwd.length; i++)
+	        {
+	            pwdArray[i * 2 + 1] = (byte)(unicodePwd[i] >>> 8);
+	            pwdArray[i * 2 + 0] = (byte)(unicodePwd[i] & 0xff);
+	        }
+            entry.add("UnicodePwd", pwdArray);
+	         
 			AddRequest addRequest = new AddRequestImpl();
 			addRequest.setEntry(entry);
 
@@ -853,20 +866,20 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 				throw new LdapException("Null response for ldap entry add of [" + dn + "]");
 			if (!ResultCodeEnum.SUCCESS.equals(response.getLdapResult().getResultCode()))
 				throw new LdapException(
-						"Response " + response.getLdapResult().getResultCode() + " for ldap entry add of [" + dn + "]");
+						"Response " + response.getLdapResult().getResultCode() + " for ldap entry add of [" + dn + "]\n"+response.getLdapResult().getDiagnosticMessage());
 		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
 			throw new LdapException("Failed add entry [" + dn + "]", e);
 		}
 	}
    
-   public void createUser(String cn, String ou, String displayName, String userName) throws LdapException
+   public void createUser(String cn, String ou, String displayName, String userName, String password) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          try
          {
             connection.bind();
-            createUser(cn, ou, displayName, userName, connection);
+            createUser(cn, ou, displayName, userName, password, connection);
          }
          finally
          {

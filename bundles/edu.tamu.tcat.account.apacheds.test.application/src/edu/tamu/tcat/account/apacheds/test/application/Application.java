@@ -99,7 +99,7 @@ public class Application implements IApplication
              String ou = args.get(index + 1);
              index = args.indexOf("-u");
              String userName = args.get(index + 1);
-             helper.createUser(cn, ou, cn, userName);
+             helper.createUser(cn, ou, cn, userName, "1Password2");
          }
       }
       else if (!args.contains("-u"))

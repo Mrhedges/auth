@@ -252,12 +252,12 @@ public class LdapSessionAdImpl implements LdapSession
 
 
    @Override
-   public void  createUser(String cn, String ou, String displayName, String userName) throws LdapException
+   public void  createUser(String cn, String ou, String displayName, String userName, String password) throws LdapException
    {
       init();
       synchronized (boundConnection)
       {
-         helper.createUser(cn, ou, displayName, userName, boundConnection);
+         helper.createUser(cn, ou, displayName, userName, password, boundConnection);
       }
    }
    
