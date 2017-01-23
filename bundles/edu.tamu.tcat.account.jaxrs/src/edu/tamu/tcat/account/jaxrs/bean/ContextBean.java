@@ -85,12 +85,29 @@ public class ContextBean
       return getWrapper(ccp, type).get(label);
    }
 
-   public <T> Optional<T> getOptionally(Class<T> type)
+   /**
+    * Wraps the context value for the given type in an Optional for use in a streaming paradigm.
+    *
+    * @param type
+    * @return An Optional variant of calling {@link ContextBean#get(Class)}
+    * @since 2.1
+    * @throws AccountException if no context has been set up for the given type
+    */
+   public <T> Optional<T> getOptionally(Class<T> type) throws AccountException
    {
       return Optional.ofNullable(get(type));
    }
 
-   public <T> Optional<T> getOptionally(Class<T> type, String label)
+   /**
+    * Wraps the context value for the given type and label in an Optional for use in a streaming paradigm.
+    *
+    * @param type
+    * @param label
+    * @return An Optional variant of calling {@link ContextBean#get(Class, String)}
+    * @since 2.1
+    * @throws AccountException if no context has been set up for the given type
+    */
+   public <T> Optional<T> getOptionally(Class<T> type, String label) throws AccountException
    {
       return Optional.ofNullable(get(type, label));
    }
