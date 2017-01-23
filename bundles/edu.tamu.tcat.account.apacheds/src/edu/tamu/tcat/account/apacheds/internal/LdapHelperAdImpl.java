@@ -820,40 +820,53 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          return false;
       }
    }
+
+   public void createUser(String cn, String ou, String displayName, String userName, LdapConnection boundConnection) throws LdapException
+   {
+		String dn = "CN=" + cn + ",OU=" + ou;
+		try {
+			Entry entry = new DefaultEntry();
+			entry.add("cn", cn);
+			entry.add("object.class", "organizationalPerson|person|top|user");
+			entry.add("instanceType", "4");
+			entry.add("objectCategory",
+					"CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}");
+			entry.add("distinguishedName", dn);
+			entry.add("msDS-UserAccountDisabled", "FALSE");
+			entry.add("msDS-UserDontExpirePassword", "TRUE");
+			entry.add("name", displayName);
+			entry.add("sAMAccountName", userName);
+
+			// AttributeType type =
+			// connection.getSchemaManager().getAttributeType("msDS-UserAccountDisabled");
+			// Value<Boolean> v;
+
+			entry.setDn(new Dn(dn));
+//			entry.setDn(dn);
+
+			AddRequest addRequest = new AddRequestImpl();
+			addRequest.setEntry(entry);
+
+			AddResponse response = boundConnection.add(addRequest);
+
+			if (null == response)
+				throw new LdapException("Null response for ldap entry add of [" + dn + "]");
+			if (!ResultCodeEnum.SUCCESS.equals(response.getLdapResult().getResultCode()))
+				throw new LdapException(
+						"Response " + response.getLdapResult().getResultCode() + " for ldap entry add of [" + dn + "]");
+		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
+			throw new LdapException("Failed add entry [" + dn + "]", e);
+		}
+	}
    
    public void createUser(String cn, String ou, String displayName, String userName) throws LdapException
    {
-      String dn = cn+','+ou;
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          try
          {
             connection.bind();
-            Entry entry = new DefaultEntry();
-            entry.add("cn",cn);
-            entry.add("object.class", "organizationalPerson|person|top|user");
-            entry.add("instanceType", "4");
-            entry.add("objectCategory", "CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}");
-            entry.add("distinguishedName",dn);
-            entry.add("msDS-UserAccountDisabled", "FALSE");
-            entry.add("msDS-UserDontExpirePassword", "TRUE");
-            entry.add("name", displayName);
-            entry.add("sAMAccountName", userName);
-            
-//            AttributeType type = connection.getSchemaManager().getAttributeType("msDS-UserAccountDisabled");
-//            Value<Boolean> v;
-            
-            entry.setDn(dn);
-            
-            AddRequest addRequest = new AddRequestImpl();
-            addRequest.setEntry( entry );
-            
-            AddResponse response = connection.add(addRequest);
-
-            if (null == response)
-               throw new LdapException("Null response for ldap entry add of [" + dn + "]");
-            if (!ResultCodeEnum.SUCCESS.equals(response.getLdapResult().getResultCode()))
-               throw new LdapException("Response " + response.getLdapResult().getResultCode() + " for ldap entry add of [" + dn + "]");
+            createUser(cn, ou, displayName, userName, connection);
          }
          finally
          {
@@ -862,9 +875,8 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
       catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
-         throw new LdapException("Failed add entry [" + dn + "]", e);
+         throw new LdapException("Failed add entry [CN=" + cn + ",OU=" + ou + "]", e);
       }
-      
    }
    
    static class ClosableCursor implements AutoCloseable

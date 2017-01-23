@@ -249,4 +249,17 @@ public class LdapSessionAdImpl implements LdapSession
          helper.changePasswordUincodePassword(userDistinguishedName, password, boundConnection);
       }
    }
+
+
+   @Override
+   public void  createUser(String cn, String ou, String displayName, String userName) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.createUser(cn, ou, displayName, userName, boundConnection);
+      }
+   }
+   
+   
 }

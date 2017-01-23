@@ -88,6 +88,20 @@ public class Application implements IApplication
             System.out.println("Password changed to ["+password+"]");
          }
       }
+      else if (args.contains("addUser"))
+      {
+         int index = args.indexOf("-f");
+         try (LdapSession helper = createLdapSession(args.get(index + 1)))
+         {
+             index = args.indexOf("-cn");
+             String cn = args.get(index + 1);
+             index = args.indexOf("-ou");
+             String ou = args.get(index + 1);
+             index = args.indexOf("-u");
+             String userName = args.get(index + 1);
+             helper.createUser(cn, ou, cn, userName);
+         }
+      }
       else if (!args.contains("-u"))
       {
          System.out.println("user distinguished name must be specified");
@@ -129,6 +143,8 @@ public class Application implements IApplication
             System.out.println("User [" + user + "] is "+ (helper.isMemberOf(group, user) ? "" : "not")+" a member of group ["+group+"]");
          }
       }
+      
+      // catch exception and print it & return exit not ok
       return IApplication.EXIT_OK;
    }
 

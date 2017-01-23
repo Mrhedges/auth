@@ -9,6 +9,8 @@ public interface LdapHelperMutator
    void changePasswordUserPassword(String userDistinguishedName, String password) throws LdapException;
    void changePasswordUnicodePassword(String userDistinguishedName, String password) throws LdapException;
    
+//   void addUserToGroup(String userDn, String groupDn) throws LdapException;
+   void createUser(String cn, String ou, String displayName, String userName) throws LdapException;
    //   /**
 //    * Attempt to add the specified attribute value to the userDistinguishedName in ouSearchPrefix
 //    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
