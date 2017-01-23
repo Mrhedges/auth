@@ -37,6 +37,11 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * Will have a {@link ContextBean} with the requested payload.
+ * <p>
+ * The default behavior requires that clients provide a valid token in order for the resource code to even execute.
+ * However, this behavior may be relaxed (thereby permitting anonymous access) by setting the {@code required}
+ * attribute to {@code false}. Please refer to the documentation on {@link TokenSecured#required()} for details on
+ * how this attribute affects the behavior.
  *
  * @see edu.tamu.tcat.account.jaxrs.provider.token.TokenSecurityObjectFilter
  */
@@ -59,4 +64,25 @@ public @interface TokenSecured
     * @return A label used to distinguish this annotation from others of the same type
     */
    String label() default "";
+
+   /**
+    * Indicates whether the annotated resource must be authenticated ({@code true}), or whether
+    * authentication is optional ({@code false}), in which case the resource behavior will be
+    * handled by the application. (default = {@code true})
+    *
+    * When {@code true}, failure to provide auth credentials (or providing invalid credentials)
+    * will result in an "access denied" error that prevents the resource code from executing.
+    *
+    * When {@code false}, the resource code will be allowed to execute if the token is either
+    * valid or absent, in which case the {@link ContextBean} may or may not have security context
+    * info attached, respectively. Invalid tokens will result in an "access denied" alert
+    * (the alternative to quietly treat the request as anonymous could be problematic if the client
+    * expects to be operating with authenticated privileges).
+    *
+    * @return Whether the current resource requires authentication ({@code true}) or
+    *         may permit anonymous access ({@code false})
+    * @since 2.1.0
+    * @see edu.tamu.tcat.account.jaxrs.bean.ContextBean#getOptionally
+    */
+   boolean required() default true;
 }

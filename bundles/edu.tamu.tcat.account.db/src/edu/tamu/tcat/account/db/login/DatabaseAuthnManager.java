@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Texas A&M Engineering Experiment Station
+ * Copyright 2014-2016 Texas A&M Engineering Experiment Station
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
 
 import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.db.AdaptingTokenService;
@@ -83,8 +84,8 @@ public final class DatabaseAuthnManager
              "CREATE TABLE {0} (" +
              "  user_id BIGSERIAL NOT NULL, " +
              "  user_name VARCHAR NOT NULL," +
-             "  password_hash BYTEA," +
-             "  reset_hash BYTEA DEFAULT NULL," +
+             "  password_hash VARCHAR," +
+             "  reset_hash VARCHAR DEFAULT NULL," +
              "  first_name VARCHAR," +
              "  last_name VARCHAR," +
              "  email VARCHAR" +
@@ -97,7 +98,7 @@ public final class DatabaseAuthnManager
          " WHERE user_name = ? ";
    public static final String GET_ACCOUNT_TEMPLATE = "SELECT * FROM {0} WHERE {1} = ?";
 
-   private static final String SQL_TABLENAME = "authn_local";
+   public static final String SQL_TABLENAME = "authn_local";
    private static final String SQL_COL_USERNAME = "user_name";
    private static final String SQL_COL_PWDHASHED = "password_hash";
 
@@ -123,7 +124,7 @@ public final class DatabaseAuthnManager
       Map<String, Object> props = new HashMap<>();
       props.put(DatabaseAuthnManager.PROP_TOKEN_PROPERTY_KEY, tokenKey);
       props.put(DatabaseAuthnManager.PROP_TOKEN_EXPIRES_KEY, Long.valueOf(duration));
-      props.put(DatabaseAuthnManager.PROP_TOKEN_EXPIRES_UNIT_KEY, unit);
+      props.put(DatabaseAuthnManager.PROP_TOKEN_EXPIRES_UNIT_KEY, unit.name());
       mgr.activate(props);
 
       return mgr;
@@ -167,8 +168,8 @@ public final class DatabaseAuthnManager
     *   <li>{@link DatabaseAuthnManager#PROP_TOKEN_EXPIRES_KEY} - The amount of time password
     *       reset tokens should be valid before they can no longer be used. Defaults to {@code 24}.</li>
     *   <li>{@link DatabaseAuthnManager#PROP_TOKEN_EXPIRES_UNIT_KEY} - The time unit associated
-    *       with the token expiration time. Must be a value defined by {@link ChronoUnit}.
-    *       Defaults to {@link ChronoUnit#HOURS}.</li>
+    *       with the token expiration time. Must be a String representation of a value defined
+    *       by {@link ChronoUnit}. Defaults to {@link ChronoUnit#HOURS}.</li>
     * </ul>
     *
     * @param properties
@@ -215,16 +216,6 @@ public final class DatabaseAuthnManager
             throw (RuntimeException)ex;
 
          throw new IllegalStateException(msg, ex);
-      }
-   }
-
-   @Deprecated // unneeded once AccountException is unchecked
-   private AccountRecord safeResolver(long uId)
-   {
-      try {
-         return getRecord(uId);
-      } catch (AccountException ex) {
-         throw new IllegalStateException(ex);
       }
    }
 
@@ -371,6 +362,8 @@ public final class DatabaseAuthnManager
          Throwable cause = ex.getCause();
          if (AccountException.class.isInstance(cause))
             throw (AccountException)cause;
+         if (LoginException.class.isInstance(cause))
+            throw new AccountException(cause.getMessage(), cause);
 
          throw new AccountException(error.get(), cause);
       }
@@ -434,7 +427,7 @@ public final class DatabaseAuthnManager
    {
       public AccountRecordTokenService(TokenService<Long> delegate, DatabaseAuthnManager accounts)
       {
-         super(AccountRecord.class, delegate, rv -> rv.uid, accounts::safeResolver);
+         super(AccountRecord.class, delegate, rv -> rv.uid, accounts::getRecord);
       }
 
    }

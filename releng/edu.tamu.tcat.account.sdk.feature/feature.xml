@@ -2,7 +2,7 @@
 <feature
       id="edu.tamu.tcat.account.sdk.feature"
       label="TCAT Account SDK Feature"
-      version="2.0.0.qualifier"
+      version="2.0.1.qualifier"
       provider-name="Texas A&amp;M Engineering Experiment Station">
 
    <description>
@@ -79,14 +79,14 @@ limitations under the License.
          id="edu.tamu.tcat.account.jaxrs"
          download-size="0"
          install-size="0"
-         version="2.0.0.qualifier"
+         version="2.1.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.jaxrs.source"
          download-size="0"
          install-size="0"
-         version="2.0.0.qualifier"
+         version="2.1.0.qualifier"
          unpack="false"/>
 
 </feature>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Texas A&M Engineering Experiment Station
+ * Copyright 2014-2016 Texas A&M Engineering Experiment Station
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package edu.tamu.tcat.account.db.login;
 
-import edu.tamu.tcat.account.AccountException;
 import edu.tamu.tcat.account.db.spi.DatabaseLoginModule;
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
@@ -43,17 +42,10 @@ public class DatabaseLoginProvider implements LoginProvider
    @Override
    public LoginData login()
    {
-      try
-      {
-         AccountRecord rec = authnMananger.authenticate(userName, pass);
-         if (rec == null)
-            return null;
-         LoginData rv = new DbLoginData(instanceId, rec);
-         return rv;
-      }
-      catch (Exception e)
-      {
-         throw new AccountException(e);
-      }
+      AccountRecord rec = authnMananger.authenticate(userName, pass);
+      if (rec == null)
+         return null;
+      LoginData rv = new DbLoginData(instanceId, rec);
+      return rv;
    }
 }
