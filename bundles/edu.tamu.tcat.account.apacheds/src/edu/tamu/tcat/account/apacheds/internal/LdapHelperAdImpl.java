@@ -290,14 +290,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          Entry entry = boundConnection.lookup(userDistinguishedName);
          if(entry == null)
             throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-         String quotedPassword = "\"" + password + "\"";
-         char unicodePwd[] = quotedPassword.toCharArray();
-         byte pwdArray[] = new byte[unicodePwd.length * 2];
-         for (int i = 0; i < unicodePwd.length; i++)
-         {
-            pwdArray[i * 2 + 1] = (byte)(unicodePwd[i] >>> 8);
-            pwdArray[i * 2 + 0] = (byte)(unicodePwd[i] & 0xff);
-         }
+         byte[] pwdArray = encodeUnicodePassword(password);
          ModifyRequest req = new ModifyRequestImpl();
          req.replace("UnicodePwd", pwdArray);
          Dn dn = entry.getDn();
@@ -847,14 +840,7 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 
 			entry.setDn(new Dn(dn));
 //			entry.setDn(dn);
-	        String quotedPassword = "\"" + password + "\"";
-	        char unicodePwd[] = quotedPassword.toCharArray();
-	        byte pwdArray[] = new byte[unicodePwd.length * 2];
-	        for (int i = 0; i < unicodePwd.length; i++)
-	        {
-	            pwdArray[i * 2 + 1] = (byte)(unicodePwd[i] >>> 8);
-	            pwdArray[i * 2 + 0] = (byte)(unicodePwd[i] & 0xff);
-	        }
+	        byte[] pwdArray = encodeUnicodePassword(password);
             entry.add("UnicodePwd", pwdArray);
 	         
 			AddRequest addRequest = new AddRequestImpl();
@@ -871,6 +857,18 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
 			throw new LdapException("Failed add entry [" + dn + "]", e);
 		}
 	}
+
+private byte[] encodeUnicodePassword(String password) {
+	String quotedPassword = "\"" + password + "\"";
+	char unicodePwd[] = quotedPassword.toCharArray();
+	byte pwdArray[] = new byte[unicodePwd.length * 2];
+	for (int i = 0; i < unicodePwd.length; i++)
+	{
+	    pwdArray[i * 2 + 1] = (byte)(unicodePwd[i] >>> 8);
+	    pwdArray[i * 2 + 0] = (byte)(unicodePwd[i] & 0xff);
+	}
+	return pwdArray;
+}
    
    public void createUser(String cn, String ou, String displayName, String userName, String password) throws LdapException
    {
