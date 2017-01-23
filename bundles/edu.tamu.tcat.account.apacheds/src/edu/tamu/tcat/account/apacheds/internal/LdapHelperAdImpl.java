@@ -30,7 +30,6 @@ import org.apache.directory.api.ldap.model.message.ModifyRequestImpl;
 import org.apache.directory.api.ldap.model.message.ResultCodeEnum;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.api.ldap.model.name.Dn;
-import org.apache.directory.api.ldap.model.schema.AttributeType;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
@@ -814,35 +813,44 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
    }
 
-   public void createUser(String cn, String ou, String displayName, String userName, String password, LdapConnection boundConnection) throws LdapException
+   public void createUser(String cn, String ou, String unicodePassword, String userPassword, List<String> objectClasses, 
+		   String instanceType, String objectCategory, Map<String, String> attributes, LdapConnection boundConnection) throws LdapException
    {
 		String dn = "CN=" + cn + ",OU=" + ou;
 		try {
 			Entry entry = new DefaultEntry();
 			entry.add("cn", cn);
-			entry.add("objectClass", "organizationalPerson");
-			entry.add("objectClass", "person");
-			entry.add("objectClass", "top");
-			entry.add("objectClass", "user");
-			entry.add("instanceType", "4");
-			entry.add("objectCategory",
-					"CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}");
-			entry.add("distinguishedName", dn);
-			entry.add("msDS-UserAccountDisabled", "FALSE");
-			entry.add("msDS-UserDontExpirePassword", "TRUE");
-			entry.add("name", displayName);
-			entry.add("sAMAccountName", userName);
-
-			boundConnection.getRootDse("OU="+ ou);
-			// AttributeType type =
-//			boundConnection.getSchemaManager().getAttributeType("msDS-UserAccountDisabled");
-			// Value<Boolean> v;
+			for (String c: objectClasses)
+				entry.add("objectClass", c);
+//			entry.add("objectClass", "organizationalPerson");
+//			entry.add("objectClass", "person");
+//			entry.add("objectClass", "top");
+//			entry.add("objectClass", "user");
+			entry.add("instanceType", instanceType);
+//			entry.add("instanceType", "4");
+			entry.add("objectCategory",objectCategory);
+//			entry.add("objectCategory",
+//					"CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}");
+			
+			for(java.util.Map.Entry<String,String> e : attributes.entrySet())
+				entry.add(e.getKey(), e.getValue());
+//			entry.add("distinguishedName", dn);
+//			entry.add("msDS-UserAccountDisabled", "FALSE");
+//			entry.add("msDS-UserDontExpirePassword", "TRUE");
+//			entry.add("name", displayName);
+//			entry.add("sAMAccountName", userName);
 
 			entry.setDn(new Dn(dn));
 //			entry.setDn(dn);
-	        byte[] pwdArray = encodeUnicodePassword(password);
-            entry.add("UnicodePwd", pwdArray);
-	         
+			if(unicodePassword != null && !unicodePassword.isEmpty())
+			{
+	            byte[] pwdArray = encodeUnicodePassword(unicodePassword);
+                entry.add("UnicodePwd", pwdArray);
+			}
+			if(userPassword != null && !userPassword.isEmpty())
+			{
+                entry.add("userpassword", userPassword);
+			}
 			AddRequest addRequest = new AddRequestImpl();
 			addRequest.setEntry(entry);
 
@@ -870,14 +878,15 @@ private byte[] encodeUnicodePassword(String password) {
 	return pwdArray;
 }
    
-   public void createUser(String cn, String ou, String displayName, String userName, String password) throws LdapException
+   public void createUser(String cn, String ou, String unicodePassword, String userPassword, List<String> objectClasses, 
+		   String instanceType, String objectCategory, Map<String, String> attributes) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          try
          {
             connection.bind();
-            createUser(cn, ou, displayName, userName, password, connection);
+            createUser(cn, ou, unicodePassword, userPassword, objectClasses, instanceType, objectCategory, attributes, connection);
          }
          finally
          {

@@ -4,7 +4,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.Platform;
@@ -99,7 +101,18 @@ public class Application implements IApplication
              String ou = args.get(index + 1);
              index = args.indexOf("-u");
              String userName = args.get(index + 1);
-             helper.createUser(cn, ou, cn, userName, "1Password2");
+             List<String> objClasses = Arrays.asList("organizationalPerson", "person", "top", "user");
+ 			 String instanceType="4";
+ 			 String objectCategory = "CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}";
+ 			
+ 			Map <String,String> attributes = new HashMap<>();
+ 			attributes.put("distinguishedName", "CN="+cn+",OU="+ou);
+ 			attributes.put("msDS-UserAccountDisabled", "FALSE");
+ 			attributes.put("msDS-UserDontExpirePassword", "TRUE");
+ 			attributes.put("name", cn);
+ 			attributes.put("sAMAccountName", userName);
+             
+            helper.createUser(cn, ou, "1Password2", null, objClasses, instanceType, objectCategory, attributes);
          }
       }
       else if (!args.contains("-u"))

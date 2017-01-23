@@ -1,5 +1,8 @@
 package edu.tamu.tcat.account.apacheds;
 
+import java.util.List;
+import java.util.Map;
+
 //
 /**
  * This interface provides mutator access to an LDAP server
@@ -10,7 +13,8 @@ public interface LdapHelperMutator
    void changePasswordUnicodePassword(String userDistinguishedName, String password) throws LdapException;
    
 //   void addUserToGroup(String userDn, String groupDn) throws LdapException;
-   void createUser(String cn, String ou, String displayName, String userName, String password) throws LdapException;
+   void createUser(String cn, String ou, String unicodePassword, String userPassword, List<String> objectClasses, 
+		   String instanceType, String objectCategory, Map<String, String> attributes) throws LdapException;
    //   /**
 //    * Attempt to add the specified attribute value to the userDistinguishedName in ouSearchPrefix
 //    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
