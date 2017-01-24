@@ -13,7 +13,8 @@ public interface LdapHelperMutator
    void changePasswordUnicodePassword(String userDistinguishedName, String password) throws LdapException;
    
 //TODO add group management 
-//   void addUserToGroup(String userDn, String groupDn) throws LdapException;
+   void addUserToGroup(String userDn, String groupDn) throws LdapException;
+   void removeUserFromGroup(String userDn, String groupDn) throws LdapException;
    
    /**
  * DN of new user will be CN=&lt;cn&gt;,OU=&lt;ou&gt;
