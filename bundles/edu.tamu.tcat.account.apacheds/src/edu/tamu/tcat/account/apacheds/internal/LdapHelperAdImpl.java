@@ -898,8 +898,86 @@ private byte[] encodeUnicodePassword(String password) {
          throw new LdapException("Failed add entry [CN=" + cn + ",OU=" + ou + "]", e);
       }
    }
-   
-   static class ClosableCursor implements AutoCloseable
+
+	public void addUserToGroup(String userDn, String groupDn, LdapConnection boundConnection) throws LdapException {
+		try {
+			// get group
+			Entry entry = boundConnection.lookup(groupDn);
+			// add member attribute
+			ModifyRequest req = new ModifyRequestImpl();
+			req.add("member", userDn);
+			Dn dn = entry.getDn();
+			req.setName(dn);
+			boundConnection.modify(req);
+
+			// get user
+			entry = boundConnection.lookup(userDn);
+			// add memberOf attribute
+			req = new ModifyRequestImpl();
+			req.add("memberOf", groupDn);
+			dn = entry.getDn();
+			req.setName(dn);
+			boundConnection.modify(req);
+		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
+			throw new LdapException("Failed add user [" + userDn + "] to group [" + groupDn + "]", e);
+		}
+	}
+
+	public void removeUserFromGroup(String userDn, String groupDn, LdapConnection boundConnection)
+			throws LdapException {
+		try {
+			// get group
+			Entry entry = boundConnection.lookup(groupDn);
+			// remove member attribute
+			ModifyRequest req = new ModifyRequestImpl();
+			req.remove("member", userDn);
+			Dn dn = entry.getDn();
+			req.setName(dn);
+			boundConnection.modify(req);
+
+			// get user
+			entry = boundConnection.lookup(userDn);
+			// remove memberOf attribute
+			req = new ModifyRequestImpl();
+			req.remove("memberOf", groupDn);
+			dn = entry.getDn();
+			req.setName(dn);
+			boundConnection.modify(req);
+		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
+			throw new LdapException("Failed remove user [" + userDn + "] from group [" + groupDn + "]", e);
+		}
+	}
+
+	@Override
+	public void addUserToGroup(String userDn, String groupDn) throws LdapException {
+		try (LdapConnection connection = new LdapNetworkConnection(config)) {
+			try {
+				connection.bind();
+				addUserToGroup(userDn, groupDn, connection);
+			} finally {
+				connection.unBind();
+			}
+		} catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e) {
+			throw new LdapException("Failed add user [" + userDn + "] to group [" + groupDn + "]", e);
+		}
+	}
+
+	@Override
+	public void removeUserFromGroup(String userDn, String groupDn) throws LdapException {
+		try (LdapConnection connection = new LdapNetworkConnection(config)) {
+			try {
+				connection.bind();
+				removeUserFromGroup(userDn, groupDn, connection);
+			} finally {
+				connection.unBind();
+			}
+		} catch (IOException | org.apache.directory.api.ldap.model.exception.LdapException e) {
+			throw new LdapException("Failed remove user [" + userDn + "] from group [" + groupDn + "]", e);
+		}
+	}
+
+
+static class ClosableCursor implements AutoCloseable
    {
       final EntryCursor cursor;
 

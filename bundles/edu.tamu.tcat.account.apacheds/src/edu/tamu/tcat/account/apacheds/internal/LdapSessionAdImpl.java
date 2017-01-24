@@ -261,6 +261,23 @@ public class LdapSessionAdImpl implements LdapSession
          helper.createUser(cn, ou, unicodePassword, userPassword, objectClasses, instanceType, objectCategory, attributes, boundConnection);
       }
    }
-   
-   
+
+	@Override
+	public void addUserToGroup(String userDn, String groupDn) throws LdapException {
+	      init();
+	      synchronized (boundConnection)
+	      {
+	         helper.addUserToGroup(userDn, groupDn, boundConnection);
+	      }
+	}
+
+	@Override
+	public void removeUserFromGroup(String userDn, String groupDn) throws LdapException {
+	      init();
+	      synchronized (boundConnection)
+	      {
+	         helper.removeUserFromGroup(userDn, groupDn, boundConnection);
+	      }
+	}
+
 }
