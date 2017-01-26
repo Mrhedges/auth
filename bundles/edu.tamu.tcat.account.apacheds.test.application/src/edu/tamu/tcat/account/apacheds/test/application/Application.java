@@ -131,7 +131,29 @@ public class Application implements IApplication
             helper.checkValidUser(user);
             System.out.println("User [" + user + "] is a valid user");
          }
-         else if (args.contains("testPassword"))
+         else if (args.contains("addUserGroup"))
+         { 
+        	 index = args.indexOf("-f");
+        	 LdapHelperMutator writer = createLdapMutator(args.get(index + 1));
+
+             index = args.indexOf("-g");
+             String group = args.get(index + 1);
+             
+        	 writer.addUserToGroup(user, group);
+             System.out.println("User [" + user + "] is added to ["+group+"]");
+          }
+         else if (args.contains("removeUserGroup"))
+         { 
+        	 index = args.indexOf("-f");
+        	 LdapHelperMutator writer = createLdapMutator(args.get(index + 1));
+
+             index = args.indexOf("-g");
+             String group = args.get(index + 1);
+             
+        	 writer.removeUserFromGroup(user, group);
+             System.out.println("User [" + user + "] is removed from ["+group+"]");
+          }
+          else if (args.contains("testPassword"))
          {
             index = args.indexOf("-p");
             helper.checkValidPassword(user, args.get(index + 1));
@@ -223,6 +245,7 @@ public class Application implements IApplication
 
    private void printHelp()
    {
+	   // TODO add mutator documentation
       System.out.println("Options are:");
       System.out.println("\t-f <configurationFile>");
       System.out.println("\t-u <user distinguished name>");
