@@ -233,4 +233,12 @@
          version="1.0.0.RC1"
          unpack="false"/>
 
+   <plugin
+         id="org.slf4j.nop"
+         download-size="0"
+         install-size="0"
+         version="1.7.2.v201212060727"
+         fragment="true"
+         unpack="false"/>
+
 </feature>
