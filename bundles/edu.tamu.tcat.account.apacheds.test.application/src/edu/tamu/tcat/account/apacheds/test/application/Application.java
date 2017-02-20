@@ -249,17 +249,22 @@ public class Application implements IApplication
 	   // TODO add mutator documentation
       System.out.println("Options are:");
       System.out.println("\t-f <configurationFile>");
-      System.out.println("\t-u <user distinguished name>");
+      System.out.println("\t-u <user distinguished name | sAMAccouName (create only)>");
       System.out.println("\t<testUser {does this user exist} | ");
       System.out.println("\t\ttestPassword {does this user password combination validate} | ");
       System.out.println("\t\tgroups {get the groups of user} | ");
       System.out.println("\t\tmatches {get the users matching an attribute value pair} | ");
-      System.out.println("\t\tattribute {get the specified attributes for this user} >");
-      System.out.println("\t\tmember {tests membership in a group for a user} >");
+      System.out.println("\t\tattribute {get the specified attributes for this user} |");
+      System.out.println("\t\tmember {tests membership in a group for a user}|");
+      System.out.println("\t\taddUser {create a new user with specified cn, ou, and username}|");
+      System.out.println("\t\taddUserGroup {add disntinguished user to distinguished group}|");
+      System.out.println("\t\tremoveUserGroup {remove disntinguished user to distinguished group} >");
       System.out.println("\t[-p <user password>]");
       System.out.println("\t[-a <attribute id>]");
       System.out.println("\t[-v <value>]");
       System.out.println("\t[-g <group distinguished name>]");
+      System.out.println("\t[-cn <common name to build new user distinguished name from>]");
+      System.out.println("\t[-ou <ou to add new user to and construct distinguished name from>]");
 
       //TODO add mutate
 
