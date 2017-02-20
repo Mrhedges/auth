@@ -113,6 +113,7 @@ public class Application implements IApplication
  			attributes.put("sAMAccountName", userName);
              
             helper.createUser(cn, ou, "1Password2", null, objClasses, instanceType, objectCategory, attributes);
+            System.out.println("User created ["+attributes.get("distinguishedName")+"][" + attributes.get("sAMAccountName")+"]" );
          }
       }
       else if (!args.contains("-u"))
