@@ -4,7 +4,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.Platform;
@@ -88,6 +90,32 @@ public class Application implements IApplication
             System.out.println("Password changed to ["+password+"]");
          }
       }
+      else if (args.contains("addUser"))
+      {
+         int index = args.indexOf("-f");
+         try (LdapSession helper = createLdapSession(args.get(index + 1)))
+         {
+             index = args.indexOf("-cn");
+             String cn = args.get(index + 1);
+             index = args.indexOf("-ou");
+             String ou = args.get(index + 1);
+             index = args.indexOf("-u");
+             String userName = args.get(index + 1);
+             List<String> objClasses = Arrays.asList("organizationalPerson", "person", "top", "user");
+ 			 String instanceType="4";
+ 			 String objectCategory = "CN=Person,CN=Schema,CN=Configuration,CN={DC42C6A0-6A5A-4683-9B9C-E7B7C93E30E9}";
+ 			
+ 			Map <String,String> attributes = new HashMap<>();
+ 			attributes.put("distinguishedName", "CN="+cn+",OU="+ou);
+ 			attributes.put("msDS-UserAccountDisabled", "FALSE");
+ 			attributes.put("msDS-UserDontExpirePassword", "TRUE");
+ 			attributes.put("name", cn);
+ 			attributes.put("sAMAccountName", userName);
+             
+            helper.createUser(cn, ou, "1Password2", null, objClasses, instanceType, objectCategory, attributes);
+            System.out.println("User created ["+attributes.get("distinguishedName")+"][" + attributes.get("sAMAccountName")+"]" );
+         }
+      }
       else if (!args.contains("-u"))
       {
          System.out.println("user distinguished name must be specified");
@@ -104,7 +132,29 @@ public class Application implements IApplication
             helper.checkValidUser(user);
             System.out.println("User [" + user + "] is a valid user");
          }
-         else if (args.contains("testPassword"))
+         else if (args.contains("addUserGroup"))
+         { 
+        	 index = args.indexOf("-f");
+        	 LdapHelperMutator writer = createLdapMutator(args.get(index + 1));
+
+             index = args.indexOf("-g");
+             String group = args.get(index + 1);
+             
+        	 writer.addUserToGroup(user, group);
+             System.out.println("User [" + user + "] is added to ["+group+"]");
+          }
+         else if (args.contains("removeUserGroup"))
+         { 
+        	 index = args.indexOf("-f");
+        	 LdapHelperMutator writer = createLdapMutator(args.get(index + 1));
+
+             index = args.indexOf("-g");
+             String group = args.get(index + 1);
+             
+        	 writer.removeUserFromGroup(user, group);
+             System.out.println("User [" + user + "] is removed from ["+group+"]");
+          }
+          else if (args.contains("testPassword"))
          {
             index = args.indexOf("-p");
             helper.checkValidPassword(user, args.get(index + 1));
@@ -129,6 +179,8 @@ public class Application implements IApplication
             System.out.println("User [" + user + "] is "+ (helper.isMemberOf(group, user) ? "" : "not")+" a member of group ["+group+"]");
          }
       }
+      
+      // catch exception and print it & return exit not ok
       return IApplication.EXIT_OK;
    }
 
@@ -194,19 +246,25 @@ public class Application implements IApplication
 
    private void printHelp()
    {
+	   // TODO add mutator documentation
       System.out.println("Options are:");
       System.out.println("\t-f <configurationFile>");
-      System.out.println("\t-u <user distinguished name>");
+      System.out.println("\t-u <user distinguished name | sAMAccouName (create only)>");
       System.out.println("\t<testUser {does this user exist} | ");
       System.out.println("\t\ttestPassword {does this user password combination validate} | ");
       System.out.println("\t\tgroups {get the groups of user} | ");
       System.out.println("\t\tmatches {get the users matching an attribute value pair} | ");
-      System.out.println("\t\tattribute {get the specified attributes for this user} >");
-      System.out.println("\t\tmember {tests membership in a group for a user} >");
+      System.out.println("\t\tattribute {get the specified attributes for this user} |");
+      System.out.println("\t\tmember {tests membership in a group for a user}|");
+      System.out.println("\t\taddUser {create a new user with specified cn, ou, and username}|");
+      System.out.println("\t\taddUserGroup {add disntinguished user to distinguished group}|");
+      System.out.println("\t\tremoveUserGroup {remove disntinguished user to distinguished group} >");
       System.out.println("\t[-p <user password>]");
       System.out.println("\t[-a <attribute id>]");
       System.out.println("\t[-v <value>]");
       System.out.println("\t[-g <group distinguished name>]");
+      System.out.println("\t[-cn <common name to build new user distinguished name from>]");
+      System.out.println("\t[-ou <ou to add new user to and construct distinguished name from>]");
 
       //TODO add mutate
 

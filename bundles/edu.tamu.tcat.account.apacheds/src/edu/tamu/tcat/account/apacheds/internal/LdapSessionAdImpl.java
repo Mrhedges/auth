@@ -249,4 +249,35 @@ public class LdapSessionAdImpl implements LdapSession
          helper.changePasswordUincodePassword(userDistinguishedName, password, boundConnection);
       }
    }
+
+
+   @Override
+   public void  createUser(String cn, String ou, String unicodePassword, String userPassword, List<String> objectClasses, 
+		   String instanceType, String objectCategory, Map<String, String> attributes) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.createUser(cn, ou, unicodePassword, userPassword, objectClasses, instanceType, objectCategory, attributes, boundConnection);
+      }
+   }
+
+	@Override
+	public void addUserToGroup(String userDn, String groupDn) throws LdapException {
+	      init();
+	      synchronized (boundConnection)
+	      {
+	         helper.addUserToGroup(userDn, groupDn, boundConnection);
+	      }
+	}
+
+	@Override
+	public void removeUserFromGroup(String userDn, String groupDn) throws LdapException {
+	      init();
+	      synchronized (boundConnection)
+	      {
+	         helper.removeUserFromGroup(userDn, groupDn, boundConnection);
+	      }
+	}
+
 }
