@@ -51,4 +51,6 @@ public interface LdapHelperMutator
     * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
     */
    void removeAttribute(String userDistinguishedName, String attributeId) throws LdapException;
+   
+//should there be a modify - remove of present & add?
 }
