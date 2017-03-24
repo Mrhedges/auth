@@ -595,10 +595,6 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       {
          throw new LdapException("Failed " + attributeId + " add for user " + userDistinguishedName, e);
       }
-      catch (NullPointerException npe)
-      {
-         throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-      }
    }
 
    @Override
