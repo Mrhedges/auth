@@ -52,5 +52,5 @@ public interface LdapHelperMutator
     */
    void removeAttribute(String userDistinguishedName, String attributeId) throws LdapException;
    
-//should there be a modify - remove of present & add?
+//should there be a modify (replace command on Modify request)?
 }

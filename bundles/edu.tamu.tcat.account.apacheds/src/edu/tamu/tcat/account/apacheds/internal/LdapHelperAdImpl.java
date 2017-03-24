@@ -575,12 +575,18 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    {
       try
       {
-         Entry entry;
+         Entry entry = connection.lookup(userDistinguishedName);
+         if (entry == null)
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
+         
+         ModifyRequest req = new ModifyRequestImpl();
          if (value.getClass().equals(byte[].class))
-            entry = connection.lookup(userDistinguishedName).add(attributeId, (byte[])value);
+            req = req.add(attributeId, (byte[])value);
          else
-            entry = connection.lookup(userDistinguishedName).add(attributeId, String.valueOf(value));
-         connection.modify(entry, ModificationOperation.ADD_ATTRIBUTE);
+            req = req.add(attributeId, String.valueOf(value));
+         Dn dn = entry.getDn();
+         req = req.setName(dn);
+         connection.modify(req);
       }
       catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
@@ -625,13 +631,15 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          Entry entry = connection.lookup(userDistinguishedName);
          if (entry == null)
             throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-         if (value.getClass().equals(byte[].class))
-            if (!entry.remove(attributeId, (byte[])value))
-               return;
-            else if (!entry.remove(attributeId, String.valueOf(value)))
-               return;
 
-         connection.modify(entry, ModificationOperation.REMOVE_ATTRIBUTE);
+         ModifyRequest req = new ModifyRequestImpl();
+         if (value.getClass().equals(byte[].class))
+            req = req.remove(attributeId, (byte[])value);
+         else
+            req = req.remove(attributeId, String.valueOf(value));
+         Dn dn = entry.getDn();
+         req.setName(dn);
+         connection.modify(req);
       }
       catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
@@ -671,8 +679,13 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          Entry entry = connection.lookup(userDistinguishedName);
          if (entry == null)
             throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-         entry.removeAttributes(attributeId);
-         connection.modify(entry, ModificationOperation.REMOVE_ATTRIBUTE);
+         
+         ModifyRequest req = new ModifyRequestImpl();
+         req = req.remove(attributeId);
+         Dn dn = entry.getDn();
+         req.setName(dn);
+         connection.modify(req);
+         
       }
       catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
