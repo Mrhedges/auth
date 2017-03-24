@@ -20,7 +20,6 @@ import org.apache.directory.api.ldap.codec.protocol.mina.LdapProtocolCodecFactor
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.entry.Entry;
-import org.apache.directory.api.ldap.model.entry.ModificationOperation;
 import org.apache.directory.api.ldap.model.entry.Value;
 import org.apache.directory.api.ldap.model.message.AddRequest;
 import org.apache.directory.api.ldap.model.message.AddRequestImpl;
@@ -951,7 +950,9 @@ private byte[] encodeUnicodePassword(String password) {
 			req.add("member", userDn);
 			Dn dn = entry.getDn();
 			req.setName(dn);
-			boundConnection.modify(req);
+			ModifyResponse resp = boundConnection.modify(req);
+         if (!Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            throw new LdapException("Failed to add user ["+userDn+"] to group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
 
 			// get user
 			entry = boundConnection.lookup(userDn);
@@ -961,6 +962,11 @@ private byte[] encodeUnicodePassword(String password) {
 			dn = entry.getDn();
 			req.setName(dn);
 			boundConnection.modify(req);
+			resp = boundConnection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to add user ["+userDn+"] to group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
+
 		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
 			throw new LdapException("Failed add user [" + userDn + "] to group [" + groupDn + "]", e);
 		}
@@ -976,7 +982,9 @@ private byte[] encodeUnicodePassword(String password) {
 			req.remove("member", userDn);
 			Dn dn = entry.getDn();
 			req.setName(dn);
-			boundConnection.modify(req);
+			ModifyResponse resp = boundConnection.modify(req);
+         if (!Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            throw new LdapException("Failed to remove user ["+userDn+"] from group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
 
 			// get user
 			entry = boundConnection.lookup(userDn);
@@ -985,7 +993,10 @@ private byte[] encodeUnicodePassword(String password) {
 			req.remove("memberOf", groupDn);
 			dn = entry.getDn();
 			req.setName(dn);
-			boundConnection.modify(req);
+			resp = boundConnection.modify(req);
+         if (!Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            throw new LdapException("Failed to remove user ["+userDn+"] from group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
+
 		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
 			throw new LdapException("Failed remove user [" + userDn + "] from group [" + groupDn + "]", e);
 		}
