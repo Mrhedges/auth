@@ -172,6 +172,37 @@ public class Application implements IApplication
             for (Object a : helper.getAttributes(user, attr))
                System.out.println("User [" + user + "] is has attribute ["+attr+"] value [" + a + "]");
          }
+         else if (args.contains("addAttribute"))
+         {
+            index = args.indexOf("-f");
+            LdapHelperMutator writer = createLdapMutator(args.get(index + 1));
+            index = args.indexOf("-a");
+            String attr = args.get(index + 1);
+            index = args.indexOf("-v");
+            String val = args.get(index + 1);
+            writer.addAttribute(user, attr, val);
+            System.out.println("User [" + user + "] is has added value ["+val+"] to attribute ["+attr+"]");
+         }
+         else if (args.contains("removeAttribute"))
+         {
+            index = args.indexOf("-f");
+            LdapHelperMutator writer = createLdapMutator(args.get(index + 1));
+            index = args.indexOf("-a");
+            String attr = args.get(index + 1);
+            index = args.indexOf("-v");
+            String val = index <0 ? null : args.get(index + 1);
+            if(val == null)
+            {
+               writer.removeAttribute(user, attr);
+               System.out.println("User [" + user + "] is has removed all values from attribute ["+attr+"]");
+               
+            }else
+            {
+               writer.removeAttribute(user, attr, val);
+               System.out.println("User [" + user + "] is has removed value ["+val+"] from attribute ["+attr+"]");
+               
+            }
+         }
          else if (args.contains("member"))
          {
             index = args.indexOf("-g");
@@ -246,7 +277,6 @@ public class Application implements IApplication
 
    private void printHelp()
    {
-	   // TODO add mutator documentation
       System.out.println("Options are:");
       System.out.println("\t-f <configurationFile>");
       System.out.println("\t-u <user distinguished name | sAMAccouName (create only)>");
@@ -255,6 +285,8 @@ public class Application implements IApplication
       System.out.println("\t\tgroups {get the groups of user} | ");
       System.out.println("\t\tmatches {get the users matching an attribute value pair} | ");
       System.out.println("\t\tattribute {get the specified attributes for this user} |");
+      System.out.println("\t\taddAttribute {add the specified attribute and value to this user} |");
+      System.out.println("\t\tremoveAttribute {get the the specified attribute value(s all if no value specified) from this user} |");
       System.out.println("\t\tmember {tests membership in a group for a user}|");
       System.out.println("\t\taddUser {create a new user with specified cn, ou, and username}|");
       System.out.println("\t\taddUserGroup {add disntinguished user to distinguished group}|");
