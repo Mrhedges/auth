@@ -27,6 +27,7 @@ import org.apache.directory.api.ldap.model.message.AddRequestImpl;
 import org.apache.directory.api.ldap.model.message.AddResponse;
 import org.apache.directory.api.ldap.model.message.ModifyRequest;
 import org.apache.directory.api.ldap.model.message.ModifyRequestImpl;
+import org.apache.directory.api.ldap.model.message.ModifyResponse;
 import org.apache.directory.api.ldap.model.message.ResultCodeEnum;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.api.ldap.model.name.Dn;
@@ -586,7 +587,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             req = req.add(attributeId, String.valueOf(value));
          Dn dn = entry.getDn();
          req = req.setName(dn);
-         connection.modify(req);
+         ModifyResponse resp = connection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to add attribute ["+attributeId+"] to user ["+userDistinguishedName+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
       }
       catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
@@ -639,7 +643,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             req = req.remove(attributeId, String.valueOf(value));
          Dn dn = entry.getDn();
          req.setName(dn);
-         connection.modify(req);
+         ModifyResponse resp = connection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to remove attribute ["+attributeId+"] from user ["+userDistinguishedName+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
       }
       catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
@@ -684,8 +691,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
          req = req.remove(attributeId);
          Dn dn = entry.getDn();
          req.setName(dn);
-         connection.modify(req);
-         
+         ModifyResponse resp = connection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to remove attribute ["+attributeId+"] from user ["+userDistinguishedName+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
       }
       catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
