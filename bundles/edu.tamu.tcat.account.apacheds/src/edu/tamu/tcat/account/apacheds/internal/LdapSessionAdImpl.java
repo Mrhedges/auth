@@ -280,4 +280,35 @@ public class LdapSessionAdImpl implements LdapSession
 	      }
 	}
 
+   @Override
+   public void addAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.addAttribute(userDistinguishedName, attributeId, value, boundConnection);
+      }
+   }
+
+   @Override
+   public void removeAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.removeAttribute(userDistinguishedName, attributeId, value, boundConnection);
+      } 
+   }
+
+   @Override
+   public void removeAttribute(String userDistinguishedName, String attributeId) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.removeAttribute(userDistinguishedName, attributeId, boundConnection);
+      }
+   }
+	
+
 }

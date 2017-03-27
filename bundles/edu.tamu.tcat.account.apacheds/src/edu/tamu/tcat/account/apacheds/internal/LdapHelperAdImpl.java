@@ -20,13 +20,13 @@ import org.apache.directory.api.ldap.codec.protocol.mina.LdapProtocolCodecFactor
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.entry.Entry;
-import org.apache.directory.api.ldap.model.entry.ModificationOperation;
 import org.apache.directory.api.ldap.model.entry.Value;
 import org.apache.directory.api.ldap.model.message.AddRequest;
 import org.apache.directory.api.ldap.model.message.AddRequestImpl;
 import org.apache.directory.api.ldap.model.message.AddResponse;
 import org.apache.directory.api.ldap.model.message.ModifyRequest;
 import org.apache.directory.api.ldap.model.message.ModifyRequestImpl;
+import org.apache.directory.api.ldap.model.message.ModifyResponse;
 import org.apache.directory.api.ldap.model.message.ResultCodeEnum;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.api.ldap.model.name.Dn;
@@ -546,68 +546,67 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       return values;
    }
 
-//   @Override
-   public void addAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId, Object value) throws LdapException
+   @Override
+   public void addAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
-
-         try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+         try
          {
-            Entry entry;
-            if (value.getClass().equals(byte[].class))
-               entry = connection.lookup(userDistinguishedName).add(attributeId, (byte[])value);
-            else
-               entry = connection.lookup(userDistinguishedName).add(attributeId, String.valueOf(value));
-            connection.modify(entry, ModificationOperation.ADD_ATTRIBUTE);
+            addAttribute(userDistinguishedName, attributeId, value, connection);
          }
-         catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
+         finally
          {
-            throw new LdapException("Failed " + attributeId + " add for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+            connection.unBind();
          }
-         catch(NullPointerException npe)
-         {
+      }
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new LdapException("Failed " + attributeId + " add for user " + userDistinguishedName, e);
+      }
+   }
+   
+   void addAttribute(String userDistinguishedName, String attributeId, Object value, LdapConnection connection) throws LdapException
+   {
+      try
+      {
+         Entry entry = connection.lookup(userDistinguishedName);
+         if (entry == null)
             throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-         }
-         finally
-         {
-            connection.unBind();
-         }
+         
+         ModifyRequest req = new ModifyRequestImpl();
+         if (value.getClass().equals(byte[].class))
+            req = req.add(attributeId, (byte[])value);
+         else
+            req = req.add(attributeId, String.valueOf(value));
+         Dn dn = entry.getDn();
+         req = req.setName(dn);
+         ModifyResponse resp = connection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to add attribute ["+attributeId+"] to user ["+userDistinguishedName+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
       }
-      catch (LdapException e)
+      catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
-         throw e;
-      }
-      catch (Exception e)
-      {
-         throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+         throw new LdapException("Failed " + attributeId + " add for user " + userDistinguishedName, e);
       }
    }
 
-//   @Override
-   public void removeAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId, Object value) throws LdapException
+   @Override
+   public void removeAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
 
-         try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+         try
          {
-            Entry entry = connection.lookup(userDistinguishedName);
-            if(entry == null)
-               throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-            if (value.getClass().equals(byte[].class))
-               if (!entry.remove(attributeId, (byte[])value))
-                  return;
-               else if (!entry.remove(attributeId, String.valueOf(value)))
-                  return;
-
-            connection.modify(entry, ModificationOperation.REMOVE_ATTRIBUTE);
-         }
-         catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
-         {
-            throw new LdapException("Failed " + attributeId + " remove for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+            removeAttribute(userDistinguishedName, attributeId, value, connection);
          }
          finally
          {
@@ -620,29 +619,45 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
       catch (Exception e)
       {
-         throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+         throw new LdapException("Failed " + attributeId + " remove for user " + userDistinguishedName, e);
+      }
+   }
+   
+   void removeAttribute(String userDistinguishedName, String attributeId, Object value, LdapConnection connection) throws LdapException
+   {
+      try
+      {
+         Entry entry = connection.lookup(userDistinguishedName);
+         if (entry == null)
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
+
+         ModifyRequest req = new ModifyRequestImpl();
+         if (value.getClass().equals(byte[].class))
+            req = req.remove(attributeId, (byte[])value);
+         else
+            req = req.remove(attributeId, String.valueOf(value));
+         Dn dn = entry.getDn();
+         req.setName(dn);
+         ModifyResponse resp = connection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to remove attribute ["+attributeId+"] from user ["+userDistinguishedName+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
+      }
+      catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed " + attributeId + " remove for user " + userDistinguishedName, e);
       }
    }
 
-//   @Override
-   public void removeAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException
+   @Override
+   public void removeAttribute(String userDistinguishedName, String attributeId) throws LdapException
    {
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          connection.bind();
-         try//(ClosableCursor c = new ClosableCursor(connection.search(ouSearchPrefix, "(objectclass=*)", SearchScope.SUBTREE, "*")))
+         try
          {
-//            EntryCursor cursor = c.cursor;
-
-            Entry entry = connection.lookup(userDistinguishedName);
-            if(entry == null)
-               throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-            entry.removeAttributes(attributeId);
-            connection.modify(entry, ModificationOperation.REMOVE_ATTRIBUTE);
-         }
-         catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
-         {
-            throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+            removeAttribute(userDistinguishedName, attributeId, connection);
          }
          finally
          {
@@ -655,7 +670,30 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
       catch (Exception e)
       {
-         throw new LdapException("Failed " + attributeId + " lookup for user " + userDistinguishedName + " in " + ouSearchPrefix, e);
+         throw new LdapException("Failed " + attributeId + " remove for user " + userDistinguishedName, e);
+      }
+   }
+   
+   void removeAttribute(String userDistinguishedName, String attributeId, LdapConnection connection) throws LdapException
+   {
+      try
+      {
+         Entry entry = connection.lookup(userDistinguishedName);
+         if (entry == null)
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
+         
+         ModifyRequest req = new ModifyRequestImpl();
+         req = req.remove(attributeId);
+         Dn dn = entry.getDn();
+         req.setName(dn);
+         ModifyResponse resp = connection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to remove attribute ["+attributeId+"] from user ["+userDistinguishedName+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
+      }
+      catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed " + attributeId + " remove for user " + userDistinguishedName, e);
       }
    }
 
@@ -901,24 +939,11 @@ private byte[] encodeUnicodePassword(String password) {
 
 	public void addUserToGroup(String userDn, String groupDn, LdapConnection boundConnection) throws LdapException {
 		try {
-			// get group
-			Entry entry = boundConnection.lookup(groupDn);
-			// add member attribute
-			ModifyRequest req = new ModifyRequestImpl();
-			req.add("member", userDn);
-			Dn dn = entry.getDn();
-			req.setName(dn);
-			boundConnection.modify(req);
 
-			// get user
-			entry = boundConnection.lookup(userDn);
-			// add memberOf attribute
-			req = new ModifyRequestImpl();
-			req.add("memberOf", groupDn);
-			dn = entry.getDn();
-			req.setName(dn);
-			boundConnection.modify(req);
-		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
+			addAttribute(groupDn, "member", userDn, boundConnection);
+			//addAttribute(userDn, "memberOf", groupDn, boundConnection);
+
+		} catch (LdapException e) {
 			throw new LdapException("Failed add user [" + userDn + "] to group [" + groupDn + "]", e);
 		}
 	}
@@ -926,24 +951,11 @@ private byte[] encodeUnicodePassword(String password) {
 	public void removeUserFromGroup(String userDn, String groupDn, LdapConnection boundConnection)
 			throws LdapException {
 		try {
-			// get group
-			Entry entry = boundConnection.lookup(groupDn);
-			// remove member attribute
-			ModifyRequest req = new ModifyRequestImpl();
-			req.remove("member", userDn);
-			Dn dn = entry.getDn();
-			req.setName(dn);
-			boundConnection.modify(req);
 
-			// get user
-			entry = boundConnection.lookup(userDn);
-			// remove memberOf attribute
-			req = new ModifyRequestImpl();
-			req.remove("memberOf", groupDn);
-			dn = entry.getDn();
-			req.setName(dn);
-			boundConnection.modify(req);
-		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
+			removeAttribute(groupDn, "member", userDn, boundConnection);
+			//removeAttribute(userDn, "memberOf", groupDn, boundConnection);
+
+		} catch (LdapException e) {
 			throw new LdapException("Failed remove user [" + userDn + "] from group [" + groupDn + "]", e);
 		}
 	}

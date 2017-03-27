@@ -34,21 +34,23 @@ public interface LdapHelperMutator
 		   String instanceType, String objectCategory, Map<String, String> attributes) throws LdapException;
 
 
-   //   /**
-//    * Attempt to add the specified attribute value to the userDistinguishedName in ouSearchPrefix
-//    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
-//    * */
-//   void addAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId, Object value) throws LdapException;
-//
-//   /**
-//    * Attempt to remove the specified attribute value from the userDistinguishedName in ouSearchPrefix
-//    *  @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
-//    */
-//   void removeAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId, Object value) throws LdapException;
-//
-//   /**
-//    * Attempt to remove all the values for the specified attribute from the userDistinguishedName in ouSearchPrefix
-//    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
-//    */
-//   void removeAttribute(String ouSearchPrefix, String userDistinguishedName, String attributeId) throws LdapException;
+   /**
+    * Attempt to add the specified attribute value to the userDistinguishedName in ouSearchPrefix
+    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
+    * */
+   void addAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException;
+
+   /**
+    * Attempt to remove the specified attribute value from the userDistinguishedName in ouSearchPrefix
+    *  @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
+    */
+   void removeAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException;
+
+   /**
+    * Attempt to remove all the values for the specified attribute from the userDistinguishedName in ouSearchPrefix
+    * @ param ouSearchPrefix if null ou search prefix will be extracted from userDistinguishedName
+    */
+   void removeAttribute(String userDistinguishedName, String attributeId) throws LdapException;
+   
+//should there be a modify (replace command on Modify request)?
 }
