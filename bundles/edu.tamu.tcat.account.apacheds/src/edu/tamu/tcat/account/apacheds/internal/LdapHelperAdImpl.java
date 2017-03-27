@@ -939,31 +939,11 @@ private byte[] encodeUnicodePassword(String password) {
 
 	public void addUserToGroup(String userDn, String groupDn, LdapConnection boundConnection) throws LdapException {
 		try {
-			// get group
-			Entry entry = boundConnection.lookup(groupDn);
-			// add member attribute
-			ModifyRequest req = new ModifyRequestImpl();
-			req.add("member", userDn);
-			Dn dn = entry.getDn();
-			req.setName(dn);
-			ModifyResponse resp = boundConnection.modify(req);
-         if (!Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
-            throw new LdapException("Failed to add user ["+userDn+"] to group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
 
-			// get user
-			entry = boundConnection.lookup(userDn);
-			// add memberOf attribute
-			req = new ModifyRequestImpl();
-			req.add("memberOf", groupDn);
-			dn = entry.getDn();
-			req.setName(dn);
-			boundConnection.modify(req);
-			resp = boundConnection.modify(req);
-         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
-            return;
-         throw new LdapException("Failed to add user ["+userDn+"] to group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
+         addAttribute(userDn, "memberOf", groupDn, boundConnection);
+         addAttribute(groupDn, "member", userDn, boundConnection);
 
-		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
+		} catch (LdapException e) {
 			throw new LdapException("Failed add user [" + userDn + "] to group [" + groupDn + "]", e);
 		}
 	}
@@ -971,29 +951,11 @@ private byte[] encodeUnicodePassword(String password) {
 	public void removeUserFromGroup(String userDn, String groupDn, LdapConnection boundConnection)
 			throws LdapException {
 		try {
-			// get group
-			Entry entry = boundConnection.lookup(groupDn);
-			// remove member attribute
-			ModifyRequest req = new ModifyRequestImpl();
-			req.remove("member", userDn);
-			Dn dn = entry.getDn();
-			req.setName(dn);
-			ModifyResponse resp = boundConnection.modify(req);
-         if (!Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
-            throw new LdapException("Failed to remove user ["+userDn+"] from group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
 
-			// get user
-			entry = boundConnection.lookup(userDn);
-			// remove memberOf attribute
-			req = new ModifyRequestImpl();
-			req.remove("memberOf", groupDn);
-			dn = entry.getDn();
-			req.setName(dn);
-			resp = boundConnection.modify(req);
-         if (!Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
-            throw new LdapException("Failed to remove user ["+userDn+"] from group ["+groupDn+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
+         removeAttribute(groupDn, "member", userDn, boundConnection);
+         removeAttribute(userDn, "memberOf", groupDn, boundConnection);
 
-		} catch (org.apache.directory.api.ldap.model.exception.LdapException e) {
+		} catch (LdapException e) {
 			throw new LdapException("Failed remove user [" + userDn + "] from group [" + groupDn + "]", e);
 		}
 	}
