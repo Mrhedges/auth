@@ -940,8 +940,8 @@ private byte[] encodeUnicodePassword(String password) {
 	public void addUserToGroup(String userDn, String groupDn, LdapConnection boundConnection) throws LdapException {
 		try {
 
-         addAttribute(userDn, "memberOf", groupDn, boundConnection);
-         addAttribute(groupDn, "member", userDn, boundConnection);
+			addAttribute(groupDn, "member", userDn, boundConnection);
+			//addAttribute(userDn, "memberOf", groupDn, boundConnection);
 
 		} catch (LdapException e) {
 			throw new LdapException("Failed add user [" + userDn + "] to group [" + groupDn + "]", e);
@@ -952,8 +952,8 @@ private byte[] encodeUnicodePassword(String password) {
 			throws LdapException {
 		try {
 
-         removeAttribute(groupDn, "member", userDn, boundConnection);
-         removeAttribute(userDn, "memberOf", groupDn, boundConnection);
+			removeAttribute(groupDn, "member", userDn, boundConnection);
+			//removeAttribute(userDn, "memberOf", groupDn, boundConnection);
 
 		} catch (LdapException e) {
 			throw new LdapException("Failed remove user [" + userDn + "] from group [" + groupDn + "]", e);
