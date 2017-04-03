@@ -102,6 +102,35 @@ public class LdapLoginProvider implements LoginProvider
       }
    }
 
+   /**
+    * Check if the credentials in this login provider match an LDAP account. This API is used to determine
+    * if the account exists in the system before attempting to create it if the application has such capability.
+    */
+   public boolean identityExists()
+   {
+      Objects.requireNonNull(ldapHelper, "LDAP Login Provider not initialized");
+      try
+      {
+         for (String ou : searchOUs)
+         {
+            List<String> possibleIds = ldapHelper.getMatches(ou, "sAMAccountName", username);
+            if (possibleIds.size() > 1)
+               debug.warning("Found multiple LDAP entries matching account name ["+username+"] in OU ["+ou+"]");
+
+            if (possibleIds.size() > 0)
+            {
+               return true;
+            }
+         }
+
+         return false;
+      }
+      catch (LdapException e)
+      {
+         throw new AccountException("Failed check for identity.", e);
+      }
+   }
+
    private static class LdapUserData implements LoginData
    {
       // these should be somewhere external
