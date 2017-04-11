@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import edu.tamu.tcat.account.AccountException;
+import edu.tamu.tcat.account.apacheds.LdapAuthException;
 import edu.tamu.tcat.account.apacheds.LdapException;
 import edu.tamu.tcat.account.apacheds.LdapHelperReader;
 import edu.tamu.tcat.account.login.LoginData;
@@ -77,7 +78,14 @@ public class LdapLoginProvider implements LoginProvider
             {
                distinguishedName = possibleIds.get(0);
 
-               ldapHelper.checkValidPassword(distinguishedName, password);
+               try
+               {
+                  ldapHelper.checkValidPassword(distinguishedName, password);
+               }
+               catch (LdapAuthException e)
+               {
+                  return null;
+               }
                LdapUserData rv = new LdapUserData(ldapHelper, distinguishedName, instanceId);
                if (requiredGroup != null)
                {
@@ -90,7 +98,7 @@ public class LdapLoginProvider implements LoginProvider
             }
 
             if (possibleIds.size() > 1)
-               debug.warning("Found multiple LDAP entries matching account name ["+username+"] in OU ["+ou+"]");
+               debug.warning("Found multiple LDAP entries matching name ["+username+"] in OU ["+ou+"]");
          }
 
          return null;
@@ -99,6 +107,46 @@ public class LdapLoginProvider implements LoginProvider
       catch (LdapException e)
       {
          throw new AccountException("Failed attempted login.", e);
+      }
+   }
+
+   /**
+    * Get the {@link LoginData} representing details of an identity, as requested by {@link #username}. This is useful to look up
+    * details, for example when performing password reset handshake operations.
+    */
+   public LoginData unauthGetDetails(LdapHelperReader ldapHelper, String username, String instanceId, List<String> searchOUs)
+   {
+      Objects.requireNonNull(ldapHelper, "LDAP Login Provider not initialized");
+      try
+      {
+         for (String ou : searchOUs)
+         {
+            List<String> possibleIds = ldapHelper.getMatches(ou, "sAMAccountName", username);
+            if (possibleIds.size() == 1)
+            {
+               String distinguishedName = possibleIds.get(0);
+
+               LdapUserData rv = new LdapUserData(ldapHelper, distinguishedName, instanceId);
+               if (requiredGroup != null)
+               {
+                  if (!rv.groups.contains(requiredGroup))
+                     return null;
+                  //throw new IllegalStateException("Authenticated account for ["+username+"] but does not have required group ["+requiredGroup+"]");
+               }
+
+               return rv;
+            }
+
+            if (possibleIds.size() > 1)
+               debug.warning("Found multiple LDAP entries matching name ["+username+"] in OU ["+ou+"]");
+         }
+
+         return null;
+         //throw new AccountLoginException("Failed finding single match for account name ["+username+"]");
+      }
+      catch (LdapException e)
+      {
+         throw new AccountException("Failed unauthenticated identity details access.", e);
       }
    }
 
@@ -214,13 +262,16 @@ public class LdapLoginProvider implements LoginProvider
          this.pid = pid;
          distinguishedName = dn;
          // display name
-         displayName = String.valueOf(helper.getAttributes(dn, "displayName").stream().findFirst().orElse(null));
+         displayName = (String)helper.getAttributes(dn, "displayName").stream().findFirst().orElse(null);
+         if (displayName == null)
+            displayName = (String)helper.getAttributes(dn, "name").stream().findFirst().orElse(null);
+
          // first
-         firstName = String.valueOf(helper.getAttributes(dn, "givenName").stream().findFirst().orElse(null));
+         firstName = (String)helper.getAttributes(dn, "givenName").stream().findFirst().orElse(null);
          // last
-         lastName = String.valueOf(helper.getAttributes(dn, "sn").stream().findFirst().orElse(null));
-         //email?
-         email = String.valueOf(helper.getAttributes(dn, "userPrincipalName").stream().findFirst().orElse(null));
+         lastName = (String)helper.getAttributes(dn, "sn").stream().findFirst().orElse(null);
+
+         email = (String)helper.getAttributes(dn, "mail").stream().findFirst().orElse(null);
          // strip CN=*, out from distinguished names here
          groups = helper.getGroupNames(dn).stream()
                .map(name -> name.substring(name.indexOf('=') + 1, name.indexOf(',')))
