@@ -214,27 +214,16 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
    }
 
-   // LDS
+   // other LDAP systems (possible to modify MS to take this attribute
    void changePasswordUserPassword(String userDistinguishedName, String password, LdapConnection boundConnection) throws LdapException
    {
-      try //(ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      try 
       {
-         Entry entry = boundConnection.lookup(userDistinguishedName);
-         if(entry == null)
-            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
-         ModifyRequest req = new ModifyRequestImpl();
-         req.replace("userpassword", password);
-         Dn dn = entry.getDn();
-         req.setName(dn);
-         boundConnection.modify(req);
-      }
-      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
-      {
-         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
+         modifyAttribute(userDistinguishedName, "userpassword", password, boundConnection);
       }
       catch (Exception e)
       {
-         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
+         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage(), e);
       }
    }
    
@@ -283,23 +272,10 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    // AD direct
    void changePasswordUincodePassword(String userDistinguishedName, String password, LdapConnection boundConnection) throws LdapException
    {
-      try// (ClosableCursor c = new ClosableCursor(boundConnection.search(computeDefaultOu(userDistinguishedName), "(objectclass=*)", SearchScope.SUBTREE, "*")))
+      try
       {
-//         EntryCursor cursor = c.cursor;
-         Entry entry = boundConnection.lookup(userDistinguishedName);
-         if(entry == null)
-            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
          byte[] pwdArray = encodeUnicodePassword(password);
-         ModifyRequest req = new ModifyRequestImpl();
-         req.replace("UnicodePwd", pwdArray);
-         Dn dn = entry.getDn();
-         req.setName(dn);
-         boundConnection.modify(req);
-//         boundConnection.modify(entry, ModificationOperation.REPLACE_ATTRIBUTE);
-      }
-      catch (org.apache.directory.api.ldap.model.exception.LdapException e)
-      {
-         throw new LdapAuthException("Failed changing password for distinguished name [" + userDistinguishedName + "] " + e.getMessage());
+         modifyAttribute(userDistinguishedName, "UnicodePwd", pwdArray, boundConnection);
       }
       catch (Exception e)
       {
@@ -580,8 +556,19 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
             throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
          
          ModifyRequest req = new ModifyRequestImpl();
-         if (value.getClass().equals(byte[].class))
+         if (value == null)
+            throw new IllegalArgumentException("Value cannot be null.");
+         else if (value.getClass().equals(byte[].class))
             req = req.add(attributeId, (byte[])value);
+         else if (value instanceof Collection)
+         {
+            value =((Collection<?>)value).stream().map(v-> String.valueOf(v)).collect(Collectors.toList()).toArray(new String[0]);
+            req = req.add(attributeId, (String[])value);
+         } 
+         else if (value instanceof String[])
+         {
+            req = req.add(attributeId, (String[])value);
+         }
          else
             req = req.add(attributeId, String.valueOf(value));
          Dn dn = entry.getDn();
@@ -594,6 +581,43 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
       {
          throw new LdapException("Failed " + attributeId + " add for user " + userDistinguishedName, e);
+      }
+   }
+   
+   void modifyAttribute(String userDistinguishedName, String attributeId, Object value, LdapConnection connection) throws LdapException
+   {
+      if (value == null)
+         throw new IllegalArgumentException("Value cannot be null.  Use removeAttribute instead");
+      try
+      {
+         Entry entry = connection.lookup(userDistinguishedName);
+         if (entry == null)
+            throw new LdapAuthException("No such user [" + userDistinguishedName + "]");
+         
+         ModifyRequest req = new ModifyRequestImpl();
+         if (value.getClass().equals(byte[].class))
+            req = req.replace(attributeId, (byte[])value);
+         else if (value instanceof Collection)
+         {
+            value =((Collection<?>)value).stream().map(v-> String.valueOf(v)).collect(Collectors.toList()).toArray(new String[0]);
+            req = req.replace(attributeId, (String[])value);
+         } 
+         else if (value instanceof String[])
+         {
+            req = req.replace(attributeId, (String[])value);
+         }
+         else
+            req = req.replace(attributeId, String.valueOf(value));
+         Dn dn = entry.getDn();
+         req = req.setName(dn);
+         ModifyResponse resp = connection.modify(req);
+         if (Objects.equals(ResultCodeEnum.SUCCESS, resp.getLdapResult().getResultCode()))
+            return;
+         throw new LdapException("Failed to modify attribute ["+attributeId+"] to user ["+userDistinguishedName+"] " + resp.getLdapResult().getResultCode() + " " + resp.getLdapResult().getDiagnosticMessage());
+      }
+      catch (LdapException | org.apache.directory.api.ldap.model.exception.LdapException e)
+      {
+         throw new LdapException("Failed " + attributeId + " modify for user " + userDistinguishedName, e);
       }
    }
 
