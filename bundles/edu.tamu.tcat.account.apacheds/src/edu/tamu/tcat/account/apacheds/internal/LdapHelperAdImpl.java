@@ -584,6 +584,30 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
       }
    }
    
+   public void modifyAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException
+   {
+      try (LdapConnection connection = new LdapNetworkConnection(config))
+      {
+         connection.bind();
+         try
+         {
+            modifyAttribute(userDistinguishedName, attributeId, value, connection);
+         }
+         finally
+         {
+            connection.unBind();
+         }
+      }
+      catch (LdapException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new LdapException("Failed " + attributeId + " add for user " + userDistinguishedName, e);
+      }      
+   }
+   
    void modifyAttribute(String userDistinguishedName, String attributeId, Object value, LdapConnection connection) throws LdapException
    {
       if (value == null)

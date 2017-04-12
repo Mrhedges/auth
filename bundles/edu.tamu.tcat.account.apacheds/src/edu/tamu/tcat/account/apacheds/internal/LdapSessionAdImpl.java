@@ -291,6 +291,16 @@ public class LdapSessionAdImpl implements LdapSession
    }
 
    @Override
+   public void modifyAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException
+   {
+      init();
+      synchronized (boundConnection)
+      {
+         helper.modifyAttribute(userDistinguishedName, attributeId, value, boundConnection);
+      }
+   }
+
+   @Override
    public void removeAttribute(String userDistinguishedName, String attributeId, Object value) throws LdapException
    {
       init();
