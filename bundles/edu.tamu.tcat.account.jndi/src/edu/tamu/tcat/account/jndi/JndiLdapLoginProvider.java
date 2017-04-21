@@ -1,9 +1,9 @@
 package edu.tamu.tcat.account.jndi;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,8 +17,6 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.StartTlsRequest;
-import javax.naming.ldap.StartTlsResponse;
 
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
@@ -63,37 +61,8 @@ public class JndiLdapLoginProvider implements LoginProvider
    @Override
    public LoginData login()
    {
-      Properties env = new Properties();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-      //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
-      env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      String ldapUrl = "ldap://"+host+":"+port+"/";
-      env.put(Context.PROVIDER_URL, ldapUrl);
-      if (useSsl)
-         env.put(Context.SECURITY_PROTOCOL, "ssl");
-
-      LdapContext ctx = null;
-      StartTlsResponse tls = null;
-
-      try
+      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
-         // First, bind anonymously, then send credentials
-         ctx = new InitialLdapContext(env, null);
-
-         if (useTls)
-         {
-            tls = (StartTlsResponse)ctx.extendedOperation(new StartTlsRequest());
-            tls.negotiate();
-         }
-
-         if (adminAccountDn != null)
-         {
-            // Set user/pass for LDAP access
-            ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
-            ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, adminAccountDn);
-            ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, adminAccountPassword);
-         }
-
          // Search the directory
          String filter = "(sAMAccountName={0})";
          SearchControls ctls = new SearchControls();
@@ -103,12 +72,12 @@ public class JndiLdapLoginProvider implements LoginProvider
          String dn = null;
          for (String base : searchOUs)
          {
-            NamingEnumeration<SearchResult> results = ctx.search(base, filter, new String[] { username }, ctls);
+            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { username }, ctls);
             try
             {
                if (results.hasMore())
                {
-                  SearchResult result = (SearchResult) results.next();
+                  SearchResult result = results.next();
                   dn = result.getNameInNamespace();
 
                   // If there are more results, got multiple matches, so should fail
@@ -137,7 +106,7 @@ public class JndiLdapLoginProvider implements LoginProvider
             return null;
 
          // Step 3: Bind another context with found DN and given password
-         Properties envAuth = (Properties)env.clone();
+         Hashtable<Object,Object> envAuth = (Hashtable)ctx.getContext().getEnvironment().clone();
          envAuth.put(Context.SECURITY_PRINCIPAL, dn);
          envAuth.put(Context.SECURITY_CREDENTIALS, password);
          try
@@ -146,7 +115,7 @@ public class JndiLdapLoginProvider implements LoginProvider
             LdapContext ctxAuth = new InitialLdapContext(envAuth, null);
             try
             {
-               JndiLdapLoginData rv = new JndiLdapLoginData(ctx, dn, PROVIDER_ID);
+               JndiLdapLoginData rv = new JndiLdapLoginData(ctx.getContext(), dn, PROVIDER_ID);
                return rv;
             }
             finally
@@ -171,28 +140,6 @@ public class JndiLdapLoginProvider implements LoginProvider
       {
          debug.log(Level.WARNING, "Failed to initialize LDAP authentication attempt", e);
       }
-      finally
-      {
-         if (tls != null)
-         {
-            try
-            {
-               tls.close();
-            }
-            catch (Exception e)
-            {
-               debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-            }
-         }
-         try
-         {
-            ctx.close();
-         }
-         catch (Exception e)
-         {
-            debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-         }
-      }
       return null;
    }
 
@@ -202,37 +149,8 @@ public class JndiLdapLoginProvider implements LoginProvider
     */
    public LoginData unauthGetDetails(String username, String instanceId, List<String> searchOUs)
    {
-      Properties env = new Properties();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-      //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
-      env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      String ldapUrl = "ldap://"+host+":"+port+"/";
-      env.put(Context.PROVIDER_URL, ldapUrl);
-      if (useSsl)
-         env.put(Context.SECURITY_PROTOCOL, "ssl");
-
-      LdapContext ctx = null;
-      StartTlsResponse tls = null;
-
-      try
+      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
-         // First, bind anonymously, then send credentials
-         ctx = new InitialLdapContext(env, null);
-
-         if (useTls)
-         {
-            tls = (StartTlsResponse)ctx.extendedOperation(new StartTlsRequest());
-            tls.negotiate();
-         }
-
-         if (adminAccountDn != null)
-         {
-            // Set user/pass for LDAP access
-            ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
-            ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, adminAccountDn);
-            ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, adminAccountPassword);
-         }
-
          // Search the directory
          String filter = "(sAMAccountName={0})";
          SearchControls ctls = new SearchControls();
@@ -242,12 +160,12 @@ public class JndiLdapLoginProvider implements LoginProvider
          String dn = null;
          for (String base : searchOUs)
          {
-            NamingEnumeration<SearchResult> results = ctx.search(base, filter, new String[] { username }, ctls);
+            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { username }, ctls);
             try
             {
                if (results.hasMore())
                {
-                  SearchResult result = (SearchResult) results.next();
+                  SearchResult result = results.next();
                   dn = result.getNameInNamespace();
 
                   // If there are more results, got multiple matches, so should fail
@@ -275,203 +193,50 @@ public class JndiLdapLoginProvider implements LoginProvider
          if (dn == null)
             return null;
 
-         JndiLdapLoginData rv = new JndiLdapLoginData(ctx, dn, PROVIDER_ID);
+         JndiLdapLoginData rv = new JndiLdapLoginData(ctx.getContext(), dn, PROVIDER_ID);
          return rv;
       }
       catch (Exception e)
       {
          debug.log(Level.WARNING, "Failed LDAP data retrieval", e);
       }
-      finally
-      {
-         if (tls != null)
-         {
-            try
-            {
-               tls.close();
-            }
-            catch (Exception e)
-            {
-               debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-            }
-         }
-         try
-         {
-            ctx.close();
-         }
-         catch (Exception e)
-         {
-            debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-         }
-      }
       return null;
    }
 
    public void setAttribute(String dn, String attributeName, Object value)
    {
-      Properties env = new Properties();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-      //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
-      env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      String ldapUrl = "ldap://"+host+":"+port+"/";
-      env.put(Context.PROVIDER_URL, ldapUrl);
-      if (useSsl)
-         env.put(Context.SECURITY_PROTOCOL, "ssl");
-
-      LdapContext ctx = null;
-      StartTlsResponse tls = null;
-
-      try
+      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
-         // First, bind anonymously, then send credentials
-         ctx = new InitialLdapContext(env, null);
-
-         if (useTls)
-         {
-            tls = (StartTlsResponse)ctx.extendedOperation(new StartTlsRequest());
-            tls.negotiate();
-         }
-
-         if (adminAccountDn != null)
-         {
-            // Set user/pass for LDAP access
-            ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
-            ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, adminAccountDn);
-            ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, adminAccountPassword);
-         }
-
          Attributes attrs = new BasicAttributes(attributeName, value);
          // REPLACE_ATTRIBUTE will remove-all if value is null, or create-or-replace all existing values
-         ctx.modifyAttributes(dn, DirContext.REPLACE_ATTRIBUTE, attrs);
+         ctx.getContext().modifyAttributes(dn, DirContext.REPLACE_ATTRIBUTE, attrs);
       }
       catch (Exception e)
       {
          debug.log(Level.WARNING, "Failed LDAP attribute update '"+attributeName+"' for '"+dn+"'", e);
       }
-      finally
-      {
-         if (tls != null)
-         {
-            try
-            {
-               tls.close();
-            }
-            catch (Exception e)
-            {
-               debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-            }
-         }
-         try
-         {
-            ctx.close();
-         }
-         catch (Exception e)
-         {
-            debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-         }
-      }
    }
 
    public String getDN(byte[] objectGUID, String searchOU)
    {
-      Properties env = new Properties();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-      //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
-      //env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      String ldapUrl = "ldap://"+host+":"+port+"/";
-      env.put(Context.PROVIDER_URL, ldapUrl);
-      if (useSsl)
-         env.put(Context.SECURITY_PROTOCOL, "ssl");
-
-      LdapContext ctx = null;
-      StartTlsResponse tls = null;
-
-      try
+      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
-         // First, bind anonymously, then send credentials
-         ctx = new InitialLdapContext(env, null);
-
-         if (useTls)
-         {
-            tls = (StartTlsResponse)ctx.extendedOperation(new StartTlsRequest());
-            tls.negotiate();
-         }
-
-         if (adminAccountDn != null)
-         {
-            // Set user/pass for LDAP access
-            ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
-            ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, adminAccountDn);
-            ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, adminAccountPassword);
-         }
-
          String guidStr = ADDataUtils.toGuidBindingString(objectGUID);
-         String dn = ctx.getAttributes(guidStr).get("distinguishedName").get().toString();
+         String dn = ctx.getContext().getAttributes(guidStr).get("distinguishedName").get().toString();
          return dn;
       }
       catch (Exception e)
       {
          debug.log(Level.WARNING, "Failed LDAP data retrieval", e);
       }
-      finally
-      {
-         if (tls != null)
-         {
-            try
-            {
-               tls.close();
-            }
-            catch (Exception e)
-            {
-               debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-            }
-         }
-         try
-         {
-            ctx.close();
-         }
-         catch (Exception e)
-         {
-            debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-         }
-      }
       return null;
    }
 
    public Object getAttributeValue(String dn, String attributeName)
    {
-      Properties env = new Properties();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-      //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
-      env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      String ldapUrl = "ldap://"+host+":"+port+"/";
-      env.put(Context.PROVIDER_URL, ldapUrl);
-      if (useSsl)
-         env.put(Context.SECURITY_PROTOCOL, "ssl");
-
-      LdapContext ctx = null;
-      StartTlsResponse tls = null;
-
-      try
+      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
-         // First, bind anonymously, then send credentials
-         ctx = new InitialLdapContext(env, null);
-
-         if (useTls)
-         {
-            tls = (StartTlsResponse)ctx.extendedOperation(new StartTlsRequest());
-            tls.negotiate();
-         }
-
-         if (adminAccountDn != null)
-         {
-            // Set user/pass for LDAP access
-            ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
-            ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, adminAccountDn);
-            ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, adminAccountPassword);
-         }
-
-         Attributes attrs = ctx.getAttributes(dn);
+         Attributes attrs = ctx.getContext().getAttributes(dn);
          Attribute attr = attrs.get(attributeName);
          if (attr == null)
             return null;
@@ -480,28 +245,6 @@ public class JndiLdapLoginProvider implements LoginProvider
       catch (Exception e)
       {
          debug.log(Level.WARNING, "Failed LDAP attribute get '"+attributeName+"' for '"+dn+"'", e);
-      }
-      finally
-      {
-         if (tls != null)
-         {
-            try
-            {
-               tls.close();
-            }
-            catch (Exception e)
-            {
-               debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-            }
-         }
-         try
-         {
-            ctx.close();
-         }
-         catch (Exception e)
-         {
-            debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-         }
       }
       return null;
    }
@@ -512,37 +255,8 @@ public class JndiLdapLoginProvider implements LoginProvider
     */
    public boolean identityExists()
    {
-      Properties env = new Properties();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-      //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
-      env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      String ldapUrl = "ldap://"+host+":"+port+"/";
-      env.put(Context.PROVIDER_URL, ldapUrl);
-      if (useSsl)
-         env.put(Context.SECURITY_PROTOCOL, "ssl");
-
-      LdapContext ctx = null;
-      StartTlsResponse tls = null;
-
-      try
+      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
-         // First, bind anonymously, then send credentials
-         ctx = new InitialLdapContext(env, null);
-
-         if (useTls)
-         {
-            tls = (StartTlsResponse)ctx.extendedOperation(new StartTlsRequest());
-            tls.negotiate();
-         }
-
-         if (adminAccountDn != null)
-         {
-            // Set user/pass for LDAP access
-            ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
-            ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, adminAccountDn);
-            ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, adminAccountPassword);
-         }
-
          // Search the directory
          String filter = "(sAMAccountName={0})";
          SearchControls ctls = new SearchControls();
@@ -552,12 +266,12 @@ public class JndiLdapLoginProvider implements LoginProvider
          String dn = null;
          for (String base : searchOUs)
          {
-            NamingEnumeration<SearchResult> results = ctx.search(base, filter, new String[] { username }, ctls);
+            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { username }, ctls);
             try
             {
                if (results.hasMore())
                {
-                  SearchResult result = (SearchResult) results.next();
+                  SearchResult result = results.next();
                   dn = result.getNameInNamespace();
 
                   // If there are more results, got multiple matches, so should fail
@@ -582,28 +296,6 @@ public class JndiLdapLoginProvider implements LoginProvider
       catch (Exception e)
       {
          debug.log(Level.WARNING, "Failed to initialize LDAP existence query attempt", e);
-      }
-      finally
-      {
-         if (tls != null)
-         {
-            try
-            {
-               tls.close();
-            }
-            catch (Exception e)
-            {
-               debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-            }
-         }
-         try
-         {
-            ctx.close();
-         }
-         catch (Exception e)
-         {
-            debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-         }
       }
       return false;
    }
