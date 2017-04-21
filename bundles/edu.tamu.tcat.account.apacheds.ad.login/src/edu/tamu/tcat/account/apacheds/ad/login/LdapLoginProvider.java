@@ -32,7 +32,6 @@ public class LdapLoginProvider implements LoginProvider
    private String instanceId;
 
    private List<String> searchOUs;
-   private String requiredGroup;
 
    /**
     * Initialize the login provider so {@link #login()} can execute without arguments per API.
@@ -53,17 +52,6 @@ public class LdapLoginProvider implements LoginProvider
       this.username = Objects.requireNonNull(username);
       this.password = Objects.requireNonNull(password);
       this.instanceId = Objects.requireNonNull(instanceId);
-   }
-
-   /**
-    * Set the name of a group of which membership is required for authentication to be successful. This is useful
-    * when LDAP is configured such that accounts are members of a group for application level access.
-    *
-    * @param groupName
-    */
-   public void setRequiredGroup(String groupName)
-   {
-      requiredGroup = Objects.requireNonNull(groupName);
    }
 
    @Override
@@ -88,13 +76,6 @@ public class LdapLoginProvider implements LoginProvider
                   return null;
                }
                LdapUserData rv = new LdapUserData(ldapHelper, distinguishedName, instanceId);
-               if (requiredGroup != null)
-               {
-                  if (!rv.groups.contains(requiredGroup))
-                     return null;
-                     //throw new IllegalStateException("Authenticated account for ["+username+"] but does not have required group ["+requiredGroup+"]");
-               }
-
                return rv;
             }
 
@@ -128,13 +109,6 @@ public class LdapLoginProvider implements LoginProvider
                String distinguishedName = possibleIds.get(0);
 
                LdapUserData rv = new LdapUserData(ldapHelper, distinguishedName, instanceId);
-               if (requiredGroup != null)
-               {
-                  if (!rv.groups.contains(requiredGroup))
-                     return null;
-                  //throw new IllegalStateException("Authenticated account for ["+username+"] but does not have required group ["+requiredGroup+"]");
-               }
-
                return rv;
             }
 
