@@ -88,6 +88,20 @@ limitations under the License.
          install-size="0"
          version="2.1.0.qualifier"
          unpack="false"/>
+         
+   <plugin
+         id="edu.tamu.tcat.account.jndi"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.dev"
+         unpack="false"/>
+
+   <plugin
+         id="edu.tamu.tcat.account.jndi.source"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.dev"
+         unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.apacheds"
