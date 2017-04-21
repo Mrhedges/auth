@@ -23,6 +23,16 @@ public class JndiLdapContext implements AutoCloseable
    private StartTlsResponse tls;
    private Properties env;
 
+   /**
+    * Create a new closeable context.
+    *
+    * @param host May be space-separated to attempt multiple hosts
+    * @param port
+    * @param adminAccountDn
+    * @param adminAccountPassword
+    * @param useSsl
+    * @param useTls
+    */
    public JndiLdapContext(String host,
                           int port,
                           String adminAccountDn,
@@ -34,8 +44,15 @@ public class JndiLdapContext implements AutoCloseable
       env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
       //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
       env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      String ldapUrl = "ldap://"+host+":"+port+"/";
-      env.put(Context.PROVIDER_URL, ldapUrl);
+      StringBuilder ldapURLs = new StringBuilder();
+      String[] hosts = host.split(" ");
+      for (String str : hosts)
+      {
+         if (str.trim().isEmpty())
+            continue;
+         ldapURLs.append("ldap://").append(str).append(":").append(port).append("/ ");
+      }
+      env.put(Context.PROVIDER_URL, ldapURLs.toString());
       if (useSsl)
          env.put(Context.SECURITY_PROTOCOL, "ssl");
 
