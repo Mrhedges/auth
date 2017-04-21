@@ -1,5 +1,13 @@
 package edu.tamu.tcat.account.jndi;
 
+import java.util.Arrays;
+import java.util.List;
+
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
+
 /**
  * Helper class to facilitate conversion of MS AD/LDS data value types, such as for "objectGUID"
  * and passwords.
@@ -66,7 +74,8 @@ public class ADDataUtils
       return out.toString();
    }
 
-   public static byte[] encodeUnicodePassword(String password) {
+   public static byte[] encodeUnicodePassword(String password)
+   {
       String quotedPassword = "\"" + password + "\"";
       char unicodePwd[] = quotedPassword.toCharArray();
       byte pwdArray[] = new byte[unicodePwd.length * 2];
@@ -76,5 +85,47 @@ public class ADDataUtils
           pwdArray[i * 2 + 0] = (byte)(unicodePwd[i] & 0xff);
       }
       return pwdArray;
+   }
+
+   /**
+    * Build an {@link Attributes} that can be used to create a new identity LDAP entry.
+    * These attributes can be passed to a {@code DirContext.createSubcontext} call.
+    *
+    * @param loginId The "username", like "john.doe"
+    * @param password The plaintext password
+    * @param displayName The (abbreviated) common name or CN, like "John Doe"
+    * @param distinguishedName The full DN for the new entry
+    * @param email
+    * @param objectCategory The category of the object, specific to the local LDAP instance, such as
+    *       "CN=Person,CN=Schema,CN=Configuration,CN={ instance-guid }"
+    */
+   public static Attributes buildCreateEntryAttributes(String loginId,
+                                                       String password,
+                                                       String displayName,
+                                                       String distinguishedName,
+                                                       String email,
+                                                       String objectCategory)
+   {
+      //NOTE: some of these are specific to our LDS installation; not sure what needs to change if our LDAP system is altered
+      List<String> objClasses = Arrays.asList("organizationalPerson", "person", "top", "user");
+      String instanceType="4";
+
+      BasicAttributes attributes = new BasicAttributes();
+      attributes.put("cn", displayName);
+      Attribute clsses = new BasicAttribute("objectClass");
+      for (String cls: objClasses)
+         clsses.add(cls);
+      attributes.put(clsses);
+      attributes.put("instanceType", instanceType);
+      attributes.put("objectCategory",objectCategory);
+      attributes.put("distinguishedName", displayName);
+      attributes.put("msDS-UserAccountDisabled", "FALSE");
+      attributes.put("msDS-UserDontExpirePassword", "TRUE");
+      attributes.put("name", displayName);
+      attributes.put("sAMAccountName", loginId);
+      attributes.put("userpassword", password);
+      attributes.put("mail", email);
+
+      return attributes;
    }
 }

@@ -32,7 +32,7 @@ public class JndiLdapLoginProvider implements LoginProvider
    private boolean useSsl;
    private boolean useTls;
 
-   private String username;
+   private String loginId;
    private String password;
    private String instanceId;
 
@@ -48,12 +48,12 @@ public class JndiLdapLoginProvider implements LoginProvider
       this.useTls = useTls;
    }
 
-   public void init(String username, String password, String instanceId, List<String> searchOUs)
+   public void init(String loginId, String password, String instanceId, List<String> searchOUs)
    {
       this.searchOUs = new ArrayList<>();
       if (searchOUs != null)
          this.searchOUs.addAll(searchOUs);
-      this.username = Objects.requireNonNull(username);
+      this.loginId = Objects.requireNonNull(loginId);
       this.password = Objects.requireNonNull(password);
       this.instanceId = Objects.requireNonNull(instanceId);
    }
@@ -72,7 +72,7 @@ public class JndiLdapLoginProvider implements LoginProvider
          String dn = null;
          for (String base : searchOUs)
          {
-            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { username }, ctls);
+            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { loginId }, ctls);
             try
             {
                if (results.hasMore())
@@ -84,7 +84,7 @@ public class JndiLdapLoginProvider implements LoginProvider
                   if (results.hasMore())
                   {
                      dn = null;
-                     debug.warning("Found multiple LDAP entries matching name ["+username+"] in OU ["+base+"]");
+                     debug.warning("Found multiple LDAP entries matching name ["+loginId+"] in OU ["+base+"]");
                   }
 
                   if (dn != null)
@@ -144,10 +144,10 @@ public class JndiLdapLoginProvider implements LoginProvider
    }
 
    /**
-    * Get the {@link LoginData} representing details of an identity, as requested by {@link #username}, or {@code null}. This is useful to look up
+    * Get the {@link LoginData} representing details of an identity, as requested by {@link #loginId}, or {@code null}. This is useful to look up
     * details, for example when performing password reset handshake operations.
     */
-   public LoginData unauthGetDetails(String username, String instanceId, List<String> searchOUs)
+   public LoginData unauthGetDetails(String loginId, String instanceId, List<String> searchOUs)
    {
       try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
@@ -160,7 +160,7 @@ public class JndiLdapLoginProvider implements LoginProvider
          String dn = null;
          for (String base : searchOUs)
          {
-            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { username }, ctls);
+            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { loginId }, ctls);
             try
             {
                if (results.hasMore())
@@ -172,7 +172,7 @@ public class JndiLdapLoginProvider implements LoginProvider
                   if (results.hasMore())
                   {
                      dn = null;
-                     debug.warning("Found multiple LDAP entries matching name ["+username+"] in OU ["+base+"]");
+                     debug.warning("Found multiple LDAP entries matching name ["+loginId+"] in OU ["+base+"]");
                   }
 
                   if (dn != null)
@@ -266,7 +266,7 @@ public class JndiLdapLoginProvider implements LoginProvider
          String dn = null;
          for (String base : searchOUs)
          {
-            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { username }, ctls);
+            NamingEnumeration<SearchResult> results = ctx.getContext().search(base, filter, new String[] { loginId }, ctls);
             try
             {
                if (results.hasMore())
@@ -276,7 +276,7 @@ public class JndiLdapLoginProvider implements LoginProvider
 
                   // If there are more results, got multiple matches, so should fail
                   if (results.hasMore())
-                     debug.warning("Found multiple LDAP entries matching name ["+username+"] in OU ["+base+"]");
+                     debug.warning("Found multiple LDAP entries matching name ["+loginId+"] in OU ["+base+"]");
 
                   if (dn != null)
                      return true;
