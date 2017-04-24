@@ -1,13 +1,11 @@
 package edu.tamu.tcat.account.jndi;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -15,8 +13,6 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
 
 import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
@@ -25,8 +21,7 @@ public class JndiLdapLoginProvider implements LoginProvider
 {
    private static final Logger debug = Logger.getLogger(JndiLdapLoginProvider.class.getName());
    public static final String PROVIDER_ID = "tcatLdapLoginProvider";
-   private String host;
-   private int port;
+   private String urls;
    private String adminAccountDn;
    private String adminAccountPassword;
    private boolean useSsl;
@@ -38,10 +33,9 @@ public class JndiLdapLoginProvider implements LoginProvider
 
    private List<String> searchOUs;
 
-   public JndiLdapLoginProvider(String host, int port, String adminAccountDn, String adminAccountPassword, boolean useSsl, boolean useTls)
+   public JndiLdapLoginProvider(String urls, String adminAccountDn, String adminAccountPassword, boolean useSsl, boolean useTls)
    {
-      this.host = host;
-      this.port = port;
+      this.urls = urls;
       this.adminAccountDn = adminAccountDn;
       this.adminAccountPassword = adminAccountPassword;
       this.useSsl = useSsl;
@@ -61,9 +55,8 @@ public class JndiLdapLoginProvider implements LoginProvider
    @Override
    public LoginData login()
    {
-      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
+      try (JndiLdapContext ctx = new JndiLdapContext(urls, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
-         // Search the directory
          String filter = "(sAMAccountName={0})";
          SearchControls ctls = new SearchControls();
          ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -105,35 +98,10 @@ public class JndiLdapLoginProvider implements LoginProvider
          if (dn == null)
             return null;
 
-         // Step 3: Bind another context with found DN and given password
-         Hashtable<Object,Object> envAuth = (Hashtable)ctx.getContext().getEnvironment().clone();
-         envAuth.put(Context.SECURITY_PRINCIPAL, dn);
-         envAuth.put(Context.SECURITY_CREDENTIALS, password);
-         try
+         if (ctx.authenticate(dn, password))
          {
-            // If this fails, the password was invalid, so auth fails
-            LdapContext ctxAuth = new InitialLdapContext(envAuth, null);
-            try
-            {
-               JndiLdapLoginData rv = new JndiLdapLoginData(ctx.getContext(), dn, PROVIDER_ID);
-               return rv;
-            }
-            finally
-            {
-               try
-               {
-                  ctxAuth.close();
-               }
-               catch (Exception e)
-               {
-                  debug.log(Level.WARNING, "Failed closing LDAP resource", e);
-               }
-            }
-         }
-         catch (Exception e)
-         {
-            // This is expected if authn fails, so log as FINE
-            debug.log(Level.FINE, "Failed LDAP authentication", e);
+            JndiLdapLoginData rv = new JndiLdapLoginData(ctx.getContext(), dn, PROVIDER_ID);
+            return rv;
          }
       }
       catch (Exception e)
@@ -149,7 +117,7 @@ public class JndiLdapLoginProvider implements LoginProvider
     */
    public LoginData unauthGetDetails(String loginId, String instanceId, List<String> searchOUs)
    {
-      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
+      try (JndiLdapContext ctx = new JndiLdapContext(urls, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
          // Search the directory
          String filter = "(sAMAccountName={0})";
@@ -205,7 +173,7 @@ public class JndiLdapLoginProvider implements LoginProvider
 
    public void setAttribute(String dn, String attributeName, Object value)
    {
-      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
+      try (JndiLdapContext ctx = new JndiLdapContext(urls, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
          Attributes attrs = new BasicAttributes(attributeName, value);
          // REPLACE_ATTRIBUTE will remove-all if value is null, or create-or-replace all existing values
@@ -219,7 +187,7 @@ public class JndiLdapLoginProvider implements LoginProvider
 
    public String getDN(byte[] objectGUID, String searchOU)
    {
-      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
+      try (JndiLdapContext ctx = new JndiLdapContext(urls, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
          String guidStr = ADDataUtils.toGuidBindingString(objectGUID);
          String dn = ctx.getContext().getAttributes(guidStr).get("distinguishedName").get().toString();
@@ -234,7 +202,7 @@ public class JndiLdapLoginProvider implements LoginProvider
 
    public Object getAttributeValue(String dn, String attributeName)
    {
-      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
+      try (JndiLdapContext ctx = new JndiLdapContext(urls, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
          Attributes attrs = ctx.getContext().getAttributes(dn);
          Attribute attr = attrs.get(attributeName);
@@ -255,7 +223,7 @@ public class JndiLdapLoginProvider implements LoginProvider
     */
    public boolean identityExists()
    {
-      try (JndiLdapContext ctx = new JndiLdapContext(host, port, adminAccountDn, adminAccountPassword, useSsl, useTls))
+      try (JndiLdapContext ctx = new JndiLdapContext(urls, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
          // Search the directory
          String filter = "(sAMAccountName={0})";

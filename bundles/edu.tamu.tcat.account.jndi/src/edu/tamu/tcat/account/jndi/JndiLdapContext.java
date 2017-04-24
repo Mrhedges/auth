@@ -1,5 +1,6 @@
 package edu.tamu.tcat.account.jndi;
 
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,7 +15,8 @@ import edu.tamu.tcat.account.AccountException;
 
 /**
  * A thin wrapper to initialize an {@link LdapContext} and hold it as {@link AutoCloseable}. This is not meant
- * to replace the API, but exposes the wrapped context via {@link #getContext()}.
+ * to replace the API, but exposes the wrapped context via {@link #getContext()}. This wrapper in particular handles
+ * TLS and SSL connections, which are more complex than normal connections.
  */
 public class JndiLdapContext implements AutoCloseable
 {
@@ -24,7 +26,8 @@ public class JndiLdapContext implements AutoCloseable
    private Properties env;
 
    /**
-    * Create a new closeable context.
+    * Create a new closeable context. Hosts provided may be of the format "ldap://host:port/", "ldaps://host:port/", or with
+    * multiple as "ldap://host1:port/ ldap://host2:port/" for the library to internally fall-back when attempting to connect.
     *
     * @param host May be space-separated to attempt multiple hosts
     * @param port
@@ -33,28 +36,25 @@ public class JndiLdapContext implements AutoCloseable
     * @param useSsl
     * @param useTls
     */
-   public JndiLdapContext(String host,
-                          int port,
+   public JndiLdapContext(String ldapURLs,
                           String adminAccountDn,
                           String adminAccountPassword,
                           boolean useSsl,
                           boolean useTls)
    {
+      if (useSsl && useTls)
+         throw new IllegalArgumentException("Must use either SSL or TLS or neither");
+
       env = new Properties();
       env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
       //NOTE: this is important, because it ensures objectGUID is retrieved as byte[] and not String
       env.put("java.naming.ldap.attributes.binary", "objectGUID");
-      StringBuilder ldapURLs = new StringBuilder();
-      String[] hosts = host.split(" ");
-      for (String str : hosts)
-      {
-         if (str.trim().isEmpty())
-            continue;
-         ldapURLs.append("ldap://").append(str).append(":").append(port).append("/ ");
-      }
-      env.put(Context.PROVIDER_URL, ldapURLs.toString());
+      env.put(Context.PROVIDER_URL, ldapURLs);
       if (useSsl)
          env.put(Context.SECURITY_PROTOCOL, "ssl");
+      // This env var is ignored, but may help for debugging
+      if (useTls)
+         env.put(Context.SECURITY_PROTOCOL, "tls");
 
       try
       {
@@ -74,6 +74,9 @@ public class JndiLdapContext implements AutoCloseable
             ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, adminAccountDn);
             ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, adminAccountPassword);
          }
+
+         // Force connection/bind to use established credentials instead of failing later on first use
+         ctx.reconnect(null);
       }
       catch (Exception e)
       {
@@ -132,5 +135,23 @@ public class JndiLdapContext implements AutoCloseable
    public LdapContext getContext()
    {
       return ctx;
+   }
+
+   public boolean authenticate(String dn, String password)
+   {
+      try
+      {
+         Hashtable<Object,Object> orig = (Hashtable)ctx.getEnvironment();
+         // Bind another context with found DN and given password
+         try (JndiLdapContext ctxAuth = new JndiLdapContext((String)orig.get(Context.PROVIDER_URL), dn, password, tls == null, tls != null))
+         {
+            return true;
+         }
+      }
+      catch (Exception e)
+      {
+         logger.log(Level.WARNING, "Failed to LDAP authentication attempt", e);
+         return false;
+      }
    }
 }
