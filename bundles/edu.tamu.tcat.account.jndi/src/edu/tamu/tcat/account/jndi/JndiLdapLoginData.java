@@ -17,17 +17,17 @@ public class JndiLdapLoginData implements LoginData
    private static final Logger logger = Logger.getLogger(JndiLdapLoginData.class.getName());
 
    /** type: String */
-   public static final String DATA_KEY_DN = "dn";
+   private static final String DATA_KEY_DN = "dn";
    /** type: byte[] */
-   public static final String DATA_KEY_GUID = "guid";
+   private static final String DATA_KEY_GUID = "guid";
    /** type: String */
-   public static final String DATA_KEY_USERNAME = "username";
+   private static final String DATA_KEY_USERNAME = "username";
    /** type: String */
-   public static final String DATA_KEY_FIRST = "first";
+   private static final String DATA_KEY_FIRST = "first";
    /** type: String */
-   public static final String DATA_KEY_LAST = "last";
+   private static final String DATA_KEY_LAST = "last";
    /** type: String */
-   public static final String DATA_KEY_EMAIL = "email";
+   private static final String DATA_KEY_EMAIL = "email";
    ///** type: Collection<String> */
    //public static final String DATA_KEY_GROUPS = "groups";
 
