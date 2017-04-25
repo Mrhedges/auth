@@ -1,12 +1,12 @@
 /*
- * Copyright 2014 Texas A&M Engineering Experiment Station
+ * Copyright 2014-2017 Texas A&M Engineering Experiment Station
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,11 @@ package edu.tamu.tcat.account.jaxrs.internal;
 
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * A {@link SecurityContext} which contains contexts of arbitrary storage via a {@link ContextContainingPrincipal}.
+ * Uses of this context override classical JAAS usage, rendering {@link #isUserInRole(String)} and {@link #isSecure()}
+ * defunct and to be handled by the application internally.
+ */
 class ContextContainingSecurity implements SecurityContext
 {
    private final ContextContainingPrincipal principal;
@@ -25,7 +30,7 @@ class ContextContainingSecurity implements SecurityContext
    {
       this.principal = principal;
    }
-   
+
    @Override
    public ContextContainingPrincipal getUserPrincipal()
    {
@@ -49,5 +54,4 @@ class ContextContainingSecurity implements SecurityContext
    {
       return null;
    }
-   
 }

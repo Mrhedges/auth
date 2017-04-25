@@ -46,6 +46,7 @@
     <module>bundles/edu.tamu.tcat.account.db</module>
     <module>bundles/edu.tamu.tcat.account.jaas</module>
     <module>bundles/edu.tamu.tcat.account.jaxrs</module>
+    <module>bundles/edu.tamu.tcat.account.jndi</module>
 <!--     <module>bundles/edu.tamu.tcat.account.apacheds</module> -->
 <!--     <module>bundles/edu.tamu.tcat.account.apacheds.ad.login</module> -->
 <!--     <module>bundles/edu.tamu.tcat.account.apacheds.test.application</module>  -->
