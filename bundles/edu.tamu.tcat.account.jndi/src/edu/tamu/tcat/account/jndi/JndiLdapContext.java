@@ -1,6 +1,5 @@
 package edu.tamu.tcat.account.jndi;
 
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -141,16 +140,15 @@ public class JndiLdapContext implements AutoCloseable
    {
       try
       {
-         Hashtable<Object,Object> orig = (Hashtable)ctx.getEnvironment();
          // Bind another context with found DN and given password
-         try (JndiLdapContext ctxAuth = new JndiLdapContext((String)orig.get(Context.PROVIDER_URL), dn, password, tls == null, tls != null))
+         try (JndiLdapContext ctxAuth = new JndiLdapContext(env.getProperty(Context.PROVIDER_URL), dn, password, tls == null, tls != null))
          {
             return true;
          }
       }
       catch (Exception e)
       {
-         logger.log(Level.WARNING, "Failed to LDAP authentication attempt", e);
+         logger.log(Level.WARNING, "Failed LDAP authentication attempt", e);
          return false;
       }
    }
