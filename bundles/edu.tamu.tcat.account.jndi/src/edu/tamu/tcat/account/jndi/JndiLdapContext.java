@@ -138,6 +138,11 @@ public class JndiLdapContext implements AutoCloseable
 
    public boolean authenticate(String dn, String password)
    {
+      if(password == null || password.isEmpty())
+      {
+         logger.log(Level.WARNING, "Failed LDAP authentication attempt.  Password not supplied.");
+         return false;
+      }
       try
       {
          // Bind another context with found DN and given password
