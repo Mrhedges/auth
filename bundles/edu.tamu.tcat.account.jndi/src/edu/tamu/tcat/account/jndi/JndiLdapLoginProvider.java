@@ -10,7 +10,6 @@ import javax.naming.NamingEnumeration;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import edu.tamu.tcat.account.login.LoginData;
 import edu.tamu.tcat.account.login.LoginProvider;
 
 public class JndiLdapLoginProvider implements LoginProvider
@@ -53,8 +52,11 @@ public class JndiLdapLoginProvider implements LoginProvider
       return searchOUs;
    }
 
+   /**
+    * @since 1.1
+    */
    @Override
-   public LoginData login()
+   public JndiLdapLoginData login()
    {
       try (JndiLdapContext ctx = new JndiLdapContext(urls, adminAccountDn, adminAccountPassword, useSsl, useTls))
       {
