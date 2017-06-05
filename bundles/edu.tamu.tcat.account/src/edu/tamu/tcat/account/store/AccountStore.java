@@ -15,6 +15,8 @@
  */
 package edu.tamu.tcat.account.store;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 import edu.tamu.tcat.account.Account;
@@ -34,6 +36,26 @@ public interface AccountStore
     * @return The account for the given criteria or {@code null} if none found.
     */
    Account lookup(LoginData loginData);
+
+   /**
+    * Look up all the authenticated {@link Account}s associated with the provided user information within the
+    * scope of a login provider as defined by the provided {@link LoginData}.
+    * <p>
+    * This is invoked after authentication has already been performed against a {@link LoginProvider}
+    * which has provided a {@link LoginData}, containing the parameters needed to look up an account.
+    * This API provides multiple results to support an architecture that allows impersonation, meaning
+    * a single identity is allowed to associate with more than one account to support concepts such
+    * as a shared account or testing.
+    *
+    * @param loginData Information about an authenticated user
+    * @return The accounts for the given criteria or an empty collection if none found.
+    * @since 2.1
+    */
+   default Collection<? extends Account> lookupAll(LoginData loginData)
+   {
+      Account account = lookup(loginData);
+      return account == null ? Collections.emptySet() : Collections.singleton(account);
+   }
 
    /**
     * Get the {@link Account} representing the provided account identifier {@link UUID}.
