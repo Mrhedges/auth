@@ -1,5 +1,6 @@
 package edu.tamu.tcat.account.jndi;
 
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,8 +99,8 @@ public class JndiLdapLoginData implements LoginData
 //         groups = helper.getGroupNames(dn).stream()
 //               .map(name -> name.substring(name.indexOf('=') + 1, name.indexOf(',')))
 //               .collect(Collectors.toList());
-      // The user-id contains two parts; the first is the readable GUID, then a semicolon, then the byte string used for LDAP queries
-      userId = ADDataUtils.toGuidString(guid) + ";" + ADDataUtils.toByteString(guid);
+      // The user-id is the readable GUID
+      userId = ADDataUtils.toGuidString(guid);
    }
 
    @Override
@@ -136,5 +137,45 @@ public class JndiLdapLoginData implements LoginData
          //   return (T)groups;
       }
       return null;
+   }
+
+   /**
+    * @since 1.1
+    */
+   public String getDN()
+   {
+      return distinguishedName;
+   }
+
+   /**
+    * @since 1.1
+    */
+   public byte[] getGuid()
+   {
+      return guid;
+   }
+
+   /**
+    * @since 1.1
+    */
+   public UUID getGuidUuid()
+   {
+      return UUID.fromString(userId);
+   }
+
+   /**
+    * @since 1.1
+    */
+   public String getEmail()
+   {
+      return email;
+   }
+
+   /**
+    * @since 1.1
+    */
+   public String getDisplayName()
+   {
+      return displayName;
    }
 }
