@@ -103,32 +103,4 @@ limitations under the License.
          version="1.1.0.dev"
          unpack="false"/>
 
-   <plugin
-         id="edu.tamu.tcat.account.apacheds"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
-         unpack="false"/>
-
-   <plugin
-         id="edu.tamu.tcat.account.apacheds.source"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
-         unpack="false"/>
-
-   <plugin
-         id="edu.tamu.tcat.account.apacheds.ad.login"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
-         unpack="false"/>
-
-   <plugin
-         id="edu.tamu.tcat.account.apacheds.ad.login.source"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
-         unpack="false"/>
-
 </feature>
