@@ -2,7 +2,7 @@
 <feature
       id="edu.tamu.tcat.account.sdk.feature"
       label="TCAT Account SDK Feature"
-      version="2.1.0.qualifier"
+      version="2.1.1.qualifier"
       provider-name="Texas A&amp;M Engineering Experiment Station">
 
    <description>
@@ -37,14 +37,14 @@ limitations under the License.
          id="edu.tamu.tcat.account"
          download-size="0"
          install-size="0"
-         version="2.1.0.dev"
+         version="2.1.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.source"
          download-size="0"
          install-size="0"
-         version="2.1.0.dev"
+         version="2.1.0.qualifier"
          unpack="false"/>
 
    <plugin
@@ -93,42 +93,14 @@ limitations under the License.
          id="edu.tamu.tcat.account.jndi"
          download-size="0"
          install-size="0"
-         version="1.1.0.dev"
+         version="1.1.0.qualifier"
          unpack="false"/>
 
    <plugin
          id="edu.tamu.tcat.account.jndi.source"
          download-size="0"
          install-size="0"
-         version="1.1.0.dev"
-         unpack="false"/>
-
-   <plugin
-         id="edu.tamu.tcat.account.apacheds"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
-         unpack="false"/>
-
-   <plugin
-         id="edu.tamu.tcat.account.apacheds.source"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
-         unpack="false"/>
-
-   <plugin
-         id="edu.tamu.tcat.account.apacheds.ad.login"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
-         unpack="false"/>
-
-   <plugin
-         id="edu.tamu.tcat.account.apacheds.ad.login.source"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.dev"
+         version="1.1.0.qualifier"
          unpack="false"/>
 
 </feature>
