@@ -187,6 +187,8 @@ public class LdapHelperAdImpl implements LdapHelperReader, LdapHelperMutator
    @Override
    public void checkValidPassword(String userDistinguishedName, String password) throws LdapException
    {
+      if(password == null || password.isEmpty())
+         throw new LdapException("Failed validating password for distinguished name " + userDistinguishedName + ". Password required.");
       try (LdapConnection connection = new LdapNetworkConnection(config))
       {
          checkValidPassword(userDistinguishedName, password, connection);

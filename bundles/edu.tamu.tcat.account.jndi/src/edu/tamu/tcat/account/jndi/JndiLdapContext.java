@@ -138,9 +138,13 @@ public class JndiLdapContext implements AutoCloseable
 
    public boolean authenticate(String dn, String password)
    {
+      if (dn == null || dn.trim().isEmpty())
+         throw new IllegalArgumentException("Failed LDAP authentication attempt. Distinguished Name not supplied.");
+      if (password == null || password.trim().isEmpty())
+         throw new IllegalArgumentException("Failed LDAP authentication attempt. Password not supplied.");
       try
       {
-         // Bind another context with found DN and given password
+         // Bind (and release) another context with given DN and password
          try (JndiLdapContext ctxAuth = new JndiLdapContext(env.getProperty(Context.PROVIDER_URL), dn, password, tls == null, tls != null))
          {
             return true;
